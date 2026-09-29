@@ -182,6 +182,14 @@ body{min-width:320px}
   html,body{min-width:320px}
 }
 
+
+/* ===== v9 activity, streak and swipe UI ===== */
+.activityHero{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(125deg,#1b2117,#121612)}
+.activityHero h2{font-size:22px;margin-top:7px}.activityBurn{min-width:92px;text-align:right}.activityBurn b{font-size:35px;color:var(--lime)}.activityBurn small{color:var(--muted)}
+.activityChoices{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.activityChoice{min-height:112px;background:#20261e;color:var(--white);border:1px solid #ffffff0c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:transform .2s,border-color .2s,background .2s}.activityChoice span{font-size:28px}.activityChoice b{font-size:11px}.activityChoice small{color:var(--muted);font-size:10px}.activityChoice.selected{border-color:#d6ff3266;background:#28321f;box-shadow:0 0 24px #d6ff3210;transform:translateY(-2px)}.largeProgress{height:11px;margin-top:15px}.streakCard{display:flex;justify-content:space-between;align-items:center}.streakNumber{display:flex;align-items:baseline;gap:6px;margin-top:6px}.streakNumber span{font-size:28px}.streakNumber b{font-size:38px;color:var(--lime)}.streakNumber small{color:var(--muted);font-weight:800}.streakDots{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}.streakDots i{width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:#242a23;color:#777f73;font-style:normal;font-size:11px}.streakDots i.done{background:#d6ff32;color:#10150c;box-shadow:0 0 13px #d6ff3238}.streakDots i.rest{background:#31372f;color:#aab1a5}.levelUpOverlay{position:fixed;inset:0;background:#050705eF;z-index:100;display:grid;place-items:center;opacity:0;pointer-events:none;transition:.25s}.levelUpOverlay.show{opacity:1;pointer-events:auto}.levelUpBox{text-align:center;padding:42px 55px;border:1px solid #d6ff3266;border-radius:28px;background:linear-gradient(145deg,#1a2117,#0d110d);box-shadow:0 0 80px #d6ff3220;animation:levelReveal .7s cubic-bezier(.2,.8,.2,1)}.levelUpBox .bolt{font-size:52px}.levelUpBox h2{font-size:35px;color:var(--lime);margin:8px 0}.levelUpBox p{color:var(--muted);margin:0}.swipeHint{touch-action:pan-y}
+@keyframes levelReveal{0%{transform:scale(.72) translateY(20px);opacity:0}60%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
+@media(max-width:699px){.activityChoices{grid-template-columns:1fr}.activityChoice{min-height:72px;display:grid;grid-template-columns:42px 1fr auto;text-align:left;padding:10px 15px}.activityChoice span{grid-row:1/3}.activityChoice small{justify-self:end}.streakCard{align-items:flex-start;gap:10px}.streakDots{margin-top:4px}}
+
 </style>
 </head>
 <body>
@@ -208,12 +216,25 @@ body{min-width:320px}
 </div>
 <div class="grid"><div class="card metric reveal d2"><div class="metricTop"><span class="label">PROTEIN</span><span class="metricIcon">🥩</span></div><div class="value"><span id="proteinView">0</span><small> g</small></div><div class="muted">Target <span id="proteinTargetHome">150</span> g</div><div class="metricProgress"><div class="metricFill" id="proteinBar"></div></div></div>
 <div class="card metric reveal d2"><div class="metricTop"><span class="label">WATER</span><span class="metricIcon">💧</span></div><div class="value"><span id="waterView">0</span><small> L</small></div><div class="muted">Target <span id="waterTargetHome">3</span> L</div><div class="metricProgress"><div class="metricFill" id="waterBar"></div></div></div></div>
-<div class="card metric reveal d3"><div class="metricTop"><span class="label">TODAY'S CALORIES</span><span class="metricIcon">🔥</span></div><div class="value"><span id="calView">0</span><small> kcal</small></div><div class="muted">Planning target ~<span id="calorieTargetHome">2,200</span> kcal</div></div>
-<div class="card reveal d4"><div class="quickTitle"><h2>Quick water</h2><span><span id="waterQuickTarget">3</span> L target</span></div><div class="quick"><button onclick="addWater(.25)">+250 ml</button><button onclick="addWater(.5)">+500 ml</button><button onclick="addWater(1)">+1 L</button></div></div>
+<div class="card metric reveal d3"><div class="metricTop"><span class="label">TODAY'S CALORIES</span><span class="metricIcon">🔥</span></div><div class="muted" style="margin-top:8px">Burned <span id="burnHome">0</span> kcal</div><div class="metricProgress"><div class="metricFill" id="calorieBurnBarHome"></div></div><div class="value"><span id="calView">0</span><small> kcal</small></div><div class="muted">Planning target ~<span id="calorieTargetHome">2,200</span> kcal</div></div>
+<div class="card reveal d4"><div class="quickTitle"><h2>⚡ LEVEL <span id="levelHome">1</span></h2><span><span id="xpHome">0</span> / <span id="xpNextHome">100</span> XP</span></div><div class="metricProgress"><div class="metricFill" id="xpBarHome"></div></div><div class="muted" style="margin-top:9px">🔥 <span id="streakHome">0</span> day workout streak</div></div><div class="card reveal d4"><div class="quickTitle"><h2>Quick water</h2><span><span id="waterQuickTarget">3</span> L target</span></div><div class="quick"><button onclick="addWater(.25)">+250 ml</button><button onclick="addWater(.5)">+500 ml</button><button onclick="addWater(1)">+1 L</button></div></div>
 <div class="card reveal d5"><h2>Today's workout</h2><p class="muted" id="workoutText">No workout logged yet.</p><button onclick="show('workout')">Open workout</button></div>
 </section>
 
 <section id="food" class="section"><div class="card"><h2>Smart food logging</h2><p class="muted">Type your meal naturally</p><div class="foodInput"><input id="smartFood" placeholder="2 eggs, 3 appam, 100g chicken"><button onclick="smartAdd()">Add</button></div><div id="smartResult"></div></div><div class="card"><h2>Quick foods</h2><div class="quick"><button onclick="smartFill('2 eggs')">🥚 Eggs</button><button onclick="smartFill('100g chicken')">🍗 Chicken</button><button onclick="smartFill('3 appam')">🥞 Appam</button><button onclick="smartFill('2 chapathi')">🫓 Chapathi</button><button onclick="smartFill('250ml milk')">🥛 Milk</button><button onclick="smartFill('50g oats')">🥣 Oats</button></div></div><div class="card"><h2>Today's food</h2><div id="foodList"></div><div class="food"><b>Total</b><b id="foodTotal"></b></div></div></section>
+
+
+<section id="activity" class="section">
+<div class="card activityHero"><div><span class="label">TODAY'S ACTIVITY</span><h2 id="activitySummary">Choose an activity</h2><p class="muted">Estimate calories burned and build your streak.</p></div><div class="activityBurn"><b id="burnView">0</b><small> kcal</small></div></div>
+<div class="card"><h2>Choose activity</h2><div class="activityChoices">
+<button class="activityChoice" data-activity="Gym"><span>🏋️</span><b>GYM</b><small>Strength</small></button>
+<button class="activityChoice" data-activity="Badminton"><span>🏸</span><b>BADMINTON</b><small>Cardio</small></button>
+<button class="activityChoice" data-activity="Cricket"><span>🏏</span><b>CRICKET</b><small>Sport</small></button>
+</div></div>
+<div class="card"><div class="editGrid"><label class="muted">Duration (minutes)<input id="activityMinutes" type="number" min="1" max="600" value="45"></label><label class="muted">Intensity<select id="activityIntensity"><option value="light">Light</option><option value="moderate" selected>Moderate</option><option value="hard">Hard</option></select></label></div><button class="primary" onclick="calculateActivity()">Calculate calories</button><div id="activityResult" class="result" style="display:none"></div></div>
+<div class="card"><div class="quickTitle"><h2>Calories burned</h2><span id="burnTargetLabel">0 / 500 kcal</span></div><div class="metricProgress largeProgress"><div class="metricFill" id="burnBar"></div></div><p class="muted" id="burnPercent">0%</p></div>
+<div class="card streakCard"><div><span class="label">WORKOUT STREAK</span><div class="streakNumber"><span>🔥</span><b id="streakView">0</b><small> DAYS</small></div><p class="muted">Weekend rest days don't break your streak.</p></div><div class="streakDots" id="streakDots"></div></div>
+</section>
 
 <section id="workout" class="section">
 <div class="card">
@@ -255,7 +276,7 @@ body{min-width:320px}
 </section>
 </main>
 
-<nav class="nav"><button onclick="show('home')" id="n-home" class="active"><b>⌂</b>Home</button><button onclick="show('food')" id="n-food"><b>🍽</b>Food</button><button onclick="show('workout')" id="n-workout"><b>🏋</b>Workout</button><button onclick="show('progressTab')" id="n-progressTab"><b>↗</b>Progress</button><button onclick="show('budget')" id="n-budget"><b>₹</b>Budget</button><button onclick="show('profile')" id="n-profile"><b>◉</b>Profile</button></nav>
+<nav class="nav"><button onclick="show('home')" id="n-home" class="active"><b>⌂</b>Home</button><button onclick="show('food')" id="n-food"><b>🍽</b>Food</button><button onclick="show('activity')" id="n-activity"><b>⚡</b>Activity</button><button onclick="show('workout')" id="n-workout"><b>🏋</b>Workout</button><button onclick="show('progressTab')" id="n-progressTab"><b>↗</b>Progress</button><button onclick="show('budget')" id="n-budget"><b>₹</b>Budget</button><button onclick="show('profile')" id="n-profile"><b>◉</b>Profile</button></nav>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -290,7 +311,7 @@ function rewardOnce(key,amount,reason){const day=today();d.rewardDays[day]=d.rew
 function addXP(amount,reason){const before=levelInfo().level;d.xp+=amount;const after=levelInfo().level;save(false);if(after>before)showLevelUp(after,levelInfo().rank);render();if(after===before&&reason)toast('+'+amount+' XP • '+reason)}
 function showLevelUp(level,rank){document.getElementById('overlayLevel').textContent=level;document.getElementById('overlayRank').textContent=rank;document.getElementById('levelOverlay').classList.add('show')}
 function closeLevelOverlay(){document.getElementById('levelOverlay').classList.remove('show')}
-function show(id){document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.getElementById('n-'+id).classList.add('active');if(id==='profile')fillProfile();if(id==='workout')renderCalendar();render()}
+function show(id){document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.getElementById('n-'+id)?.classList.add('active');if(id==='profile')fillProfile();if(id==='workout')renderCalendar();render()}
 function addWater(v){const before=d.water;d.water=Math.round((d.water+v)*100)/100;save();toast('Water added 💧');if(before<d.waterTarget&&d.water>=d.waterTarget)rewardOnce('waterTarget',30,'Water target')}
 function smartFill(v){document.getElementById('smartFood').value=v}
 function smartAdd(){let raw=document.getElementById('smartFood').value.toLowerCase().trim();if(!raw)return;let parts=raw.split(/,| and /).map(x=>x.trim()).filter(Boolean),added=[];parts.forEach(part=>{let m=part.match(/(\d+(?:\.\d+)?)\s*(kg|g|ml)?\s*(.+)/);if(!m)return;let q=parseFloat(m[1]),u=m[2]||'',name=m[3];let key=Object.keys(DB).find(k=>DB[k].a.some(a=>name.includes(a)));if(!key)return;let f=DB[key],factor=q;if(u==='g')factor=q/100;if(u==='kg')factor=q*10;if(u==='ml')factor=q/250;if(!u)factor=q;let p=Math.round(f.p*factor*10)/10,c=Math.round(f.c*factor);d.foods.push({n:q+' '+key,p,c});added.push({p,c})});if(added.length){let p=added.reduce((a,x)=>a+x.p,0),c=added.reduce((a,x)=>a+x.c,0);document.getElementById('smartResult').innerHTML='<div class="result">Added ✓ &nbsp; <b>'+p.toFixed(1)+' g protein</b> • <b>'+c+' kcal</b></div>';document.getElementById('smartFood').value='';rewardOnce('foodLogged',10,'Meal logged');save()}else document.getElementById('smartResult').innerHTML='<div class="result">Try: 2 eggs, 3 appam, 100g chicken</div>'}
@@ -340,6 +361,76 @@ function render(){
 }
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._toast);window._toast=setTimeout(()=>t.classList.remove('show'),1700)}
 render();
+
+/* ===== v9 Activity + XP + streak + swipe ===== */
+const V9KEY='deqxFitV9';
+let v9=JSON.parse(localStorage.getItem(V9KEY)||'null')||{activity:null,burned:0,streak:0,lastWorkout:null,xp:0,level:1};
+const ACTIVITY_MET={Gym:5.5,Badminton:7,Cricket:5};
+function saveV9(){localStorage.setItem(V9KEY,JSON.stringify(v9))}
+function earnXP(amount,reason){
+  const before=v9.level;
+  v9.xp+=Math.max(0,Math.round(amount));
+  while(v9.xp>=v9.level*100){v9.xp-=v9.level*100;v9.level++}
+  saveV9();renderV9();
+  if(v9.level>before)showLevelUp();
+}
+function showLevelUp(){document.getElementById('levelUpText').textContent='Level '+v9.level+' unlocked';document.getElementById('levelUpOverlay').classList.add('show')}
+function closeLevelUp(){document.getElementById('levelUpOverlay').classList.remove('show')}
+document.querySelectorAll('.activityChoice').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.activityChoice').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');v9.activity=b.dataset.activity;saveV9()}));
+function calculateActivity(){
+  if(!v9.activity){toast('Choose an activity first');show('activity');return}
+  const mins=Math.min(600,Math.max(1,Number(document.getElementById('activityMinutes').value)||45));
+  const intensity=document.getElementById('activityIntensity').value;
+  const mult={light:.82,moderate:1,hard:1.18}[intensity];
+  const weight=Math.max(40,Math.min(180,Number(d.weight)||70));
+  const kcal=Math.round(ACTIVITY_MET[v9.activity]*weight*(mins/60)*mult);
+  v9.burned=kcal;v9.lastActivityDate=today();saveV9();
+  document.getElementById('activityResult').style.display='block';
+  document.getElementById('activityResult').innerHTML='🔥 <b>'+kcal+' kcal estimated</b> · '+mins+' min '+v9.activity;
+  earnXP(Math.min(60,Math.round(kcal/10)),'activity');
+  toast('Activity logged +XP ⚡');
+}
+function updateStreak(){
+  const day=new Date().getDay(); // 0 Sun, 6 Sat
+  if(day===0||day===6)return;
+  const key=today();
+  if(v9.lastWorkout===key)return;
+  v9.lastWorkout=key;v9.streak++;
+  saveV9();earnXP(50,'workout');renderV9();
+}
+function renderV9(){
+  const burn=v9.burned||0,target=500,percent=Math.min(100,Math.round(burn/target*100)),next=v9.level*100,xpPct=Math.min(100,Math.round(v9.xp/next*100));
+  ['burnView','burnHome'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=burn});
+  const bar=document.getElementById('burnBar');if(bar)bar.style.width=percent+'%';
+  const homeBar=document.getElementById('calorieBurnBarHome');if(homeBar)homeBar.style.width=percent+'%';
+  const bp=document.getElementById('burnPercent');if(bp)bp.textContent=percent+'%';
+  const bt=document.getElementById('burnTargetLabel');if(bt)bt.textContent=burn+' / '+target+' kcal';
+  const lv=document.getElementById('levelHome');if(lv)lv.textContent=v9.level;
+  const xp=document.getElementById('xpHome');if(xp)xp.textContent=v9.xp;
+  const xn=document.getElementById('xpNextHome');if(xn)xn.textContent=next;
+  const xb=document.getElementById('xpBarHome');if(xb)xb.style.width=xpPct+'%';
+  ['streakHome','streakView'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=v9.streak});
+  const dots=document.getElementById('streakDots');
+  if(dots){const labels=['M','T','W','T','F'];dots.innerHTML=labels.map((x,i)=>'<i class="'+(i<v9.streak%6?'done':'')+'">'+x+'</i>').join('')}
+}
+const oldSaveWorkout=window.saveWorkout;
+window.saveWorkout=function(){oldSaveWorkout();updateStreak()}
+renderV9();
+
+/* Swipe between bottom sections. Weekend/rest behavior stays data-driven. */
+const swipeOrder=['home','food','activity','workout','progressTab','budget','profile'];
+let touchStartX=0,touchStartY=0,touchStartTime=0;
+const mainEl=document.querySelector('.main');
+mainEl.addEventListener('touchstart',e=>{if(!e.touches[0])return;touchStartX=e.touches[0].clientX;touchStartY=e.touches[0].clientY;touchStartTime=Date.now()},{passive:true});
+mainEl.addEventListener('touchend',e=>{
+  const t=e.changedTouches[0];if(!t)return;
+  const dx=t.clientX-touchStartX,dy=t.clientY-touchStartY,dt=Date.now()-touchStartTime;
+  if(dt>700||Math.abs(dx)<60||Math.abs(dx)<Math.abs(dy)*1.25)return;
+  const active=document.querySelector('.section.active');if(!active)return;
+  const i=swipeOrder.indexOf(active.id);const ni=i+(dx<0?1:-1);if(ni<0||ni>=swipeOrder.length)return;
+  show(swipeOrder[ni]);
+},{passive:true});
+
 </script>
 
 <script>
@@ -358,6 +449,11 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+
+
+<div class="levelUpOverlay" id="levelUpOverlay" role="dialog" aria-live="polite">
+<div class="levelUpBox"><div class="bolt">⚡</div><h2>LEVEL UP</h2><p id="levelUpText">Level 2 unlocked</p><button onclick="closeLevelUp()" style="margin-top:20px">CONTINUE</button></div>
+</div>
 
 </body>
 </html>
