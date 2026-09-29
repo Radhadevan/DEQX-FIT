@@ -505,7 +505,7 @@ render();
 
 /* ===== v9 Activity + XP + streak + swipe ===== */
 const V9KEY='deqxFitV9';
-let v9=JSON.parse(localStorage.getItem(V9KEY)||'null')||{activity:null,burned:0,streak:0,lastWorkout:null,xp:0,level:1};
+var v9=JSON.parse(localStorage.getItem(V9KEY)||'null')||{activity:null,burned:0,streak:0,lastWorkout:null,xp:0,level:1};
 const ACTIVITY_MET={Gym:5.5,Badminton:7,Cricket:5};
 function saveV9(){localStorage.setItem(V9KEY,JSON.stringify(v9))}
 function earnXP(amount,reason){
