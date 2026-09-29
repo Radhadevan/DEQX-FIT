@@ -1,4 +1,4 @@
-const CACHE='deqx-fit-v6';
+const CACHE='deqx-fit-v7';
 const APP_SHELL=['./','./index.html','./manifest.json','./icon.svg'];
 
 self.addEventListener('install',event=>{
