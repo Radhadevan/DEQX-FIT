@@ -12,154 +12,86 @@
 <meta name="apple-mobile-web-app-title" content="DEQX FIT">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
-:root{color-scheme:dark;--bg:#090b09;--panel:#141714;--panel2:#191d18;--line:#282d27;--lime:#d6ff32;--white:#f5f7f1;--muted:#a0a69a;--dim:#747b70;--glow:#d6ff3226}
-*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:radial-gradient(ellipse at 50% -15%,#26301d 0,transparent 43%),var(--bg);color:var(--white);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
-.app{max-width:520px;margin:auto;min-height:100vh;background:linear-gradient(180deg,#10130f 0,#090b09 48%);padding-bottom:98px;overflow:hidden}
-.hero{color:var(--white);padding:22px 19px 15px;position:relative;overflow:hidden;background:transparent}
-.hero:after{content:"";position:absolute;width:240px;height:240px;border-radius:50%;right:-165px;top:-140px;background:radial-gradient(circle,#d6ff3224 0,transparent 68%);pointer-events:none}
-.heroTop{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}
-.brand{font-size:21px;font-weight:900;letter-spacing:1px}.brand span{color:var(--lime);font-weight:800;margin-left:3px}.sub{color:var(--muted);font-size:10px;margin-top:5px;letter-spacing:1.2px;font-weight:650}
-.avatar{width:44px;height:44px;border-radius:15px;background:linear-gradient(145deg,#20261e,#141713);display:grid;place-items:center;border:1px solid #ffffff14;box-shadow:0 5px 18px #0008;color:var(--lime);font-size:17px;font-weight:950;letter-spacing:-1px;position:relative}.avatar:after{content:"";position:absolute;width:17px;height:2px;border-radius:3px;background:var(--lime);bottom:7px;box-shadow:0 0 9px #d6ff3266}
+:root{color-scheme:dark;--bg:#090b09;--panel:#141714;--panel2:#191d18;--line:#282d27;--lime:#d6ff32;--white:#f5f7f1;--muted:#a0a69a;--dim:#747b70}
+*{box-sizing:border-box}html{background:var(--bg);scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(ellipse at 50% -15%,#26301d 0,transparent 43%),var(--bg);color:var(--white);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit}.app{max-width:520px;margin:auto;min-height:100vh;background:linear-gradient(180deg,#10130f 0,#090b09 48%);padding-bottom:98px;overflow:hidden}
+.hero{color:var(--white);padding:22px 19px 15px;position:relative;overflow:hidden;background:transparent}.hero:after{content:"";position:absolute;width:240px;height:240px;border-radius:50%;right:-165px;top:-140px;background:radial-gradient(circle,#d6ff3224 0,transparent 68%);pointer-events:none}
+.heroTop{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}.brand{font-size:21px;font-weight:900;letter-spacing:1px}.brand span{color:var(--lime);font-weight:800;margin-left:3px}.sub{color:var(--muted);font-size:10px;margin-top:5px;letter-spacing:1.2px;font-weight:650}
+.avatar{width:44px;height:44px;border-radius:15px;background:linear-gradient(145deg,#20261e,#141713);display:grid;place-items:center;border:1px solid #ffffff14;box-shadow:0 5px 18px #0008;color:var(--lime);font-size:17px;font-weight:950;letter-spacing:-1px;position:relative;cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s}.avatar:after{content:"";position:absolute;width:17px;height:2px;border-radius:3px;background:var(--lime);bottom:7px;box-shadow:0 0 9px #d6ff3266}.avatar:active{transform:scale(.9)}.avatar.pulse{animation:profilePulse .7s ease}
 .main{padding:9px 15px 14px}.card{background:linear-gradient(145deg,#191d18,#131613);border:1px solid #ffffff0a;border-radius:22px;padding:16px;margin-bottom:12px;box-shadow:0 12px 28px #0004;position:relative;overflow:hidden}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.label{font-size:10px;color:var(--muted);font-weight:750;letter-spacing:1.05px}.value{font-size:26px;font-weight:820;margin-top:6px;letter-spacing:-1px;color:var(--white)}.value small{font-size:13px;color:var(--muted);font-weight:650;letter-spacing:0}
 .goalCard{display:flex;align-items:center;gap:16px;background:linear-gradient(118deg,#d6ff32 0,#c8f42c 58%,#97bd1e 100%);color:#11150c;border:0;box-shadow:0 10px 30px #b8e72924}.goalCard:after{content:"";position:absolute;width:175px;height:175px;right:-74px;top:-84px;border:1px solid #fff6;border-radius:50%;box-shadow:0 0 42px #fff2,inset 0 0 28px #fff2}
-.ring{width:86px;height:86px;border-radius:50%;display:grid;place-items:center;flex:none;background:conic-gradient(#11150c var(--p),#ffffff70 0);filter:drop-shadow(0 3px 10px #556d1528);position:relative;z-index:1}
-.ringInner{width:66px;height:66px;border-radius:50%;background:#c9f233;display:grid;place-items:center;font-weight:850;font-size:15px;color:#14180e}
+.ring{width:86px;height:86px;border-radius:50%;display:grid;place-items:center;flex:none;background:conic-gradient(#11150c var(--p),#ffffff70 0);filter:drop-shadow(0 3px 10px #556d1528);position:relative;z-index:1;transition:background 1s cubic-bezier(.2,.8,.2,1);transform:rotate(-90deg)}.ringInner{width:66px;height:66px;border-radius:50%;background:#c9f233;display:grid;place-items:center;font-weight:850;font-size:15px;color:#14180e;transform:rotate(90deg)}
 .goalText{flex:1;position:relative;z-index:1}.goalText .label{color:#38441d}.goalText strong{font-size:20px;letter-spacing:-.7px;color:#11150c}.goalText p{margin:5px 0 0;color:#39451f;font-size:12px;font-weight:600}
-.metric{position:relative;overflow:hidden}.metricIcon{font-size:18px;filter:saturate(.85)}.metricTop{display:flex;justify-content:space-between;align-items:center}.metricProgress{height:6px;background:#2b3029;border-radius:9px;margin-top:12px;overflow:hidden}.metricFill{height:100%;background:linear-gradient(90deg,#b9e923,var(--lime));border-radius:9px;box-shadow:0 0 12px #d6ff3266}
-.quickTitle{display:flex;justify-content:space-between;align-items:center}.quickTitle span{font-size:11px;color:var(--muted)}
-.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:11px}.quick button,.pill{border:1px solid #ffffff0d;border-radius:13px;padding:11px 5px;background:#222720;color:var(--white);font-weight:700;font-size:11px;transition:transform .15s,border-color .15s}.quick button:active,button:active{transform:scale(.97)}
+.metric{position:relative;overflow:hidden}.metricIcon{font-size:18px;filter:saturate(.85)}.metricTop{display:flex;justify-content:space-between;align-items:center}.metricProgress{height:6px;background:#2b3029;border-radius:9px;margin-top:12px;overflow:hidden}.metricFill{height:100%;width:0;background:linear-gradient(90deg,#b9e923,var(--lime));border-radius:9px;box-shadow:0 0 12px #d6ff3266;transition:width .75s cubic-bezier(.2,.8,.2,1)}
+.quickTitle{display:flex;justify-content:space-between;align-items:center}.quickTitle span{font-size:11px;color:var(--muted)}.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:11px}.quick button,.pill{border:1px solid #ffffff0d;border-radius:13px;padding:11px 5px;background:#222720;color:var(--white);font-weight:700;font-size:11px;transition:transform .15s,border-color .15s,background .15s}.quick button:active,button:active{transform:scale(.97)}
 .primary{background:var(--lime)!important;color:#12160b!important}.foodInput{display:flex;gap:8px}.foodInput input{flex:1;min-width:0}
-input,select{width:100%;padding:12px;border:1px solid #30362e;border-radius:13px;background:#10130f;color:var(--white);margin:6px 0 10px;font-size:14px;outline:none}input:focus,select:focus{border-color:#9dbc31;box-shadow:0 0 0 3px #d6ff3217}input::placeholder{color:#72796e}input[type=checkbox]{accent-color:var(--lime);width:auto;margin-right:8px}
+input,select{width:100%;padding:12px;border:1px solid #30362e;border-radius:13px;background:#10130f;color:var(--white);margin:6px 0 10px;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s,transform .2s}input:focus,select:focus{border-color:#9dbc31;box-shadow:0 0 0 3px #d6ff3217}input::placeholder{color:#72796e}input[type=checkbox]{accent-color:var(--lime);width:auto;margin-right:8px}
 button{border:0;border-radius:13px;padding:12px 14px;background:var(--lime);color:#13170d;font-weight:800;cursor:pointer;box-shadow:0 5px 16px #d6ff3212}
 h2{font-size:15px;margin:0;letter-spacing:-.2px}.muted{font-size:12px;color:var(--muted)}.food{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid #ffffff0c;font-size:12px;color:#e5e9df}.food:last-child{border-bottom:0}
-.actions{display:flex;gap:8px}.actions button{flex:1}.section{display:none}.section.active{display:block;animation:rise .22s ease-out}@keyframes rise{from{opacity:.6;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.actions{display:flex;gap:8px}.actions button{flex:1}.section{display:none}.section.active{display:block;animation:sectionIn .32s cubic-bezier(.2,.8,.2,1)}
 .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(520px,100%);height:81px;background:#10130ff2;border-top:1px solid #ffffff12;backdrop-filter:blur(18px);display:flex;justify-content:space-around;align-items:center;padding:7px 5px max(7px,env(safe-area-inset-bottom));z-index:5}
-.nav button{background:transparent;color:#777e72;box-shadow:none;padding:7px 6px;font-size:10px;display:flex;flex-direction:column;gap:4px;align-items:center;min-width:48px;flex:1}.nav button b{font-size:19px;font-weight:500;line-height:1}.nav button.active{color:var(--lime)}.nav button.active b{filter:drop-shadow(0 0 7px #d6ff3266)}
-.badge{display:inline-block;background:#242920;border-radius:20px;padding:5px 8px;font-size:11px;color:#d7dfce}
-.result{background:#20271a;border:1px solid #d6ff3224;color:#eef5df;border-radius:14px;padding:11px;margin-top:10px;font-size:13px}
+.nav button{background:transparent;color:#777e72;box-shadow:none;padding:7px 6px;font-size:10px;display:flex;flex-direction:column;gap:4px;align-items:center;min-width:48px;flex:1;transition:transform .18s,color .18s}.nav button b{font-size:19px;font-weight:500;line-height:1}.nav button.active{color:var(--lime)}.nav button.active b{filter:drop-shadow(0 0 7px #d6ff3266)}.nav button.active{animation:navPop .28s ease}
+.badge{display:inline-block;background:#242920;border-radius:20px;padding:5px 8px;font-size:11px;color:#d7dfce}.result{background:#20271a;border:1px solid #d6ff3224;color:#eef5df;border-radius:14px;padding:11px;margin-top:10px;font-size:13px}
 .editGrid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.editRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #ffffff0c}.editRow:last-child{border-bottom:0}.editRow input{margin:3px 0 7px;min-width:0}.editActions{display:flex;gap:7px;align-items:center}.editActions button{padding:9px 10px;font-size:11px}.deleteBtn{background:#39201d;color:#ffb4a7;box-shadow:none}.saveNote{min-height:16px;margin-top:8px}
-@media(min-width:520px){.app{border-left:1px solid #ffffff09;border-right:1px solid #ffffff09}.nav{border-radius:18px 18px 0 0}}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+.profileHint{font-size:11px;color:var(--dim);margin-top:8px}.profileHero{display:flex;align-items:center;gap:13px;margin-bottom:12px}.profileIcon{width:50px;height:50px;border-radius:16px;background:#20261e;color:var(--lime);display:grid;place-items:center;font-weight:950;border:1px solid #ffffff12;box-shadow:0 0 25px #d6ff3212}
+.toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,18px);opacity:0;background:#eaf4e4;color:#11170e;padding:11px 16px;border-radius:14px;font-size:12px;font-weight:800;z-index:30;pointer-events:none;transition:.25s}.toast.show{opacity:1;transform:translate(-50%,0)}
+.reveal{opacity:0;transform:translateY(16px);animation:reveal .55s cubic-bezier(.2,.8,.2,1) forwards}.d1{animation-delay:.04s}.d2{animation-delay:.08s}.d3{animation-delay:.12s}.d4{animation-delay:.16s}.d5{animation-delay:.20s}
+@keyframes reveal{to{opacity:1;transform:none}}@keyframes sectionIn{from{opacity:.2;transform:translateY(7px)}to{opacity:1;transform:none}}@keyframes navPop{50%{transform:translateY(-3px) scale(1.04)}}@keyframes profilePulse{0%{transform:scale(1)}45%{transform:scale(1.08);box-shadow:0 0 0 7px #d6ff3218}100%{transform:scale(1)}}
+@media(min-width:520px){.app{border-left:1px solid #ffffff09;border-right:1px solid #ffffff09}.nav{border-radius:18px 18px 0 0}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
 <div class="app">
-<header class="hero"><div class="heroTop"><div><div class="brand">DEQX <span>FIT</span></div><div class="sub">TRAIN · TRACK · TRANSFORM</div></div><div class="avatar" aria-label="DEQX FIT logo">DQX</div></div></header>
+<header class="hero reveal"><div class="heroTop"><div><div class="brand">DEQX <span>FIT</span></div><div class="sub">TRAIN · TRACK · TRANSFORM</div></div><button class="avatar" id="profileAvatar" aria-label="Open profile" onclick="openProfile()">DQX</button></div></header>
 
 <main class="main">
 <section id="home" class="section active">
-<div class="card goalCard">
-<div class="ring" id="ring"><div class="ringInner" id="ringText">0%</div></div>
-<div class="goalText"><span class="label">GOAL PROGRESS</span><br><strong><span id="weightHome">97</span> → <span id="goalWeightHome">85</span> kg</strong><p id="remaining">12.0 kg remaining</p></div>
-</div>
-
-<div class="grid">
-<div class="card metric"><div class="metricTop"><span class="label">PROTEIN</span><span class="metricIcon">🥩</span></div><div class="value"><span id="proteinView">0</span><small> g</small></div><div class="muted">Target <span id="proteinTargetHome">150</span> g</div><div class="metricProgress"><div class="metricFill" id="proteinBar"></div></div></div>
-<div class="card metric"><div class="metricTop"><span class="label">WATER</span><span class="metricIcon">💧</span></div><div class="value"><span id="waterView">0</span><small> L</small></div><div class="muted">Target <span id="waterTargetHome">3</span> L</div><div class="metricProgress"><div class="metricFill" id="waterBar"></div></div></div>
-</div>
-
-<div class="card metric"><div class="metricTop"><span class="label">TODAY'S CALORIES</span><span class="metricIcon">🔥</span></div><div class="value"><span id="calView">0</span><small> kcal</small></div><div class="muted">Planning target ~<span id="calorieTargetHome">2,200</span> kcal</div></div>
-
-<div class="card"><div class="quickTitle"><h2>Quick water</h2><span><span id="waterQuickTarget">3</span> L target</span></div><div class="quick"><button onclick="addWater(.25)">+250 ml</button><button onclick="addWater(.5)">+500 ml</button><button onclick="addWater(1)">+1 L</button></div></div>
-
-<div class="card"><h2>Today's workout</h2><p class="muted" id="workoutText">No workout logged yet.</p><button onclick="show('workout')">Open workout</button></div>
+<div class="card goalCard reveal d1"><div class="ring" id="ring"><div class="ringInner" id="ringText">0%</div></div><div class="goalText"><span class="label">GOAL PROGRESS</span><br><strong><span id="weightHome">97</span> → <span id="goalWeightHome">85</span> kg</strong><p id="remaining">12.0 kg remaining</p></div></div>
+<div class="grid"><div class="card metric reveal d2"><div class="metricTop"><span class="label">PROTEIN</span><span class="metricIcon">🥩</span></div><div class="value"><span id="proteinView">0</span><small> g</small></div><div class="muted">Target <span id="proteinTargetHome">150</span> g</div><div class="metricProgress"><div class="metricFill" id="proteinBar"></div></div></div>
+<div class="card metric reveal d2"><div class="metricTop"><span class="label">WATER</span><span class="metricIcon">💧</span></div><div class="value"><span id="waterView">0</span><small> L</small></div><div class="muted">Target <span id="waterTargetHome">3</span> L</div><div class="metricProgress"><div class="metricFill" id="waterBar"></div></div></div></div>
+<div class="card metric reveal d3"><div class="metricTop"><span class="label">TODAY'S CALORIES</span><span class="metricIcon">🔥</span></div><div class="value"><span id="calView">0</span><small> kcal</small></div><div class="muted">Planning target ~<span id="calorieTargetHome">2,200</span> kcal</div></div>
+<div class="card reveal d4"><div class="quickTitle"><h2>Quick water</h2><span><span id="waterQuickTarget">3</span> L target</span></div><div class="quick"><button onclick="addWater(.25)">+250 ml</button><button onclick="addWater(.5)">+500 ml</button><button onclick="addWater(1)">+1 L</button></div></div>
+<div class="card reveal d5"><h2>Today's workout</h2><p class="muted" id="workoutText">No workout logged yet.</p><button onclick="show('workout')">Open workout</button></div>
 </section>
 
-<section id="food" class="section">
-<div class="card"><h2>Smart food logging</h2><p class="muted">Type your meal naturally</p>
-<div class="foodInput"><input id="smartFood" placeholder="2 eggs, 3 appam, 100g chicken"><button onclick="smartAdd()">Add</button></div>
-<div id="smartResult"></div>
-</div>
-<div class="card"><h2>Quick foods</h2><div class="quick">
-<button onclick="smartFill('2 eggs')">🥚 Eggs</button><button onclick="smartFill('100g chicken')">🍗 Chicken</button><button onclick="smartFill('3 appam')">🥞 Appam</button>
-<button onclick="smartFill('2 chapathi')">🫓 Chapathi</button><button onclick="smartFill('250ml milk')">🥛 Milk</button><button onclick="smartFill('50g oats')">🥣 Oats</button>
-</div></div>
-<div class="card"><h2>Today's food</h2><div id="foodList"></div><div class="food"><b>Total</b><b id="foodTotal"></b></div></div>
-</section>
+<section id="food" class="section"><div class="card"><h2>Smart food logging</h2><p class="muted">Type your meal naturally</p><div class="foodInput"><input id="smartFood" placeholder="2 eggs, 3 appam, 100g chicken"><button onclick="smartAdd()">Add</button></div><div id="smartResult"></div></div><div class="card"><h2>Quick foods</h2><div class="quick"><button onclick="smartFill('2 eggs')">🥚 Eggs</button><button onclick="smartFill('100g chicken')">🍗 Chicken</button><button onclick="smartFill('3 appam')">🥞 Appam</button><button onclick="smartFill('2 chapathi')">🫓 Chapathi</button><button onclick="smartFill('250ml milk')">🥛 Milk</button><button onclick="smartFill('50g oats')">🥣 Oats</button></div></div><div class="card"><h2>Today's food</h2><div id="foodList"></div><div class="food"><b>Total</b><b id="foodTotal"></b></div></div></section>
 
-<section id="workout" class="section">
-<div class="card"><h2>Today's workout</h2>
-<select id="workoutSelect"><option>Upper Body</option><option>Push</option><option>Pull</option><option>Full Body</option><option>Cardio / Badminton</option><option>Rest / Recovery</option></select>
-<input id="workoutMinutes" type="number" placeholder="Minutes"><button onclick="saveWorkout()">Save workout</button><p id="workoutSaved" class="muted"></p>
-</div>
-<div class="card"><h2>Workout checklist</h2><p><label><input type="checkbox" id="warmup"> Warm-up completed</label></p><p><label><input type="checkbox" id="cooldown"> Cool-down completed</label></p><p class="muted">Stop any movement that causes pain.</p></div>
-</section>
+<section id="workout" class="section"><div class="card"><h2>Today's workout</h2><select id="workoutSelect"><option>Upper Body</option><option>Push</option><option>Pull</option><option>Full Body</option><option>Cardio / Badminton</option><option>Rest / Recovery</option></select><input id="workoutMinutes" type="number" placeholder="Minutes"><button onclick="saveWorkout()">Save workout</button><p id="workoutSaved" class="muted"></p></div><div class="card"><h2>Workout checklist</h2><p><label><input type="checkbox" id="warmup"> Warm-up completed</label></p><p><label><input type="checkbox" id="cooldown"> Cool-down completed</label></p><p class="muted">Stop any movement that causes pain.</p></div></section>
 
-<section id="progressTab" class="section">
-<div class="card"><h2>Update weight</h2><input id="newWeight" type="number" step=".1" placeholder="Current weight in kg"><button onclick="saveWeight()">Save weight</button></div>
-<div class="card"><h2>Weight history</h2><div id="history"></div></div>
-</section>
+<section id="progressTab" class="section"><div class="card"><h2>Update weight</h2><input id="newWeight" type="number" step=".1" placeholder="Current weight in kg"><button onclick="saveWeight()">Save weight</button></div><div class="card"><h2>Weight history</h2><div id="history"></div></div></section>
 
-<section id="budget" class="section">
-<div class="card"><h2>Daily food budget</h2><div class="value">₹<span id="budgetTargetView">250</span></div><p class="muted">Today's spending</p><input id="spent" type="number" placeholder="Enter amount spent"><button onclick="saveSpent()">Save spending</button><p id="spentResult"></p></div>
-</section>
+<section id="budget" class="section"><div class="card"><h2>Daily food budget</h2><div class="value">₹<span id="budgetTargetView">250</span></div><p class="muted">Today's spending</p><input id="spent" type="number" placeholder="Enter amount spent"><button onclick="saveSpent()">Save spending</button><p id="spentResult"></p></div></section>
 
 <section id="profile" class="section">
-<div class="card"><h2>Profile &amp; goals</h2><p class="muted">Update your targets any time. Changes apply across your dashboard.</p>
+<div class="card"><div class="profileHero"><div class="profileIcon">DQX</div><div><h2>Profile &amp; goals</h2><div class="profileHint">Tap the DQX button anytime to come back here.</div></div></div>
+<p class="muted">Update your targets any time. Changes apply across your dashboard.</p>
 <div class="editGrid"><label class="muted">Goal weight (kg)<input id="profileGoal" type="number" min="1" step=".1"></label><label class="muted">Protein target (g)<input id="profileProtein" type="number" min="1" step="1"></label><label class="muted">Water target (L)<input id="profileWaterTarget" type="number" min=".1" step=".1"></label><label class="muted">Calories target<input id="profileCalories" type="number" min="1" step="50"></label><label class="muted">Daily budget (₹)<input id="profileBudget" type="number" min="0" step="10"></label></div>
-<button onclick="saveProfile()">Save goals</button><p id="profileSaved" class="muted saveNote"></p></div>
-<div class="card"><h2>Edit today's data</h2><p class="muted">Correct your current weight, water, spending, or workout note.</p>
-<label class="muted">Current weight (kg)<input id="profileWeight" type="number" min="1" step=".1"></label><label class="muted">Water today (L)<input id="profileWater" type="number" min="0" step=".05"></label><label class="muted">Food spending today (₹)<input id="profileSpent" type="number" min="0" step="1"></label><label class="muted">Workout note<input id="profileWorkout" type="text" placeholder="e.g. Push • 45 min"></label>
-<button onclick="saveDailyEdits()">Save today's data</button><p id="dailySaved" class="muted saveNote"></p></div>
+<button class="primary" onclick="saveProfile()">Save goals</button><p id="profileSaved" class="muted saveNote"></p></div>
+<div class="card"><h2>Edit today's data</h2><p class="muted">Correct your current weight, water, spending, or workout note.</p><label class="muted">Current weight (kg)<input id="profileWeight" type="number" min="1" step=".1"></label><label class="muted">Water today (L)<input id="profileWater" type="number" min="0" step=".05"></label><label class="muted">Food spending today (₹)<input id="profileSpent" type="number" min="0" step="1"></label><label class="muted">Workout note<input id="profileWorkout" type="text" placeholder="e.g. Push • 45 min"></label><button onclick="saveDailyEdits()">Save today's data</button><p id="dailySaved" class="muted saveNote"></p></div>
 <div class="card"><h2>Edit today's food</h2><p class="muted">Change a food name, protein, or calories, or remove an entry.</p><div id="profileFoodList"></div></div>
 </section>
 </main>
 
-<nav class="nav">
-<button onclick="show('home')" id="n-home" class="active"><b>⌂</b>Home</button>
-<button onclick="show('food')" id="n-food"><b>🍽</b>Food</button>
-<button onclick="show('workout')" id="n-workout"><b>🏋</b>Workout</button>
-<button onclick="show('progressTab')" id="n-progressTab"><b>↗</b>Progress</button>
-<button onclick="show('budget')" id="n-budget"><b>₹</b>Budget</button>
-<button onclick="show('profile')" id="n-profile"><b>◉</b>Profile</button>
-</nav>
+<nav class="nav"><button onclick="show('home')" id="n-home" class="active"><b>⌂</b>Home</button><button onclick="show('food')" id="n-food"><b>🍽</b>Food</button><button onclick="show('workout')" id="n-workout"><b>🏋</b>Workout</button><button onclick="show('progressTab')" id="n-progressTab"><b>↗</b>Progress</button><button onclick="show('budget')" id="n-budget"><b>₹</b>Budget</button><button onclick="show('profile')" id="n-profile"><b>◉</b>Profile</button></nav>
 </div>
+<div class="toast" id="toast"></div>
 
 <script>
-const KEY='fitRadhadevanV4', today=()=>new Date().toLocaleDateString('en-IN');
+const KEY='fitRadhadevanV5', today=()=>new Date().toLocaleDateString('en-IN');
 const DB={egg:{p:6.3,c:78,a:['egg','eggs']},appam:{p:2,c:120,a:['appam','appams']},chapathi:{p:3,c:110,a:['chapathi','chapati','chappathi','chappati']},chicken:{p:27,c:165,a:['chicken']},beef:{p:26,c:250,a:['beef']},milk:{p:8,c:150,a:['milk']},oats:{p:6.5,c:190,a:['oats','oat']}};
-let d=JSON.parse(localStorage.getItem(KEY)||localStorage.getItem('fitRadhadevanV3')||localStorage.getItem('fitRadhadevanV2')||localStorage.getItem('fitRadhadevan')||'null')||{weight:97,foods:[],history:[{date:today(),weight:97}],water:0,workout:'',spent:0,date:today()};
+let d=JSON.parse(localStorage.getItem(KEY)||localStorage.getItem('fitRadhadevanV4')||localStorage.getItem('fitRadhadevanV3')||localStorage.getItem('fitRadhadevanV2')||localStorage.getItem('fitRadhadevan')||'null')||{weight:97,foods:[],history:[{date:today(),weight:97}],water:0,workout:'',spent:0,date:today()};
 d.foods=d.foods||[];d.history=d.history||[{date:today(),weight:d.weight||97}];d.goalWeight=Number(d.goalWeight)||85;d.proteinTarget=Number(d.proteinTarget)||150;d.waterTarget=Number(d.waterTarget)||3;d.calorieTarget=Number(d.calorieTarget)||2200;d.budgetTarget=Number.isFinite(Number(d.budgetTarget))?Number(d.budgetTarget):250;
-if(d.date!==today()){d.foods=[];d.water=0;d.workout='';d.spent=0;d.date=today();save()}
-function save(){localStorage.setItem(KEY,JSON.stringify(d));render()}
-function show(id){document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.getElementById('n-'+id).classList.add('active');render()}
-function addWater(v){d.water=Math.round((d.water+v)*100)/100;save()}
+if(d.date!==today()){d.foods=[];d.water=0;d.workout='';d.spent=0;d.date=today();save(false)}
+function save(doRender=true){localStorage.setItem(KEY,JSON.stringify(d));if(doRender)render()}
+function openProfile(){const a=document.getElementById('profileAvatar');a.classList.remove('pulse');void a.offsetWidth;a.classList.add('pulse');show('profile')}
+function show(id){document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.getElementById('n-'+id).classList.add('active');if(id==='profile')fillProfile();render()}
+function addWater(v){d.water=Math.round((d.water+v)*100)/100;save();toast('Water added 💧')}
 function smartFill(v){document.getElementById('smartFood').value=v}
-function smartAdd(){
-let raw=document.getElementById('smartFood').value.toLowerCase().trim();if(!raw)return;
-let parts=raw.split(/,| and /).map(x=>x.trim()).filter(Boolean),added=[];
-parts.forEach(part=>{let m=part.match(/(\d+(?:\.\d+)?)\s*(kg|g|ml)?\s*(.+)/);if(!m)return;let q=parseFloat(m[1]),u=m[2]||'',name=m[3];let key=Object.keys(DB).find(k=>DB[k].a.some(a=>name.includes(a)));if(!key)return;let f=DB[key],factor=q;if(u==='g')factor=q/100;if(u==='kg')factor=q*10;if(u==='ml')factor=q/250;if(!u && key==='egg')factor=q;if(!u && key==='appam')factor=q;if(!u && key==='chapathi')factor=q;let p=Math.round(f.p*factor*10)/10,c=Math.round(f.c*factor);d.foods.push({n:q+' '+key,p,c});added.push({p,c})});
-if(added.length){let p=added.reduce((a,x)=>a+x.p,0),c=added.reduce((a,x)=>a+x.c,0);document.getElementById('smartResult').innerHTML=`<div class="result">Added ✓ &nbsp; <b>${p.toFixed(1)} g protein</b> • <b>${c} kcal</b></div>`;document.getElementById('smartFood').value='';save()}else document.getElementById('smartResult').innerHTML='<div class="result">Try: 2 eggs, 3 appam, 100g chicken</div>'
-}
-function saveWeight(){let w=+document.getElementById('newWeight').value;if(w>0){d.weight=w;d.history.push({date:today(),weight:w});document.getElementById('newWeight').value='';save()}}
-function saveWorkout(){d.workout=document.getElementById('workoutSelect').value+' • '+(+document.getElementById('workoutMinutes').value||0)+' min';save();document.getElementById('workoutSaved').textContent='Saved ✓'}
-function saveSpent(){d.spent=+document.getElementById('spent').value||0;save()}
-function saveProfile(){
-let goal=+document.getElementById('profileGoal').value,protein=+document.getElementById('profileProtein').value,water=+document.getElementById('profileWaterTarget').value,calories=+document.getElementById('profileCalories').value,budget=+document.getElementById('profileBudget').value;
-if(!(goal>0&&protein>0&&water>0&&calories>0&&budget>=0)){document.getElementById('profileSaved').textContent='Enter valid positive targets and a budget of 0 or more.';return}
-d.goalWeight=goal;d.proteinTarget=protein;d.waterTarget=water;d.calorieTarget=calories;d.budgetTarget=budget;save();document.getElementById('profileSaved').textContent='Goals updated ✓';
-}
-function saveDailyEdits(){
-let weight=+document.getElementById('profileWeight').value,water=+document.getElementById('profileWater').value,spent=+document.getElementById('profileSpent').value;
-if(!(weight>0&&water>=0&&spent>=0)){document.getElementById('dailySaved').textContent='Enter a valid weight, water amount, and spending amount.';return}
-d.weight=weight;d.water=water;d.spent=spent;d.workout=document.getElementById('profileWorkout').value.trim();let latest=[...d.history].reverse().find(x=>x.date===today());if(latest)latest.weight=weight;else d.history.push({date:today(),weight});save();document.getElementById('dailySaved').textContent='Today’s data updated ✓';
-}
-function escapeHtml(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function saveFoodEdit(i){let name=document.getElementById('foodName'+i).value.trim(),protein=+document.getElementById('foodProtein'+i).value,calories=+document.getElementById('foodCalories'+i).value;if(!name||protein<0||calories<0)return;d.foods[i]={n:name,p:protein,c:calories};save()}
-function removeFood(i){if(confirm('Remove this food entry?')){d.foods.splice(i,1);save()}}
-function render(){
-let p=d.foods.reduce((a,x)=>a+(Number(x.p)||0),0),c=d.foods.reduce((a,x)=>a+(Number(x.c)||0),0),gp=Math.max(0,Math.min(100,(100-d.weight)/Math.max(1,100-d.goalWeight)*100));
-document.getElementById('weightHome').textContent=d.weight;document.getElementById('goalWeightHome').textContent=d.goalWeight;document.getElementById('remaining').textContent=Math.max(0,d.weight-d.goalWeight).toFixed(1)+' kg remaining';document.getElementById('ring').style.setProperty('--p',gp+'%');document.getElementById('ringText').textContent=Math.round(gp)+'%';
-document.getElementById('proteinView').textContent=Math.round(p);document.getElementById('waterView').textContent=d.water;document.getElementById('calView').textContent=c;
-document.getElementById('proteinTargetHome').textContent=d.proteinTarget;document.getElementById('waterTargetHome').textContent=d.waterTarget;document.getElementById('waterQuickTarget').textContent=d.waterTarget;document.getElementById('calorieTargetHome').textContent=Number(d.calorieTarget).toLocaleString('en-IN');document.getElementById('budgetTargetView').textContent=d.budgetTarget;
-document.getElementById('proteinBar').style.width=Math.min(100,p/d.proteinTarget*100)+'%';document.getElementById('waterBar').style.width=Math.min(100,d.water/d.waterTarget*100)+'%';document.getElementById('workoutText').textContent=d.workout||'No workout logged yet.';
-document.getElementById('foodList').innerHTML=d.foods.length?d.foods.map(x=>`<div class="food"><span>${x.n}</span><span>${x.p}g • ${x.c} kcal</span></div>`).join(''):'No food logged yet.';
-document.getElementById('foodTotal').textContent=Math.round(p)+' g • '+c+' kcal';document.getElementById('history').innerHTML=d.history.slice().reverse().map(x=>`<div class="food"><span>${x.date}</span><b>${x.weight} kg</b></div>`).join('');
-document.getElementById('spentResult').textContent=d.spent?`₹${d.spent} spent • ₹${d.budgetTarget-d.spent} ${d.budgetTarget-d.spent>=0?'remaining':'over budget'}`:'';
-document.getElementById('profileGoal').value=d.goalWeight;document.getElementById('profileProtein').value=d.proteinTarget;document.getElementById('profileWaterTarget').value=d.waterTarget;document.getElementById('profileCalories').value=d.calorieTarget;document.getElementById('profileBudget').value=d.budgetTarget;document.getElementById('profileWeight').value=d.weight;document.getElementById('profileWater').value=d.water;document.getElementById('profileSpent').value=d.spent||0;document.getElementById('profileWorkout').value=d.workout||'';
-document.getElementById('profileFoodList').innerHTML=d.foods.length?d.foods.map((x,i)=>`<div class="editRow"><input aria-label="Food name" id="foodName${i}" value="${escapeHtml(x.n)}"/><input aria-label="Protein grams" id="foodProtein${i}" type="number" min="0" step=".1" value="${Number(x.p)||0}"/><input aria-label="Calories" id="foodCalories${i}" type="number" min="0" step="1" value="${Number(x.c)||0}"/><div class="editActions"><button onclick="saveFoodEdit(${i})">Save</button><button class="deleteBtn" onclick="removeFood(${i})">Remove</button></div></div>`).join(''):'<p class="muted">No food entries to edit today.</p>';
-}
-render();show('home');if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
-</script>
-</body></html>
+function smartAdd(){let raw=document.getElementById('smartFood').value.toLowerCase().trim();if(!raw)return;let parts=raw.split(/,| and /).map(x=>x.trim()).filter(Boolean),added=[];parts.forEach(part=>{let m=part.match(/(\d+(?:\.\d+)?)\s*(kg|g|ml)?\s*(.+)/);if(!m)return;let q=parseFloat(m[1]),u=m[2]||'',name=m[3];let key=Object.keys(DB).find(k=>DB[k].a.some(a=>name.includes(a)));if(!key)return;let f=DB[key],factor=q;if(u==='g')factor=q/100;if(u==='kg')factor=q*10;if(u==='ml')factor=q/250;if(!u)factor=q;let p=Math.round(f.p*factor*10)/10,c=Math.round(f.c*factor);d.foods.push({n:q+' '+key,p,c});added.push({p,c})});if(added.length){let p=added.reduce((a,x)=>a+x.p,0),c=added.reduce((a,x)=>a+x.c,0);document.getElementById('smartResult').innerHTML='<div class="result">Added ✓ &nbsp; <b>'+p.toFixed(1)+' g protein</b> • <b>'+c+' kcal</b></div>';document.getElementById('smartFood').value='';save()}else document.getElementById('smartResult').innerHTML='<div class="result">Try: 2 eggs, 3 appam, 100g chicken</div>'}
+function saveWeight(){let w=+document.getElementById('newWeight').value;if(w>0){d.weight=w;d.history.push({date:today(),weight:w});document.getElementById('newWeight').value='';save();toast('Weight updated ✓')}}
+function saveWorkout(){d.workout=document.getElementById('workoutSelect').value+' • '+(+document.getElementById('workoutMinutes').value||0)+' min';save();document.getElementById('workoutSaved').textContent='Saved ✓';toast('Workout saved 💪')}
+function saveSpent(){d.spent=+document.getElementById('spent').value||0;save();document.getElementById('spentResult').textContent='Saved ✓';toast('Spending saved')}
+function fillProfile(){document.getElementById('profileGoal').value=d.goalWeight;document.getElementById('profileProtein').value=d.proteinTarget;document.getElementById('profileWaterTarget').value=d.waterTarget;document.getElementById('profileCalories').value=d.calorieTarget;document.getElementById('profileBudget').value=d.budgetTarget;document.getElementById('profileWeight').value=d.weight;document.getElementById('profileWater').value=d.water;document.getElementById('profileSpent').value=d.spent;document.getElementById('profileWorkout').value=d.workout||''}
+function saveProfile(){let goal=+document.getElementById('profileGoal').value,protein=+document.getElementById('profileProtein').value,water=+document.getElementById('profileWaterTarget').value,calories=+document.ge
