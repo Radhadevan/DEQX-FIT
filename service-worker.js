@@ -1,4 +1,4 @@
-const CACHE = 'deqx-fit-v8';
+const CACHE = 'deqx-fit-v10';
 const CORE = ['./', './index.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', event => {
