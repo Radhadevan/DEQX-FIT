@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a0d09">
-<title>DEQX FIT — v11 Premium Analytics</title>
+<title>DEQX FIT — v12 Cloud Sync</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <meta name="mobile-web-app-capable" content="yes">
@@ -265,6 +265,9 @@ body{background:radial-gradient(circle at 50% -10%,#34441f 0,transparent 34%),ra
 @media(max-width:700px){.goalGrid{grid-template-columns:1fr 1fr}.dailyRing{width:102px;height:102px}.dailyRingInner{width:72px;height:72px}.dailyPercent{font-size:37px}.targetRow{grid-template-columns:8px 88px 1fr 30px}.modernQuick{grid-template-columns:repeat(2,1fr)}}
 @media(min-width:900px){.main{max-width:1050px;margin:auto}.todayHeader{padding-top:20px}.goalGrid{grid-template-columns:repeat(4,1fr)}}
 
+
+/* ===== v12 Cloud Sync / Auth ===== */
+.cloudCard{background:linear-gradient(145deg,#151a15,#0f130f);border-color:#d6ff3220}.cloudStatus{display:flex;align-items:center;gap:9px;margin:8px 0 12px;font-size:12px;color:var(--muted)}.cloudDot{width:8px;height:8px;border-radius:50%;background:#737b70;box-shadow:0 0 0 4px #ffffff06}.cloudDot.online{background:var(--lime);box-shadow:0 0 0 4px #d6ff3212,0 0 12px #d6ff3260}.cloudDot.syncing{background:#d6ff32;animation:cloudPulse 1s infinite}.cloudDot.error{background:#ff7b6b;box-shadow:0 0 0 4px #ff7b6b12}.cloudActions{display:flex;gap:8px}.cloudActions button{flex:1}.cloudMini{font-size:10px;color:var(--dim);margin-top:8px;line-height:1.45}.authBox{display:grid;gap:8px}.authBox input{margin:0}.authRow{display:flex;gap:8px}.authRow button{flex:1}.authMsg{min-height:17px;font-size:11px;color:var(--muted);margin:2px 0 0}.userPill{display:inline-flex;align-items:center;gap:7px;padding:6px 9px;border-radius:10px;background:#d6ff320b;border:1px solid #d6ff3218;color:#cfe990;font-size:11px;font-weight:750}.syncTime{font-size:10px;color:var(--dim);margin-left:auto}@keyframes cloudPulse{50%{transform:scale(1.35);opacity:.6}}
 </style>
 </head>
 <body>
@@ -363,6 +366,20 @@ body{background:radial-gradient(circle at 50% -10%,#34441f 0,transparent 34%),ra
 <section id="budget" class="section"><div class="card"><h2>Daily food budget</h2><div class="value">₹<span id="budgetTargetView">250</span></div><p class="muted">Today's spending</p><input id="spent" type="number" placeholder="Enter amount spent"><button onclick="saveSpent()">Save spending</button><p id="spentResult"></p></div></section>
 
 <section id="profile" class="section">
+<div class="card cloudCard">
+  <div class="quickTitle"><h2>Cloud sync</h2><span class="userPill" id="cloudUserPill">Offline mode</span></div>
+  <div class="cloudStatus"><span class="cloudDot" id="cloudDot"></span><span id="cloudStatusText">Local data only</span><span class="syncTime" id="cloudSyncTime"></span></div>
+  <div id="authPanel" class="authBox">
+    <input id="authEmail" type="email" autocomplete="email" placeholder="Email address">
+    <input id="authPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)">
+    <div class="authRow"><button class="primary" onclick="cloudSignIn()">Sign in</button><button onclick="cloudSignUp()">Create account</button></div>
+    <p id="authMsg" class="authMsg">Sign in to sync DEQX FIT between your phone and laptop.</p>
+  </div>
+  <div id="cloudLoggedIn" style="display:none">
+    <div class="cloudActions"><button onclick="cloudSyncNow()">Sync now</button><button class="danger" onclick="cloudSignOut()">Sign out</button></div>
+    <p class="cloudMini">Your app stays usable offline. When online, your DEQX FIT data syncs to your Supabase account.</p>
+  </div>
+</div>
 <div class="card"><div class="profileHero"><div class="profileIcon">DQX</div><div><h2>Profile &amp; goals</h2><div class="profileHint">Use the Profile tab below to edit your goals and daily data.</div></div></div>
 <p class="muted">Update your targets any time. Changes apply across your dashboard.</p>
 <div class="editGrid"><label class="muted">Goal weight (kg)<input id="profileGoal" type="number" min="1" step=".1"></label><label class="muted">Protein target (g)<input id="profileProtein" type="number" min="1" step="1"></label><label class="muted">Water target (L)<input id="profileWaterTarget" type="number" min=".1" step=".1"></label><label class="muted">Calories target<input id="profileCalories" type="number" min="1" step="50"></label><label class="muted">Daily budget (₹)<input id="profileBudget" type="number" min="0" step="10"></label></div>
@@ -559,17 +576,74 @@ mainEl.addEventListener('touchend',e=>{
 
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ===== DEQX FIT v12 — Supabase cloud sync ===== */
+const SUPABASE_URL='https://flypceipibvrkzzkurdg.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_h-0Bq665oVwud24ZHXDe8g_aib-YVT0';
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+let cloudUser=null,cloudSyncing=false,cloudTimer=null;
+function cloudEl(id){return document.getElementById(id)}
+function cloudStatus(state,text){const dot=cloudEl('cloudDot'),label=cloudEl('cloudStatusText');if(!dot||!label)return;dot.className='cloudDot '+(state||'');label.textContent=text||''}
+function cloudMessage(text){const e=cloudEl('authMsg');if(e)e.textContent=text||''}
+function cloudTime(){const e=cloudEl('cloudSyncTime');if(e)e.textContent='Synced '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}
+function cloudSetUI(){const logged=!!cloudUser;const auth=cloudEl('authPanel'),li=cloudEl('cloudLoggedIn'),pill=cloudEl('cloudUserPill');if(auth)auth.style.display=logged?'none':'grid';if(li)li.style.display=logged?'block':'none';if(pill){pill.textContent=logged?(cloudUser.email||'Signed in'):'Offline mode'}if(logged)cloudStatus('online','Cloud account connected');else cloudStatus('','Local data only')}
+function cloudDailyPayload(){const iso=isoDate(new Date()),p=d.foods.reduce((a,x)=>a+(Number(x.p)||0),0),c=d.foods.reduce((a,x)=>a+(Number(x.c)||0),0),burn=(typeof v9!=='undefined'&&Number(v9.burned))||0,completed=!!d.workoutHistory[today()]?.completed;const completion=Math.round(([p/Math.max(1,d.proteinTarget),d.water/Math.max(.1,d.waterTarget),c/Math.max(1,d.calorieTarget),burn/500,completed?1:0].map(x=>Math.min(1,Math.max(0,x))).reduce((a,x)=>a+x,0)/5)*100);return {user_id:cloudUser.id,log_date:iso,weight:Number(d.weight)||null,protein:Math.round(p*10)/10,calories:Math.round(c),water:Number(d.water)||0,calories_burned:burn,workout_completed:completed,daily_completion:completion,updated_at:new Date().toISOString()}}
+async function cloudSyncNow(){if(!cloudUser||cloudSyncing)return false;cloudSyncing=true;cloudStatus('syncing','Syncing cloud data…');try{
+ const daily=cloudDailyPayload();
+ const {error:pe}=await supabaseClient.from('profiles').upsert({id:cloudUser.id,name:cloudUser.email?.split('@')[0]||'DEQX FIT',goal_weight:Number(d.goalWeight),current_weight:Number(d.weight),protein_target:Number(d.proteinTarget),water_target:Number(d.waterTarget),calorie_target:Number(d.calorieTarget),budget_target:Number(d.budgetTarget),xp:Number(d.xp)||0,level:levelInfo().level,updated_at:new Date().toISOString()}); if(pe)throw pe;
+ const {error:de}=await supabaseClient.from('daily_logs').upsert(daily,{onConflict:'user_id,log_date'}); if(de)throw de;
+ const iso=daily.log_date;
+ let r=await supabaseClient.from('food_logs').delete().eq('user_id',cloudUser.id).eq('log_date',iso);if(r.error)throw r.error;
+ if(d.foods.length){r=await supabaseClient.from('food_logs').insert(d.foods.map(x=>({user_id:cloudUser.id,log_date:iso,food_name:String(x.n),quantity:1,protein:Number(x.p)||0,calories:Number(x.c)||0})));if(r.error)throw r.error}
+ r=await supabaseClient.from('activity_logs').delete().eq('user_id',cloudUser.id).eq('log_date',iso);if(r.error)throw r.error;
+ if(typeof v9!=='undefined'&&v9.activity){r=await supabaseClient.from('activity_logs').insert({user_id:cloudUser.id,log_date:iso,activity:v9.activity,duration:Number(document.getElementById('activityMinutes')?.value)||0,intensity:document.getElementById('activityIntensity')?.value||'moderate',calories_burned:Number(v9.burned)||0});if(r.error)throw r.error}
+ r=await supabaseClient.from('workout_logs').delete().eq('user_id',cloudUser.id).eq('workout_date',iso);if(r.error)throw r.error;
+ const wh=d.workoutHistory[today()];if(wh){r=await supabaseClient.from('workout_logs').insert({user_id:cloudUser.id,workout_date:iso,workout_type:String(wh.scheduled||d.workout||'Workout'),completed:!!wh.completed,xp_earned:wh.completed?50:0});if(r.error)throw r.error}
+ const todayWeight=[...d.history].reverse().find(x=>x.date===today());if(todayWeight){const q=await supabaseClient.from('weight_history').select('id').eq('user_id',cloudUser.id).eq('recorded_date',iso).maybeSingle();if(q.error)throw q.error;if(q.data){r=await supabaseClient.from('weight_history').update({weight:Number(todayWeight.weight)}).eq('id',q.data.id)}else{r=await supabaseClient.from('weight_history').insert({user_id:cloudUser.id,recorded_date:iso,weight:Number(todayWeight.weight)})}if(r?.error)throw r.error}
+ localStorage.setItem(KEY,JSON.stringify(d));cloudTime();cloudStatus('online','Cloud sync complete');cloudMessage('');return true;
+}catch(err){console.error(err);cloudStatus('error','Sync failed — local data is still safe');cloudMessage(err?.message||'Could not sync. Check your Supabase tables and internet connection.');return false}finally{cloudSyncing=false}}
+function cloudQueueSync(){if(!cloudUser)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>cloudSyncNow(),900)}
+async function cloudLoad(){if(!cloudUser)return;cloudStatus('syncing','Loading your cloud data…');try{
+ const {data:p,error:pe}=await supabaseClient.from('profiles').select('*').eq('id',cloudUser.id).maybeSingle();if(pe)throw pe;
+ const iso=isoDate(new Date());
+ const {data:dl,error:de}=await supabaseClient.from('daily_logs').select('*').eq('user_id',cloudUser.id).eq('log_date',iso).maybeSingle();if(de)throw de;
+ const {data:foods,error:fe}=await supabaseClient.from('food_logs').select('*').eq('user_id',cloudUser.id).eq('log_date',iso).order('id');if(fe)throw fe;
+ const {data:acts,error:ae}=await supabaseClient.from('activity_logs').select('*').eq('user_id',cloudUser.id).eq('log_date',iso).order('id',{ascending:false}).limit(1);if(ae)throw ae;
+ const {data:whs,error:we}=await supabaseClient.from('workout_logs').select('*').eq('user_id',cloudUser.id).order('workout_date',{ascending:false}).limit(120);if(we)throw we;
+ const {data:weights,error:he}=await supabaseClient.from('weight_history').select('*').eq('user_id',cloudUser.id).order('recorded_date',{ascending:true});if(he)throw he;
+ if(p){d.goalWeight=Number(p.goal_weight)||d.goalWeight;d.proteinTarget=Number(p.protein_target)||d.proteinTarget;d.waterTarget=Number(p.water_target)||d.waterTarget;d.calorieTarget=Number(p.calorie_target)||d.calorieTarget;d.budgetTarget=Number(p.budget_target)>=0?Number(p.budget_target):d.budgetTarget;d.xp=Number(p.xp)||0}
+ if(dl){d.weight=Number(dl.weight)||d.weight;d.water=Number(dl.water)||0;d.spent=Number(d.spent)||0;d.date=today();}
+ d.foods=(foods||[]).map(x=>({n:x.food_name,p:Number(x.protein)||0,c:Number(x.calories)||0}));
+ if(weights?.length)d.history=weights.map(x=>({date:new Date(x.recorded_date+'T00:00:00').toLocaleDateString('en-IN'),weight:Number(x.weight)}));
+ if(!d.history.length)d.history=[{date:today(),weight:d.weight}];
+ d.workoutHistory={};(whs||[]).forEach(x=>{const local=new Date(x.workout_date+'T00:00:00').toLocaleDateString('en-IN');d.workoutHistory[local]={scheduled:x.workout_type,completed:!!x.completed,actual:x.workout_type}});
+ if(dl&&dl.workout_completed&&!d.workoutHistory[today()])d.workoutHistory[today()]={scheduled:SCHEDULE[new Date().getDay()]||'Workout',completed:true,actual:'Workout'};
+ if(typeof v9!=='undefined'){const a=acts?.[0];v9.activity=a?.activity||null;v9.burned=Number(a?.calories_burned)||0;v9.lastActivityDate=a?today():v9.lastActivityDate;v9.xp=Number(p?.xp)||v9.xp;v9.level=Number(p?.level)||v9.level;saveV9()}
+ localStorage.setItem(KEY,JSON.stringify(d));render();renderV9();cloudTime();cloudStatus('online','Cloud data loaded');
+}catch(err){console.error(err);cloudStatus('error','Could not load cloud data');cloudMessage(err?.message||'Cloud data could not be loaded. Local mode is still available.')}}
+async function cloudSignIn(){const email=cloudEl('authEmail')?.value.trim(),password=cloudEl('authPassword')?.value;if(!email||!password){cloudMessage('Enter your email and password.');return}cloudStatus('syncing','Signing in…');const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error){cloudStatus('error','Sign in failed');cloudMessage(error.message);return}cloudUser=data.user;cloudSetUI();await cloudLoad();cloudMessage('Signed in successfully.')}
+async function cloudSignUp(){const email=cloudEl('authEmail')?.value.trim(),password=cloudEl('authPassword')?.value;if(!email||password.length<6){cloudMessage('Use a valid email and a password with at least 6 characters.');return}cloudStatus('syncing','Creating account…');const {data,error}=await supabaseClient.auth.signUp({email,password});if(error){cloudStatus('error','Sign up failed');cloudMessage(error.message);return}if(data.session){cloudUser=data.user;cloudSetUI();await cloudSyncNow();cloudMessage('Account created and synced.')}else{cloudStatus('','Check your email to confirm your account');cloudMessage('Supabase may require email confirmation. Open the confirmation email, then sign in here.')}}
+async function cloudSignOut(){await supabaseClient.auth.signOut();cloudUser=null;cloudSetUI();cloudStatus('','Signed out — local data remains on this device');cloudMessage('')}
+supabaseClient.auth.onAuthStateChange((event,session)=>{cloudUser=session?.user||null;cloudSetUI();if(session&&event!=='INITIAL_SESSION')setTimeout(()=>cloudLoad(),0)});
+(async()=>{const {data}=await supabaseClient.auth.getSession();cloudUser=data?.session?.user||null;cloudSetUI();if(cloudUser)await cloudLoad()})();
+window.addEventListener('online',()=>{if(cloudUser)cloudSyncNow()});
+const _saveCloud=window.save;window.save=function(doRender=true){_saveCloud(doRender);cloudQueueSync()};
+const _saveV9Cloud=window.saveV9;window.saveV9=function(){_saveV9Cloud();cloudQueueSync()};
+const _resetCloud=window.resetApp;window.resetApp=function(){_resetCloud();if(cloudUser)cloudQueueSync()};
+</script>
+
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=8')
+  navigator.serviceWorker.register('./service-worker.js?v=12')
     .then(reg => {
       if (reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.update();
     })
     .catch(() => {});
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!sessionStorage.getItem('deqx-sw-v8-reloaded')) {
-      sessionStorage.setItem('deqx-sw-v8-reloaded','1');
+    if (!sessionStorage.getItem('deqx-sw-v12-reloaded')) {
+      sessionStorage.setItem('deqx-sw-v12-reloaded','1');
       location.reload();
     }
   });

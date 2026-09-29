@@ -1,18 +1,10 @@
 {
-  "name": "DEQX FIT — Personal Fitness Tracker",
+  "name": "DEQX FIT",
   "short_name": "DEQX FIT",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#090b09",
-  "theme_color": "#090b09",
-  "orientation": "portrait",
-  "icons": [
-    {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
-  ]
+  "theme_color": "#0a0d09",
+  "description": "Personal fitness tracker with offline-first cloud sync.",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }
