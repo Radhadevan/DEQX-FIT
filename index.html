@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a0d09">
-<title>DEQX FIT — v16</title>
+<title>DEQX FIT — v17</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <meta name="mobile-web-app-capable" content="yes">
@@ -478,7 +478,7 @@ ensureTodayState();
 let calendarCursor=new Date();
 
 function cloneInitial(){return JSON.parse(JSON.stringify({...INITIAL,date:today(),history:[{date:today(),weight:97}]}))}
-function save(doRender=true){localStorage.setItem(KEY,JSON.stringify(d));if(doRender)render()}
+function save(doRender=true){localStorage.setItem(KEY,JSON.stringify(d));if(typeof cloudUser!=='undefined'&&cloudUser){localDirty=true;if(typeof cloudQueueSync==='function')cloudQueueSync()}if(doRender)render()}
 function levelInfo(){let level=Math.floor(d.xp/500)+1,within=d.xp%500;return {level,within,next:500,pct:within/500*100,rank:RANKS[Math.min(RANKS.length-1,Math.floor((level-1)/2))]}}
 function rewardOnce(key,amount,reason){const day=today();d.rewardDays[day]=d.rewardDays[day]||{};if(d.rewardDays[day][key])return false;d.rewardDays[day][key]=true;addXP(amount,reason);return true}
 function addXP(amount,reason){const before=levelInfo().level;d.xp+=amount;const after=levelInfo().level;save(false);if(after>before)showLevelUp(after,levelInfo().rank);render();if(after===before&&reason)toast('+'+amount+' XP • '+reason)}
@@ -601,7 +601,7 @@ refreshForDateChange();
 const V9KEY='deqxFitV9';
 var v9=JSON.parse(localStorage.getItem(V9KEY)||'null')||{activity:null,burned:0,streak:0,lastWorkout:null,xp:0,level:1};
 const ACTIVITY_MET={Gym:5.5,Badminton:7,Cricket:5};
-function saveV9(){localStorage.setItem(V9KEY,JSON.stringify(v9))}
+function saveV9(){localStorage.setItem(V9KEY,JSON.stringify(v9));if(typeof cloudUser!=='undefined'&&cloudUser){localDirty=true;if(typeof cloudQueueSync==='function')cloudQueueSync()}}
 function earnXP(amount,reason){
   const before=v9.level;
   v9.xp+=Math.max(0,Math.round(amount));
@@ -724,9 +724,7 @@ async function cloudSignOut(){await supabaseClient.auth.signOut();cloudUser=null
 supabaseClient.auth.onAuthStateChange((event,session)=>{cloudUser=session?.user||null;cloudSetUI();if(session&&event!=='INITIAL_SESSION')setTimeout(()=>cloudLoad(),0)});
 (async()=>{const {data}=await supabaseClient.auth.getSession();cloudUser=data?.session?.user||null;cloudSetUI();if(cloudUser)await cloudLoad()})();
 window.addEventListener('online',()=>{if(cloudUser)cloudSyncNow()});
-const _saveCloud=window.save;window.save=function(doRender=true){_saveCloud(doRender);if(cloudUser)localDirty=true;cloudQueueSync()};
-const _saveV9Cloud=window.saveV9;window.saveV9=function(){_saveV9Cloud();if(cloudUser)localDirty=true;cloudQueueSync()};
-const _resetCloud=window.resetApp;window.resetApp=function(){_resetCloud();if(cloudUser)cloudQueueSync()};
+
 window.addEventListener('focus',refreshForDateChange);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshForDateChange()});
 setInterval(refreshForDateChange,30000);
@@ -735,7 +733,7 @@ setInterval(refreshForDateChange,30000);
 
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=16')
+  navigator.serviceWorker.register('./service-worker.js?v=17')
     .then(reg => {
       if (reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.update();
