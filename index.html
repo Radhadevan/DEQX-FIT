@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a0d09">
-<title>DEQX FIT — v14</title>
+<title>DEQX FIT — v16</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <meta name="mobile-web-app-capable" content="yes">
@@ -270,6 +270,43 @@ body{background:radial-gradient(circle at 50% -10%,#34441f 0,transparent 34%),ra
 .cloudCard{background:linear-gradient(145deg,#151a15,#0f130f);border-color:#d6ff3220}.cloudStatus{display:flex;align-items:center;gap:9px;margin:8px 0 12px;font-size:12px;color:var(--muted)}.cloudDot{width:8px;height:8px;border-radius:50%;background:#737b70;box-shadow:0 0 0 4px #ffffff06}.cloudDot.online{background:var(--lime);box-shadow:0 0 0 4px #d6ff3212,0 0 12px #d6ff3260}.cloudDot.syncing{background:#d6ff32;animation:cloudPulse 1s infinite}.cloudDot.error{background:#ff7b6b;box-shadow:0 0 0 4px #ff7b6b12}.cloudActions{display:flex;gap:8px}.cloudActions button{flex:1}.cloudMini{font-size:10px;color:var(--dim);margin-top:8px;line-height:1.45}.authBox{display:grid;gap:8px}.authBox input{margin:0}.authRow{display:flex;gap:8px}.authRow button{flex:1}.authMsg{min-height:17px;font-size:11px;color:var(--muted);margin:2px 0 0}.userPill{display:inline-flex;align-items:center;gap:7px;padding:6px 9px;border-radius:10px;background:#d6ff320b;border:1px solid #d6ff3218;color:#cfe990;font-size:11px;font-weight:750}.syncTime{font-size:10px;color:var(--dim);margin-left:auto}@keyframes cloudPulse{50%{transform:scale(1.35);opacity:.6}}
 
 .quickFoodGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.quickFoodBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:94px;background:linear-gradient(145deg,#1b2119,#11150f);border:1px solid #ffffff10;color:var(--white);box-shadow:none}.quickFoodBtn span{font-size:27px}.quickFoodBtn b{font-size:13px}.quickFoodBtn small{font-size:10px;color:#8e9688}.quickFoodBtn:active{transform:scale(.95);border-color:#d6ff3270;box-shadow:0 0 20px #d6ff3212}.tapTip{margin:12px 2px 0;text-align:center}.customFoodGrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;margin-top:10px}.customFoodList{margin-top:12px;display:grid;gap:8px}.customFoodItem{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid #ffffff0d;border-radius:13px;background:#10130f}.customFoodMeta{display:flex;flex-direction:column;gap:3px;min-width:0}.customFoodMeta b{font-size:12px}.customFoodMeta small{font-size:10px;color:#7f887b}.customFoodItem button{padding:9px 12px;white-space:nowrap}@media(max-width:420px){.customFoodGrid{grid-template-columns:1fr}.quickFoodGrid{gap:8px}}
+
+/* ===== v16 desktop home alignment fix ===== */
+@media (min-width:900px){
+  .main{width:min(1380px,calc(100% - 72px));max-width:none;margin:0 auto;}
+  #home.section.active{
+    display:grid;
+    grid-template-columns:minmax(0,1.02fr) minmax(520px,.98fr);
+    gap:18px 24px;
+    align-items:stretch;
+  }
+  #home.section.active>.todayHeader{
+    grid-column:1;
+    grid-row:1;
+    align-self:center;
+    padding:20px 4px 20px 2px;
+  }
+  #home.section.active>.dailyGlass{
+    grid-column:2;
+    grid-row:1;
+    margin-bottom:0;
+    min-height:100%;
+  }
+  #home.section.active>.goalGrid{
+    grid-column:1/-1;
+    grid-row:2;
+    width:100%;
+    margin-bottom:0;
+  }
+  #home.section.active>.analyticsCard{grid-column:1/-1;grid-row:3;}
+  #home.section.active>.splitCards{grid-column:1/-1;grid-row:4;}
+  #home.section.active>.premiumMission{grid-column:1/-1;grid-row:5;}
+  #home.section.active>.quickGlass{grid-column:1/-1;grid-row:6;}
+}
+@media (min-width:1400px){
+  #home.section.active{grid-template-columns:minmax(0,1.05fr) minmax(600px,.95fr);gap:22px 28px;}
+}
+
 </style>
 </head>
 <body>
@@ -487,7 +524,7 @@ function removeCustomFood(id){d.customFoods=d.customFoods.filter(x=>x.id!==id);s
 function renderCustomFoods(){
  const el=document.getElementById('customFoodList'); if(!el)return;
  if(!d.customFoods.length){el.innerHTML='<p class="muted">No custom foods yet.</p>';return;}
- el.innerHTML=d.customFoods.map(f=>{const amount=f.unit==='grams'?f.amount+' g':f.amount+' serving';return '<div class="customFoodItem"><div class="customFoodMeta"><b>'+esc(f.name)+'</b><small>'+amount+' • '+Number(f.protein).toFixed(1)+' g protein • '+Number(f.calories)+' kcal</small></div><div class="actions"><button onclick="addCustomFood(''+esc(f.id)+'')">+ Add</button><button class="deleteBtn" onclick="removeCustomFood(''+esc(f.id)+'')">×</button></div></div>'}).join('');
+ el.innerHTML=d.customFoods.map(f=>{const amount=f.unit==='grams'?f.amount+' g':f.amount+' serving';return '<div class="customFoodItem"><div class="customFoodMeta"><b>'+esc(f.name)+'</b><small>'+amount+' • '+Number(f.protein).toFixed(1)+' g protein • '+Number(f.calories)+' kcal</small></div><div class="actions"><button onclick="addCustomFood(\''+esc(f.id)+'\')">+ Add</button><button class="deleteBtn" onclick="removeCustomFood(\''+esc(f.id)+'\')">×</button></div></div>'}).join('');
 }
 function smartAdd(){let raw=document.getElementById('smartFood').value.toLowerCase().trim();if(!raw)return;let parts=raw.split(/,| and /).map(x=>x.trim()).filter(Boolean),added=[];parts.forEach(part=>{let m=part.match(/(\d+(?:\.\d+)?)\s*(kg|g|ml)?\s*(.+)/);if(!m)return;let q=parseFloat(m[1]),u=m[2]||'',name=m[3];let key=Object.keys(DB).find(k=>DB[k].a.some(a=>name.includes(a)));if(!key)return;let f=DB[key],factor=q;if(u==='g')factor=q/100;if(u==='kg')factor=q*10;if(u==='ml')factor=q/250;if(!u)factor=q;let p=Math.round(f.p*factor*10)/10,c=Math.round(f.c*factor);d.foods.push({n:q+' '+key,p,c});added.push({p,c})});if(added.length){let p=added.reduce((a,x)=>a+x.p,0),c=added.reduce((a,x)=>a+x.c,0);document.getElementById('smartResult').innerHTML='<div class="result">Added ✓ &nbsp; <b>'+p.toFixed(1)+' g protein</b> • <b>'+c+' kcal</b></div>';document.getElementById('smartFood').value='';rewardOnce('foodLogged',10,'Meal logged');save()}else document.getElementById('smartResult').innerHTML='<div class="result">Try: 2 eggs, 3 appam, 100g chicken</div>'}
 function saveWeight(){let w=+document.getElementById('newWeight').value;if(w>0){d.weight=w;d.history.push({date:today(),weight:w});document.getElementById('newWeight').value='';rewardOnce('weightLogged',20,'Weight logged');save();toast('Weight updated ✓')}}
@@ -698,15 +735,15 @@ setInterval(refreshForDateChange,30000);
 
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=15')
+  navigator.serviceWorker.register('./service-worker.js?v=16')
     .then(reg => {
       if (reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.update();
     })
     .catch(() => {});
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!sessionStorage.getItem('deqx-sw-v14-reloaded')) {
-      sessionStorage.setItem('deqx-sw-v14-reloaded','1');
+    if (!sessionStorage.getItem('deqx-sw-v16-reloaded')) {
+      sessionStorage.setItem('deqx-sw-v16-reloaded','1');
       location.reload();
     }
   });
