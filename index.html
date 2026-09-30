@@ -485,7 +485,7 @@ function addXP(amount,reason){const before=levelInfo().level;d.xp+=amount;const 
 function showLevelUp(level,rank){document.getElementById('overlayLevel').textContent=level;document.getElementById('overlayRank').textContent=rank;document.getElementById('levelOverlay').classList.add('show')}
 function closeLevelOverlay(){document.getElementById('levelOverlay').classList.remove('show')}
 function show(id,direction){document.querySelectorAll('.section').forEach(x=>x.classList.remove('active','motion-left','motion-right'));const sec=document.getElementById(id);sec.classList.add('active');if(direction)sec.classList.add(direction==='left'?'motion-left':'motion-right');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.getElementById('n-'+id)?.classList.add('active');if(id==='profile')fillProfile();if(id==='workout')renderCalendar();render()}
-function addWater(v){const before=d.water;d.water=Math.round((d.water+v)*100)/100;save();toast('Water added 💧');if(before<d.waterTarget&&d.water>=d.waterTarget)rewardOnce('waterTarget',30,'Water target')}
+function addWater(v){const before=d.water;d.water=Math.round((d.water+v)*100)/100;save();updateDailyAnalytics();toast('Water added 💧');if(before<d.waterTarget&&d.water>=d.waterTarget)rewardOnce('waterTarget',30,'Water target')}
 function smartFill(v){document.getElementById('smartFood').value=v}
 function addQuickFood(key){
  const f=DB[key]; if(!f)return;
@@ -503,6 +503,7 @@ function addQuickFood(key){
  save(true);
  rewardOnce('foodLogged',10,'Meal logged');
  render();
+ updateDailyAnalytics();
  toast('Added '+label+' ✓');
 }
 
@@ -529,6 +530,7 @@ function addCustomFood(id){
  d.foods=Array.isArray(d.foods)?d.foods:[];
  d.foods.push({n:label,p:Number(f.protein)||0,c:Number(f.calories)||0,customId:id});
  save(true);
+ updateDailyAnalytics();
  toast('Added '+label+' ✓');
 }
 
@@ -598,6 +600,10 @@ function updateDailyAnalytics(){
  const dr=document.getElementById('dailyRing');if(dr)dr.style.setProperty('--p',daily+'%');
  set('dailyMessage',daily>=100?'All daily targets are complete. Strong day.':daily===0?'Your day starts here. Every logged goal moves the ring forward.':daily<50?'Good start. Keep stacking small wins.': 'You are building momentum. Keep going.');
  set('proteinPct',pp+'%');set('waterPct',wp+'%');set('caloriePct',cp+'%');set('burnPctHome',bp+'%');
+ // Keep the large numbers and their progress bars driven by the SAME live values.
+ // This also repairs screens where a render was skipped after a quick-add action.
+ set('proteinView',Math.round(p));set('waterView',Number(d.water||0).toFixed(2).replace(/\.00$/,''));set('calView',Math.round(c));set('burnHome',Math.round(burn));
+ set('proteinTargetHome',d.proteinTarget);set('waterTargetHome',d.waterTarget);set('calorieTargetHome',Number(d.calorieTarget).toLocaleString('en-IN'));
  set('proteinRow',Math.round(p));set('proteinRowTarget',d.proteinTarget);set('waterRow',d.water);set('waterRowTarget',d.waterTarget);set('calRow',Math.round(c));set('calRowTarget',Number(d.calorieTarget).toLocaleString('en-IN'));set('burnRow',burn);set('workoutRowText',done?'Completed':'Not completed');set('workoutRowPct',gp+'%');
  set('proteinRowPct',pp+'%');set('waterRowPct',wp+'%');set('calRowPct',cp+'%');set('burnRowPct',bp+'%');
  bar('proteinBar',pp);bar('waterBar',wp);bar('calorieBar',cp);bar('calorieBurnBarHome',bp);bar('proteinRowBar',pp);bar('waterRowBar',wp);bar('calRowBar',cp);bar('burnRowBar',bp);bar('workoutRowBar',gp);
