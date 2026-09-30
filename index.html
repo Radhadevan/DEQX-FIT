@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a0d09">
-<title>DEQX FIT — v21</title>
+<title>DEQX FIT — v22</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <meta name="mobile-web-app-capable" content="yes">
@@ -487,7 +487,7 @@ function addXP(amount,reason){const before=levelInfo().level;d.xp+=amount;const 
 function showLevelUp(level,rank){document.getElementById('overlayLevel').textContent=level;document.getElementById('overlayRank').textContent=rank;document.getElementById('levelOverlay').classList.add('show')}
 function closeLevelOverlay(){document.getElementById('levelOverlay').classList.remove('show')}
 function show(id,direction){document.querySelectorAll('.section').forEach(x=>x.classList.remove('active','motion-left','motion-right'));const sec=document.getElementById(id);sec.classList.add('active');if(direction)sec.classList.add(direction==='left'?'motion-left':'motion-right');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.getElementById('n-'+id)?.classList.add('active');if(id==='profile')fillProfile();if(id==='workout')renderCalendar();render()}
-function addWater(v){const before=d.water;d.water=Math.round((d.water+v)*100)/100;save();updateDailyAnalytics();toast('Water added 💧');if(before<d.waterTarget&&d.water>=d.waterTarget)rewardOnce('waterTarget',30,'Water target')}
+function addWater(v){const before=d.water;d.water=Math.round((d.water+v)*100)/100;save();updateDailyAnalytics();toast('Water updated ✓');if(before<d.waterTarget&&d.water>=d.waterTarget)rewardOnce('waterTarget',30,'Water target')}
 function smartFill(v){document.getElementById('smartFood').value=v}
 function draftItemLabel(key,qty,servings){
  const names={egg:'egg',appam:'appam',chicken:'chicken',chapathi:'chapathi',milk:'milk',oats:'oats'};
@@ -531,7 +531,7 @@ function renderFoodDraft(){
 }
 function removeDraftItem(i,all){if(!foodDraft[i])return; if(all||foodDraft[i].qty<=1)foodDraft.splice(i,1);else{const x=foodDraft[i];const f=x.customId?d.customFoods.find(y=>y.id===x.customId):DB[x.key];if(!f){foodDraft.splice(i,1)}else{let unit=x.unit;let step=x.customId?(f.amount||1):(unit==='g'?50:unit==='ml'?250:1);let pp=x.customId?(Number(f.protein)||0):(Number(f.p)||0)*(step/100);let cc=x.customId?(Number(f.calories)||0):(Number(f.c)||0)*(unit==='g'?step/100:unit==='ml'?step/250:step);x.qty-=1;x.p=Math.max(0,Math.round((x.p-pp)*10)/10);x.c=Math.max(0,Math.round(x.c-cc));x.label=x.customId?(f.unit==='grams'?x.qty+' g '+f.name:x.qty+' '+f.name+(x.qty===1?'':'s')):draftItemLabel(x.key,x.qty,{unit});}}renderFoodDraft()}
 function clearFoodDraft(){if(!foodDraft.length)return;foodDraft=[];renderFoodDraft();document.getElementById('smartResult').innerHTML='<div class="result">Selection cleared.</div>';toast('Food selection cleared')}
-function commitFoodDraft(){ensureTodayState();if(!foodDraft.length){toast('Select some food first');return}const items=foodDraft.map(x=>({n:x.label,p:Math.round((Number(x.p)||0)*10)/10,c:Math.round(Number(x.c)||0)}));d.foods.push(...items);d.date=today();save(true);rewardOnce('foodLogged',10,'Meal logged');foodDraft=[];document.getElementById('smartFood').value='';document.getElementById('smartResult').innerHTML='<div class="result">Added ✓ Meal saved to today’s data.</div>';renderFoodDraft();render();updateDailyAnalytics();toast('Meal added ✓')}
+function commitFoodDraft(){ensureTodayState();if(!foodDraft.length){toast('Select some food first');return}const items=foodDraft.map(x=>({n:x.label,p:Math.round((Number(x.p)||0)*10)/10,c:Math.round(Number(x.c)||0)}));d.foods.push(...items);d.date=today();save(false);rewardOnce('foodLogged',10,'Meal logged');foodDraft=[];document.getElementById('smartFood').value='';document.getElementById('smartResult').innerHTML='<div class="result">Saved ✓ Meal added to today’s data.</div>';renderFoodDraft();render();updateDailyAnalytics();toast('Food saved ✓ Updated today’s data')}
 function saveCustomFood(){
  const name=document.getElementById('customFoodName').value.trim();
  const protein=Number(document.getElementById('customFoodProtein').value);
@@ -539,27 +539,28 @@ function saveCustomFood(){
  const unit=document.getElementById('customFoodUnit').value;
  const amount=Number(document.getElementById('customFoodAmount').value);
  if(!name||!Number.isFinite(protein)||protein<0||!Number.isFinite(calories)||calories<0||!Number.isFinite(amount)||amount<=0){document.getElementById('customFoodResult').innerHTML='<div class="result">Enter a name, protein, calories and amount.</div>';return;}
- const id='cf_'+Date.now();d.customFoods.push({id,name,protein,calories,unit,amount});save();document.getElementById('customFoodName').value='';document.getElementById('customFoodProtein').value='';document.getElementById('customFoodCalories').value='';document.getElementById('customFoodResult').innerHTML='<div class="result">Saved ✓ Tap it below to select one serving.</div>';renderCustomFoods();
+ const id='cf_'+Date.now();d.customFoods.push({id,name,protein,calories,unit,amount});save(false);document.getElementById('customFoodName').value='';document.getElementById('customFoodProtein').value='';document.getElementById('customFoodCalories').value='';document.getElementById('customFoodAmount').value='1';document.getElementById('customFoodUnit').value='count';document.getElementById('customFoodResult').innerHTML='<div class="result">Saved ✓ Tap it below to select one serving.</div>';render();renderCustomFoods();toast('Custom food saved ✓')
 }
 function addCustomFood(id){const f=d.customFoods.find(x=>x.id===id);if(!f)return;addToFoodDraft(null,f.amount,f.unit==='grams'?'g':'count',f);toast('Selected '+f.name)}
 function removeCustomFood(id){d.customFoods=d.customFoods.filter(x=>x.id!==id);foodDraft=foodDraft.filter(x=>x.customId!==id);save();renderCustomFoods();renderFoodDraft();toast('Custom food removed')}
 function renderCustomFoods(){const el=document.getElementById('customFoodList');if(!el)return;if(!d.customFoods.length){el.innerHTML='<p class="muted">No custom foods yet.</p>';return;}el.innerHTML=d.customFoods.map(f=>{const amount=f.unit==='grams'?f.amount+' g':f.amount+' serving';const draft=foodDraft.find(x=>x.customId===f.id);return '<div class="customFoodItem"><div class="customFoodMeta"><b>'+esc(f.name)+'</b><small>'+amount+' • '+Number(f.protein).toFixed(1)+' g protein • '+Number(f.calories)+' kcal</small></div><div class="actions"><button onclick="addCustomFood(\''+esc(f.id)+'\')">+ Select</button><button class="deleteBtn" onclick="removeCustomFood(\''+esc(f.id)+'\')">×</button></div>'+(draft?'<small class="muted">Selected: '+esc(draft.label)+'</small>':'')+'</div>'}).join('')}
 function smartAdd(){const raw=document.getElementById('smartFood').value.toLowerCase().trim();if(!raw)return;let parts=raw.split(/,| and /).map(x=>x.trim()).filter(Boolean),added=0;parts.forEach(part=>{let m=part.match(/(\d+(?:\.\d+)?)\s*(kg|g|ml)?\s*(.+)/);if(!m)return;let q=parseFloat(m[1]),u=m[2]||'',name=m[3];let key=Object.keys(DB).find(k=>DB[k].a.some(a=>name.includes(a)));if(!key)return;let f=DB[key],unit=u||'count',amount=q;if(u==='kg'){unit='g';amount=q*1000}if(!u)unit='count';addToFoodDraft(key,amount,unit);added++});document.getElementById('smartResult').innerHTML=added?'<div class="result">Selected ✓ Review the meal below, then tap <b>Add to today\'s data</b>.</div>':'<div class="result">Try: 2 eggs, 3 appam, 100g chicken</div>';if(added)document.getElementById('smartFood').value=''}
 
-function saveWeight(){let w=+document.getElementById('newWeight').value;if(w>0){d.weight=w;d.history.push({date:today(),weight:w});document.getElementById('newWeight').value='';rewardOnce('weightLogged',20,'Weight logged');save();toast('Weight updated ✓')}}
+function saveWeight(){let w=+document.getElementById('newWeight').value;if(w>0){d.weight=w;d.history.push({date:today(),weight:w});rewardOnce('weightLogged',20,'Weight logged');save(false);document.getElementById('newWeight').value='';render();document.getElementById('newWeight').placeholder='Enter current weight again';toast('Weight saved ✓ Updated today’s data')}}
 function saveWorkout(){
  const scheduled=SCHEDULE[new Date().getDay()];
- if(scheduled==='Rest'){d.workout='Rest / Recovery';d.workoutHistory[today()]={scheduled:'Rest',completed:false};save();toast('Today is a rest day 😴');return}
+ if(scheduled==='Rest'){d.workout='Rest / Recovery';d.workoutHistory[today()]={scheduled:'Rest',completed:false};save(false);document.getElementById('workoutMinutes').value='';document.getElementById('workoutSaved').textContent='Saved ✓ Rest day recorded.';render();renderCalendar();toast('Workout data saved ✓');return}
  const selected=document.getElementById('workoutSelect').value,mins=+document.getElementById('workoutMinutes').value||0;
+ if(mins<=0){document.getElementById('workoutSaved').textContent='Enter workout minutes first.';toast('Enter workout minutes');return}
  d.workout=selected+' • '+mins+' min';d.workoutHistory[today()]={scheduled,completed:true,actual:d.workout};
- rewardOnce('workoutCompleted',50,'Workout complete');save();document.getElementById('workoutSaved').textContent='Completed ✓ +50 XP';toast('Workout complete 💪 +50 XP');renderCalendar();
+ rewardOnce('workoutCompleted',50,'Workout complete');save(false);document.getElementById('workoutMinutes').value='';document.getElementById('workoutSaved').textContent='Saved ✓ Workout completed +50 XP';render();renderCalendar();toast('Workout saved ✓ +50 XP');
 }
-function saveSpent(){d.spent=+document.getElementById('spent').value||0;save();document.getElementById('spentResult').textContent='Saved ✓';toast('Spending saved')}
+function saveSpent(){const value=+document.getElementById('spent').value;if(!Number.isFinite(value)||value<0){document.getElementById('spentResult').textContent='Enter a valid amount.';toast('Enter a valid amount');return}d.spent=value;save(false);document.getElementById('spent').value='';document.getElementById('spentResult').textContent='Saved ✓ Today’s spending updated.';render();toast('Spending saved ✓')}
 function fillProfile(){document.getElementById('profileGoal').value=d.goalWeight;document.getElementById('profileProtein').value=d.proteinTarget;document.getElementById('profileWaterTarget').value=d.waterTarget;document.getElementById('profileCalories').value=d.calorieTarget;document.getElementById('profileBudget').value=d.budgetTarget;document.getElementById('profileWeight').value=d.weight;document.getElementById('profileWater').value=d.water;document.getElementById('profileSpent').value=d.spent;document.getElementById('profileWorkout').value=d.workout||''}
-function saveProfile(){let goal=+document.getElementById('profileGoal').value,protein=+document.getElementById('profileProtein').value,water=+document.getElementById('profileWaterTarget').value,calories=+document.getElementById('profileCalories').value,budget=+document.getElementById('profileBudget').value;if(!(goal>0&&protein>0&&water>0&&calories>0&&budget>=0)){document.getElementById('profileSaved').textContent='Enter valid targets.';return}d.goalWeight=goal;d.proteinTarget=protein;d.waterTarget=water;d.calorieTarget=calories;d.budgetTarget=budget;save();document.getElementById('profileSaved').textContent='Goals updated ✓';toast('Profile updated ✓')}
-function saveDailyEdits(){let weight=+document.getElementById('profileWeight').value,water=+document.getElementById('profileWater').value,spent=+document.getElementById('profileSpent').value;if(!(weight>0&&water>=0&&spent>=0)){document.getElementById('dailySaved').textContent='Enter valid values.';return}d.weight=weight;d.water=water;d.spent=spent;d.workout=document.getElementById('profileWorkout').value.trim();let latest=[...d.history].reverse().find(x=>x.date===today());if(latest)latest.weight=weight;else d.history.push({date:today(),weight});save();document.getElementById('dailySaved').textContent='Today’s data updated ✓';toast('Today updated ✓')}
-function saveFoodEdit(i){let n=document.getElementById('foodName'+i).value.trim(),p=+document.getElementById('foodProtein'+i).value,c=+document.getElementById('foodCalories'+i).value;if(!n||p<0||c<0)return;d.foods[i]={n,p,c};save();toast('Food updated ✓')}
-function removeFood(i){d.foods.splice(i,1);save();toast('Food removed')}
+function saveProfile(){let goal=+document.getElementById('profileGoal').value,protein=+document.getElementById('profileProtein').value,water=+document.getElementById('profileWaterTarget').value,calories=+document.getElementById('profileCalories').value,budget=+document.getElementById('profileBudget').value;if(!(goal>0&&protein>0&&water>0&&calories>0&&budget>=0)){document.getElementById('profileSaved').textContent='Enter valid targets.';toast('Enter valid targets');return}d.goalWeight=goal;d.proteinTarget=protein;d.waterTarget=water;d.calorieTarget=calories;d.budgetTarget=budget;save(false);render();document.getElementById('profileSaved').textContent='Updated ✓ Goals saved successfully.';toast('Goals updated ✓')}
+function saveDailyEdits(){let weight=+document.getElementById('profileWeight').value,water=+document.getElementById('profileWater').value,spent=+document.getElementById('profileSpent').value;if(!(weight>0&&water>=0&&spent>=0)){document.getElementById('dailySaved').textContent='Enter valid values.';toast('Enter valid values');return}d.weight=weight;d.water=water;d.spent=spent;d.workout=document.getElementById('profileWorkout').value.trim();let latest=[...d.history].reverse().find(x=>x.date===today());if(latest)latest.weight=weight;else d.history.push({date:today(),weight});save(false);render();document.getElementById('profileWeight').value='';document.getElementById('profileWater').value='';document.getElementById('profileSpent').value='';document.getElementById('profileWorkout').value='';document.getElementById('dailySaved').textContent='Updated ✓ Today’s data saved successfully.';toast('Today’s data updated ✓')}
+function saveFoodEdit(i){let n=document.getElementById('foodName'+i).value.trim(),p=+document.getElementById('foodProtein'+i).value,c=+document.getElementById('foodCalories'+i).value;if(!n||p<0||c<0){toast('Enter valid food values');return}d.foods[i]={n,p,c};save(false);render();toast('Food updated ✓')}
+function removeFood(i){d.foods.splice(i,1);save(false);render();toast('Food removed ✓ Updated today’s data')}
 function resetApp(){if(!confirm('Reset DEQX FIT? This will erase your food, water, workout, budget, weight history, XP and level.'))return;d=cloneInitial();calendarCursor=new Date();localStorage.setItem(KEY,JSON.stringify(d));document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById('home').classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.getElementById('n-home').classList.add('active');render();toast('DEQX FIT reset ✓')}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function scheduleForDate(date){return SCHEDULE[date.getDay()]}
@@ -618,6 +619,7 @@ function updateDailyAnalytics(){
 }
 
 function toast(msg){document.body.classList.remove('uiPulse');void document.body.offsetWidth;document.body.classList.add('uiPulse');const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._toast);window._toast=setTimeout(()=>t.classList.remove('show'),1700)}
+function savedFeedback(message,sectionId,resetFn){render();if(sectionId){show(sectionId)}if(typeof resetFn==='function')resetFn();toast(message||'Saved ✓')}
 refreshForDateChange();
 
 /* ===== v9 Activity + XP + streak + swipe ===== */
@@ -644,9 +646,9 @@ function calculateActivity(){
   const kcal=Math.round(ACTIVITY_MET[v9.activity]*weight*(mins/60)*mult);
   v9.burned=kcal;v9.lastActivityDate=today();saveV9();
   document.getElementById('activityResult').style.display='block';
-  document.getElementById('activityResult').innerHTML='🔥 <b>'+kcal+' kcal estimated</b> · '+mins+' min '+v9.activity;
+  document.getElementById('activityResult').innerHTML='✅ <b>Saved ✓ '+kcal+' kcal</b> · '+mins+' min '+v9.activity;
   earnXP(Math.min(60,Math.round(kcal/10)),'activity');
-  toast('Activity logged +XP ⚡');
+  document.getElementById('activityMinutes').value='45';document.getElementById('activityIntensity').value='moderate';document.querySelectorAll('.activityChoice').forEach(x=>x.classList.remove('selected'));v9.activity=null;saveV9();renderV9();toast('Activity saved ✓ +XP');
 }
 function updateStreak(){
   const day=new Date().getDay(); // 0 Sun, 6 Sat
