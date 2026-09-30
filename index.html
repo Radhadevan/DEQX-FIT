@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a0d09">
-<title>DEQX FIT — v18</title>
+<title>DEQX FIT — v19</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <meta name="mobile-web-app-capable" content="yes">
@@ -367,12 +367,12 @@ body{background:radial-gradient(circle at 50% -10%,#34441f 0,transparent 34%),ra
 <section id="food" class="section">
 <div class="card"><h2>Smart food logging</h2><p class="muted">Type your meal naturally</p><div class="foodInput"><input id="smartFood" placeholder="2 eggs, 3 appam, 100g chicken"><button onclick="smartAdd()">Add</button></div><div id="smartResult"></div></div>
 <div class="card"><div class="quickTitle"><div><h2>Tap to add</h2><span class="muted">Each tap adds one serving</span></div><span id="tapFoodHint">1 tap = 1 serving</span></div><div class="quickFoodGrid">
-<button class="quickFoodBtn" onclick="addQuickFood('egg')"><span>🥚</span><b>Egg</b><small>1 egg</small></button>
-<button class="quickFoodBtn" onclick="addQuickFood('appam')"><span>🥞</span><b>Appam</b><small>1 appam</small></button>
-<button class="quickFoodBtn" onclick="addQuickFood('chicken')"><span>🍗</span><b>Chicken</b><small>50 g</small></button>
-<button class="quickFoodBtn" onclick="addQuickFood('chapathi')"><span>🫓</span><b>Chapathi</b><small>1 chapathi</small></button>
-<button class="quickFoodBtn" onclick="addQuickFood('milk')"><span>🥛</span><b>Milk</b><small>250 ml</small></button>
-<button class="quickFoodBtn" onclick="addQuickFood('oats')"><span>🥣</span><b>Oats</b><small>50 g</small></button>
+<button class="quickFoodBtn" data-food-key="egg" onclick="addQuickFood('egg')"><span>🥚</span><b>Egg</b><small>1 egg</small></button>
+<button class="quickFoodBtn" data-food-key="appam" onclick="addQuickFood('appam')"><span>🥞</span><b>Appam</b><small>1 appam</small></button>
+<button class="quickFoodBtn" data-food-key="chicken" onclick="addQuickFood('chicken')"><span>🍗</span><b>Chicken</b><small>50 g</small></button>
+<button class="quickFoodBtn" data-food-key="chapathi" onclick="addQuickFood('chapathi')"><span>🫓</span><b>Chapathi</b><small>1 chapathi</small></button>
+<button class="quickFoodBtn" data-food-key="milk" onclick="addQuickFood('milk')"><span>🥛</span><b>Milk</b><small>250 ml</small></button>
+<button class="quickFoodBtn" data-food-key="oats" onclick="addQuickFood('oats')"><span>🥣</span><b>Oats</b><small>50 g</small></button>
 </div><p class="muted tapTip">Tap Egg twice = 2 eggs • Chicken twice = 100 g • Oats twice = 100 g</p></div>
 <div class="card"><div class="quickTitle"><div><h2>Custom food</h2><span class="muted">Create your own tap-to-add food</span></div></div><div class="customFoodGrid"><label class="muted">Food name<input id="customFoodName" placeholder="Greek yogurt"></label><label class="muted">Protein (g)<input id="customFoodProtein" type="number" min="0" step="0.1" placeholder="10"></label><label class="muted">Calories (kcal)<input id="customFoodCalories" type="number" min="0" step="1" placeholder="100"></label><label class="muted">Unit<select id="customFoodUnit"><option value="count">Count / serving</option><option value="grams">Grams</option></select></label><label class="muted">Amount per tap<input id="customFoodAmount" type="number" min="0.1" step="0.1" value="1"></label></div><button class="primary" onclick="saveCustomFood()">Save custom food</button><div id="customFoodResult" class="result"></div><div id="customFoodList" class="customFoodList"></div></div>
 <div class="card"><h2>Today's food</h2><div id="foodList"></div><div class="food"><b>Total</b><b id="foodTotal"></b></div></div></section>
@@ -461,7 +461,7 @@ body{background:radial-gradient(circle at 50% -10%,#34441f 0,transparent 34%),ra
 </div>
 
 <script>
-const KEY='fitRadhadevanV6';
+const KEY='fitRadhadevanV7';
 const isoDate=(date)=>{const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),day=String(date.getDate()).padStart(2,'0');return `${y}-${m}-${day}`};
 const today=()=>isoDate(new Date());
 const todayLabel=()=>new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short'}).toUpperCase();
@@ -491,14 +491,17 @@ function addQuickFood(key){
  const f=DB[key]; if(!f)return;
  const servings={egg:{amount:1,unit:'count'},appam:{amount:1,unit:'count'},chicken:{amount:50,unit:'g'},chapathi:{amount:1,unit:'count'},milk:{amount:250,unit:'ml'},oats:{amount:50,unit:'g'}}[key];
  if(!servings)return;
- const factor=(servings.unit==='g')?servings.amount/100:(servings.unit==='ml')?servings.amount/250:servings.amount;
- const p=Math.round(f.p*factor*10)/10,c=Math.round(f.c*factor);
- const label=servings.unit==='count'?(servings.amount+' '+key):(servings.amount+'g '+key);
  ensureTodayState();
- d.foods=Array.isArray(d.foods)?d.foods:[];
+ if(!Array.isArray(d.foods)) d.foods=[];
+ const factor=servings.unit==='g'?servings.amount/100:servings.unit==='ml'?servings.amount/250:servings.amount;
+ const p=Math.round(f.p*factor*10)/10;
+ const c=Math.round(f.c*factor);
+ const label=servings.unit==='count'?(servings.amount+' '+key):(servings.amount+'g '+key);
  d.foods.push({n:label,p,c});
- localStorage.setItem(KEY,JSON.stringify(d));
- if(typeof cloudUser!=='undefined'&&cloudUser){localDirty=true;cloudQueueSync();}
+ d.date=today();
+ // Save + render synchronously first. Cloud sync happens afterward.
+ save(true);
+ rewardOnce('foodLogged',10,'Meal logged');
  render();
  toast('Added '+label+' ✓');
 }
@@ -525,9 +528,7 @@ function addCustomFood(id){
  const label=f.unit==='grams'?(f.amount+'g '+f.name):(f.amount+' '+f.name);
  d.foods=Array.isArray(d.foods)?d.foods:[];
  d.foods.push({n:label,p:Number(f.protein)||0,c:Number(f.calories)||0,customId:id});
- localStorage.setItem(KEY,JSON.stringify(d));
- if(typeof cloudUser!=='undefined'&&cloudUser){localDirty=true;cloudQueueSync();}
- render();
+ save(true);
  toast('Added '+label+' ✓');
 }
 
@@ -537,7 +538,7 @@ function renderCustomFoods(){
  if(!d.customFoods.length){el.innerHTML='<p class="muted">No custom foods yet.</p>';return;}
  el.innerHTML=d.customFoods.map(f=>{const amount=f.unit==='grams'?f.amount+' g':f.amount+' serving';return '<div class="customFoodItem"><div class="customFoodMeta"><b>'+esc(f.name)+'</b><small>'+amount+' • '+Number(f.protein).toFixed(1)+' g protein • '+Number(f.calories)+' kcal</small></div><div class="actions"><button onclick="addCustomFood(\''+esc(f.id)+'\')">+ Add</button><button class="deleteBtn" onclick="removeCustomFood(\''+esc(f.id)+'\')">×</button></div></div>'}).join('');
 }
-function smartAdd(){let raw=document.getElementById('smartFood').value.toLowerCase().trim();if(!raw)return;let parts=raw.split(/,| and /).map(x=>x.trim()).filter(Boolean),added=[];parts.forEach(part=>{let m=part.match(/(\d+(?:\.\d+)?)\s*(kg|g|ml)?\s*(.+)/);if(!m)return;let q=parseFloat(m[1]),u=m[2]||'',name=m[3];let key=Object.keys(DB).find(k=>DB[k].a.some(a=>name.includes(a)));if(!key)return;let f=DB[key],factor=q;if(u==='g')factor=q/100;if(u==='kg')factor=q*10;if(u==='ml')factor=q/250;if(!u)factor=q;let p=Math.round(f.p*factor*10)/10,c=Math.round(f.c*factor);d.foods.push({n:q+' '+key,p,c});added.push({p,c})});if(added.length){let p=added.reduce((a,x)=>a+x.p,0),c=added.reduce((a,x)=>a+x.c,0);document.getElementById('smartResult').innerHTML='<div class="result">Added ✓ &nbsp; <b>'+p.toFixed(1)+' g protein</b> • <b>'+c+' kcal</b></div>';document.getElementById('smartFood').value='';rewardOnce('foodLogged',10,'Meal logged');save()}else document.getElementById('smartResult').innerHTML='<div class="result">Try: 2 eggs, 3 appam, 100g chicken</div>'}
+function smartAdd(){ensureTodayState();let raw=document.getElementById('smartFood').value.toLowerCase().trim();if(!raw)return;let parts=raw.split(/,| and /).map(x=>x.trim()).filter(Boolean),added=[];parts.forEach(part=>{let m=part.match(/(\d+(?:\.\d+)?)\s*(kg|g|ml)?\s*(.+)/);if(!m)return;let q=parseFloat(m[1]),u=m[2]||'',name=m[3];let key=Object.keys(DB).find(k=>DB[k].a.some(a=>name.includes(a)));if(!key)return;let f=DB[key],factor=q;if(u==='g')factor=q/100;if(u==='kg')factor=q*10;if(u==='ml')factor=q/250;if(!u)factor=q;let p=Math.round(f.p*factor*10)/10,c=Math.round(f.c*factor);d.foods.push({n:q+' '+key,p,c});added.push({p,c})});if(added.length){let p=added.reduce((a,x)=>a+x.p,0),c=added.reduce((a,x)=>a+x.c,0);document.getElementById('smartResult').innerHTML='<div class="result">Added ✓ &nbsp; <b>'+p.toFixed(1)+' g protein</b> • <b>'+c+' kcal</b></div>';document.getElementById('smartFood').value='';rewardOnce('foodLogged',10,'Meal logged');save()}else document.getElementById('smartResult').innerHTML='<div class="result">Try: 2 eggs, 3 appam, 100g chicken</div>'}
 function saveWeight(){let w=+document.getElementById('newWeight').value;if(w>0){d.weight=w;d.history.push({date:today(),weight:w});document.getElementById('newWeight').value='';rewardOnce('weightLogged',20,'Weight logged');save();toast('Weight updated ✓')}}
 function saveWorkout(){
  const scheduled=SCHEDULE[new Date().getDay()];
@@ -744,16 +745,24 @@ setInterval(refreshForDateChange,30000);
 </script>
 
 <script>
+// v19: delegated food-tap handler guarantees quick-food buttons work even if inline handlers are blocked.
+document.addEventListener('click', function(e){
+  const btn=e.target.closest('[data-food-key]');
+  if(btn){ e.preventDefault(); addQuickFood(btn.dataset.foodKey); }
+});
+</script>
+
+<script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=17')
+  navigator.serviceWorker.register('./service-worker.js?v=19')
     .then(reg => {
       if (reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.update();
     })
     .catch(() => {});
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!sessionStorage.getItem('deqx-sw-v16-reloaded')) {
-      sessionStorage.setItem('deqx-sw-v16-reloaded','1');
+    if (!sessionStorage.getItem('deqx-sw-v19-reloaded')) {
+      sessionStorage.setItem('deqx-sw-v19-reloaded','1');
       location.reload();
     }
   });
