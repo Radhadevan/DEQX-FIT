@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a0d09">
-<title>DEQX FIT — v12 Cloud Sync</title>
+<title>DEQX FIT — v14</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <meta name="mobile-web-app-capable" content="yes">
@@ -268,6 +268,8 @@ body{background:radial-gradient(circle at 50% -10%,#34441f 0,transparent 34%),ra
 
 /* ===== v12 Cloud Sync / Auth ===== */
 .cloudCard{background:linear-gradient(145deg,#151a15,#0f130f);border-color:#d6ff3220}.cloudStatus{display:flex;align-items:center;gap:9px;margin:8px 0 12px;font-size:12px;color:var(--muted)}.cloudDot{width:8px;height:8px;border-radius:50%;background:#737b70;box-shadow:0 0 0 4px #ffffff06}.cloudDot.online{background:var(--lime);box-shadow:0 0 0 4px #d6ff3212,0 0 12px #d6ff3260}.cloudDot.syncing{background:#d6ff32;animation:cloudPulse 1s infinite}.cloudDot.error{background:#ff7b6b;box-shadow:0 0 0 4px #ff7b6b12}.cloudActions{display:flex;gap:8px}.cloudActions button{flex:1}.cloudMini{font-size:10px;color:var(--dim);margin-top:8px;line-height:1.45}.authBox{display:grid;gap:8px}.authBox input{margin:0}.authRow{display:flex;gap:8px}.authRow button{flex:1}.authMsg{min-height:17px;font-size:11px;color:var(--muted);margin:2px 0 0}.userPill{display:inline-flex;align-items:center;gap:7px;padding:6px 9px;border-radius:10px;background:#d6ff320b;border:1px solid #d6ff3218;color:#cfe990;font-size:11px;font-weight:750}.syncTime{font-size:10px;color:var(--dim);margin-left:auto}@keyframes cloudPulse{50%{transform:scale(1.35);opacity:.6}}
+
+.quickFoodGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.quickFoodBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:94px;background:linear-gradient(145deg,#1b2119,#11150f);border:1px solid #ffffff10;color:var(--white);box-shadow:none}.quickFoodBtn span{font-size:27px}.quickFoodBtn b{font-size:13px}.quickFoodBtn small{font-size:10px;color:#8e9688}.quickFoodBtn:active{transform:scale(.95);border-color:#d6ff3270;box-shadow:0 0 20px #d6ff3212}.tapTip{margin:12px 2px 0;text-align:center}.customFoodGrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;margin-top:10px}.customFoodList{margin-top:12px;display:grid;gap:8px}.customFoodItem{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid #ffffff0d;border-radius:13px;background:#10130f}.customFoodMeta{display:flex;flex-direction:column;gap:3px;min-width:0}.customFoodMeta b{font-size:12px}.customFoodMeta small{font-size:10px;color:#7f887b}.customFoodItem button{padding:9px 12px;white-space:nowrap}@media(max-width:420px){.customFoodGrid{grid-template-columns:1fr}.quickFoodGrid{gap:8px}}
 </style>
 </head>
 <body>
@@ -277,7 +279,7 @@ body{background:radial-gradient(circle at 50% -10%,#34441f 0,transparent 34%),ra
 <main class="main">
 <section id="home" class="section active">
   <div class="todayHeader reveal d1">
-    <div><div class="eyebrow">TODAY · <span id="todayDate">29 SEP</span></div><h1>Daily overview</h1><p>Build your day, one completed target at a time.</p></div>
+    <div><div class="eyebrow">TODAY · <span id="todayDate"></span></div><h1>Daily overview</h1><p>Build your day, one completed target at a time.</p></div>
     <div class="todayStatus"><span class="statusDot"></span><span id="dayState">IN PROGRESS</span></div>
   </div>
 
@@ -325,7 +327,18 @@ body{background:radial-gradient(circle at 50% -10%,#34441f 0,transparent 34%),ra
   <div class="card reveal d5"><div class="cardHeader"><div><span class="label">WEEKLY RHYTHM</span><h2>Consistency</h2></div><span class="muted"><span id="streakView">0</span> days</span></div><div class="weekChart" id="streakDots"></div></div>
 </section>
 
-<section id="food" class="section"><div class="card"><h2>Smart food logging</h2><p class="muted">Type your meal naturally</p><div class="foodInput"><input id="smartFood" placeholder="2 eggs, 3 appam, 100g chicken"><button onclick="smartAdd()">Add</button></div><div id="smartResult"></div></div><div class="card"><h2>Quick foods</h2><div class="quick"><button onclick="smartFill('2 eggs')">🥚 Eggs</button><button onclick="smartFill('100g chicken')">🍗 Chicken</button><button onclick="smartFill('3 appam')">🥞 Appam</button><button onclick="smartFill('2 chapathi')">🫓 Chapathi</button><button onclick="smartFill('250ml milk')">🥛 Milk</button><button onclick="smartFill('50g oats')">🥣 Oats</button></div></div><div class="card"><h2>Today's food</h2><div id="foodList"></div><div class="food"><b>Total</b><b id="foodTotal"></b></div></div></section>
+<section id="food" class="section">
+<div class="card"><h2>Smart food logging</h2><p class="muted">Type your meal naturally</p><div class="foodInput"><input id="smartFood" placeholder="2 eggs, 3 appam, 100g chicken"><button onclick="smartAdd()">Add</button></div><div id="smartResult"></div></div>
+<div class="card"><div class="quickTitle"><div><h2>Tap to add</h2><span class="muted">Each tap adds one serving</span></div><span id="tapFoodHint">1 tap = 1 serving</span></div><div class="quickFoodGrid">
+<button class="quickFoodBtn" onclick="addQuickFood('egg')"><span>🥚</span><b>Egg</b><small>1 egg</small></button>
+<button class="quickFoodBtn" onclick="addQuickFood('appam')"><span>🥞</span><b>Appam</b><small>1 appam</small></button>
+<button class="quickFoodBtn" onclick="addQuickFood('chicken')"><span>🍗</span><b>Chicken</b><small>50 g</small></button>
+<button class="quickFoodBtn" onclick="addQuickFood('chapathi')"><span>🫓</span><b>Chapathi</b><small>1 chapathi</small></button>
+<button class="quickFoodBtn" onclick="addQuickFood('milk')"><span>🥛</span><b>Milk</b><small>250 ml</small></button>
+<button class="quickFoodBtn" onclick="addQuickFood('oats')"><span>🥣</span><b>Oats</b><small>50 g</small></button>
+</div><p class="muted tapTip">Tap Egg twice = 2 eggs • Chicken twice = 100 g • Oats twice = 100 g</p></div>
+<div class="card"><div class="quickTitle"><div><h2>Custom food</h2><span class="muted">Create your own tap-to-add food</span></div></div><div class="customFoodGrid"><label class="muted">Food name<input id="customFoodName" placeholder="Greek yogurt"></label><label class="muted">Protein (g)<input id="customFoodProtein" type="number" min="0" step="0.1" placeholder="10"></label><label class="muted">Calories (kcal)<input id="customFoodCalories" type="number" min="0" step="1" placeholder="100"></label><label class="muted">Unit<select id="customFoodUnit"><option value="count">Count / serving</option><option value="grams">Grams</option></select></label><label class="muted">Amount per tap<input id="customFoodAmount" type="number" min="0.1" step="0.1" value="1"></label></div><button class="primary" onclick="saveCustomFood()">Save custom food</button><div id="customFoodResult" class="result"></div><div id="customFoodList" class="customFoodList"></div></div>
+<div class="card"><h2>Today's food</h2><div id="foodList"></div><div class="food"><b>Total</b><b id="foodTotal"></b></div></div></section>
 
 
 <section id="activity" class="section">
@@ -412,15 +425,19 @@ body{background:radial-gradient(circle at 50% -10%,#34441f 0,transparent 34%),ra
 
 <script>
 const KEY='fitRadhadevanV6';
-const today=()=>new Date().toLocaleDateString('en-IN');
 const isoDate=(date)=>{const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),day=String(date.getDate()).padStart(2,'0');return `${y}-${m}-${day}`};
+const today=()=>isoDate(new Date());
+const todayLabel=()=>new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short'}).toUpperCase();
 const DB={egg:{p:6.3,c:78,a:['egg','eggs']},appam:{p:2,c:120,a:['appam','appams']},chapathi:{p:3,c:110,a:['chapathi','chapati','chappathi','chappati']},chicken:{p:27,c:165,a:['chicken']},beef:{p:26,c:250,a:['beef']},milk:{p:8,c:150,a:['milk']},oats:{p:6.5,c:190,a:['oats','oat']}};
 const SCHEDULE={1:'Chest + Triceps',2:'Back + Biceps',3:'Shoulders + Forearms',4:'Leg Day',5:'Chest + Triceps',6:'Rest',0:'Rest'};
 const RANKS=['Rookie','Hunter','Elite','Vanguard','Shadow','Ascendant','Apex'];
 const INITIAL={weight:97,goalWeight:85,proteinTarget:150,waterTarget:3,calorieTarget:2200,budgetTarget:250,foods:[],history:[{date:today(),weight:97}],water:0,workout:'',spent:0,date:today(),xp:0,rewardDays:{},workoutHistory:{}};
 let d=JSON.parse(localStorage.getItem(KEY)||localStorage.getItem('fitRadhadevanV5')||localStorage.getItem('fitRadhadevanV4')||localStorage.getItem('fitRadhadevanV3')||localStorage.getItem('fitRadhadevanV2')||localStorage.getItem('fitRadhadevan')||'null')||JSON.parse(JSON.stringify(INITIAL));
-d.foods=d.foods||[];d.history=d.history||[{date:today(),weight:d.weight||97}];d.goalWeight=Number(d.goalWeight)||85;d.proteinTarget=Number(d.proteinTarget)||150;d.waterTarget=Number(d.waterTarget)||3;d.calorieTarget=Number(d.calorieTarget)||2200;d.budgetTarget=Number.isFinite(Number(d.budgetTarget))?Number(d.budgetTarget):250;d.xp=Number(d.xp)||0;d.rewardDays=d.rewardDays||{};d.workoutHistory=d.workoutHistory||{};
-if(d.date!==today()){d.foods=[];d.water=0;d.workout='';d.spent=0;d.date=today();d.rewardDays[today()]={};save(false)}
+d.foods=d.foods||[];d.customFoods=d.customFoods||[];d.history=d.history||[{date:today(),weight:d.weight||97}];d.goalWeight=Number(d.goalWeight)||85;d.proteinTarget=Number(d.proteinTarget)||150;d.waterTarget=Number(d.waterTarget)||3;d.calorieTarget=Number(d.calorieTarget)||2200;d.budgetTarget=Number.isFinite(Number(d.budgetTarget))?Number(d.budgetTarget):250;d.xp=Number(d.xp)||0;d.rewardDays=d.rewardDays||{};d.workoutHistory=d.workoutHistory||{};
+function ensureTodayState(){const t=today();if(d.date!==t){d.foods=[];d.water=0;d.workout='';d.spent=0;d.date=t;d.rewardDays[t]=d.rewardDays[t]||{};localStorage.setItem(KEY,JSON.stringify(d));return true}return false}
+function refreshForDateChange(){const changed=ensureTodayState();const el=document.getElementById('todayDate');if(el)el.textContent=todayLabel();if(changed){render();if(typeof renderV9==='function')renderV9();if(cloudUser && typeof cloudLoad==='function')setTimeout(()=>cloudLoad(),0);}}
+ensureTodayState();
+
 let calendarCursor=new Date();
 
 function cloneInitial(){return JSON.parse(JSON.stringify({...INITIAL,date:today(),history:[{date:today(),weight:97}]}))}
@@ -433,6 +450,45 @@ function closeLevelOverlay(){document.getElementById('levelOverlay').classList.r
 function show(id,direction){document.querySelectorAll('.section').forEach(x=>x.classList.remove('active','motion-left','motion-right'));const sec=document.getElementById(id);sec.classList.add('active');if(direction)sec.classList.add(direction==='left'?'motion-left':'motion-right');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.getElementById('n-'+id)?.classList.add('active');if(id==='profile')fillProfile();if(id==='workout')renderCalendar();render()}
 function addWater(v){const before=d.water;d.water=Math.round((d.water+v)*100)/100;save();toast('Water added 💧');if(before<d.waterTarget&&d.water>=d.waterTarget)rewardOnce('waterTarget',30,'Water target')}
 function smartFill(v){document.getElementById('smartFood').value=v}
+function addQuickFood(key){
+ const f=DB[key]; if(!f)return;
+ const servings={egg:{amount:1,unit:'count'},appam:{amount:1,unit:'count'},chicken:{amount:50,unit:'g'},chapathi:{amount:1,unit:'count'},milk:{amount:250,unit:'ml'},oats:{amount:50,unit:'g'}}[key];
+ const factor=(servings.unit==='g')?servings.amount/100:(servings.unit==='ml')?servings.amount/250:servings.amount;
+ const p=Math.round(f.p*factor*10)/10,c=Math.round(f.c*factor);
+ const label=servings.unit==='count'?(servings.amount+' '+key):(servings.amount+'g '+key);
+ d.foods.push({n:label,p,c});
+ rewardOnce('foodLogged',10,'Meal logged');
+ save();
+ toast('Added '+label+' ✓');
+}
+function saveCustomFood(){
+ const name=document.getElementById('customFoodName').value.trim();
+ const protein=Number(document.getElementById('customFoodProtein').value);
+ const calories=Number(document.getElementById('customFoodCalories').value||0);
+ const unit=document.getElementById('customFoodUnit').value;
+ const amount=Number(document.getElementById('customFoodAmount').value);
+ if(!name||!Number.isFinite(protein)||protein<0||!Number.isFinite(calories)||calories<0||!Number.isFinite(amount)||amount<=0){
+   document.getElementById('customFoodResult').innerHTML='<div class="result">Enter a name, protein, calories and amount.</div>';return;
+ }
+ const id='cf_'+Date.now();
+ d.customFoods.push({id,name,protein,calories,unit,amount});
+ save();
+ document.getElementById('customFoodName').value='';document.getElementById('customFoodProtein').value='';document.getElementById('customFoodCalories').value='';
+ document.getElementById('customFoodResult').innerHTML='<div class="result">Saved ✓ Tap it below to add one serving.</div>';
+ renderCustomFoods();
+}
+function addCustomFood(id){
+ const f=d.customFoods.find(x=>x.id===id); if(!f)return;
+ const label=f.unit==='grams'?(f.amount+'g '+f.name):(f.amount+' '+f.name);
+ d.foods.push({n:label,p:Number(f.protein),c:Number(f.calories),customId:id});
+ rewardOnce('foodLogged',10,'Meal logged');save();toast('Added '+label+' ✓');
+}
+function removeCustomFood(id){d.customFoods=d.customFoods.filter(x=>x.id!==id);save();renderCustomFoods();toast('Custom food removed');}
+function renderCustomFoods(){
+ const el=document.getElementById('customFoodList'); if(!el)return;
+ if(!d.customFoods.length){el.innerHTML='<p class="muted">No custom foods yet.</p>';return;}
+ el.innerHTML=d.customFoods.map(f=>{const amount=f.unit==='grams'?f.amount+' g':f.amount+' serving';return '<div class="customFoodItem"><div class="customFoodMeta"><b>'+esc(f.name)+'</b><small>'+amount+' • '+Number(f.protein).toFixed(1)+' g protein • '+Number(f.calories)+' kcal</small></div><div class="actions"><button onclick="addCustomFood(''+esc(f.id)+'')">+ Add</button><button class="deleteBtn" onclick="removeCustomFood(''+esc(f.id)+'')">×</button></div></div>'}).join('');
+}
 function smartAdd(){let raw=document.getElementById('smartFood').value.toLowerCase().trim();if(!raw)return;let parts=raw.split(/,| and /).map(x=>x.trim()).filter(Boolean),added=[];parts.forEach(part=>{let m=part.match(/(\d+(?:\.\d+)?)\s*(kg|g|ml)?\s*(.+)/);if(!m)return;let q=parseFloat(m[1]),u=m[2]||'',name=m[3];let key=Object.keys(DB).find(k=>DB[k].a.some(a=>name.includes(a)));if(!key)return;let f=DB[key],factor=q;if(u==='g')factor=q/100;if(u==='kg')factor=q*10;if(u==='ml')factor=q/250;if(!u)factor=q;let p=Math.round(f.p*factor*10)/10,c=Math.round(f.c*factor);d.foods.push({n:q+' '+key,p,c});added.push({p,c})});if(added.length){let p=added.reduce((a,x)=>a+x.p,0),c=added.reduce((a,x)=>a+x.c,0);document.getElementById('smartResult').innerHTML='<div class="result">Added ✓ &nbsp; <b>'+p.toFixed(1)+' g protein</b> • <b>'+c+' kcal</b></div>';document.getElementById('smartFood').value='';rewardOnce('foodLogged',10,'Meal logged');save()}else document.getElementById('smartResult').innerHTML='<div class="result">Try: 2 eggs, 3 appam, 100g chicken</div>'}
 function saveWeight(){let w=+document.getElementById('newWeight').value;if(w>0){d.weight=w;d.history.push({date:today(),weight:w});document.getElementById('newWeight').value='';rewardOnce('weightLogged',20,'Weight logged');save();toast('Weight updated ✓')}}
 function saveWorkout(){
@@ -467,6 +523,7 @@ function renderCalendar(){
 }
 function changeMonth(delta){calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()+delta,1);renderCalendar()}
 function render(){
+ ensureTodayState();
  let p=d.foods.reduce((a,x)=>a+(Number(x.p)||0),0),c=d.foods.reduce((a,x)=>a+(Number(x.c)||0),0),gp=Math.max(0,Math.min(100,(100-d.weight)/Math.max(1,100-d.goalWeight)*100)),li=levelInfo();
  document.getElementById('weightHome').textContent=d.weight;document.getElementById('goalWeightHome').textContent=d.goalWeight;document.getElementById('remaining').textContent=Math.max(0,d.weight-d.goalWeight).toFixed(1)+' kg remaining';document.getElementById('ring').style.setProperty('--p',gp+'%');document.getElementById('ringText').textContent=Math.round(gp)+'%';
  document.getElementById('proteinView').textContent=Math.round(p);document.getElementById('waterView').textContent=d.water;document.getElementById('calView').textContent=c;document.getElementById('proteinTargetHome').textContent=d.proteinTarget;document.getElementById('waterTargetHome').textContent=d.waterTarget;document.getElementById('waterQuickTarget').textContent=d.waterTarget;document.getElementById('calorieTargetHome').textContent=Number(d.calorieTarget).toLocaleString('en-IN');document.getElementById('budgetTargetView').textContent=d.budgetTarget;
@@ -476,7 +533,7 @@ function render(){
  document.getElementById('foodTotal').textContent=p.toFixed(1)+' g protein • '+c+' kcal';document.getElementById('foodList').innerHTML=d.foods.length?d.foods.map(x=>'<div class="food"><span>'+esc(x.n)+'</span><span>'+Number(x.p).toFixed(1)+'g • '+x.c+' kcal</span></div>').join(''):'<p class="muted">No food logged yet.</p>';
  document.getElementById('history').innerHTML=[...d.history].reverse().slice(0,12).map(x=>'<div class="food"><span>'+esc(x.date)+'</span><b>'+x.weight+' kg</b></div>').join('');
  document.getElementById('profileFoodList').innerHTML=d.foods.length?d.foods.map((x,i)=>'<div class="card" style="padding:11px;margin-bottom:8px;background:#10130f"><input id="foodName'+i+'" value="'+esc(x.n)+'"><div class="editGrid"><input id="foodProtein'+i+'" type="number" step=".1" value="'+x.p+'"><input id="foodCalories'+i+'" type="number" value="'+x.c+'"></div><div class="editActions"><button onclick="saveFoodEdit('+i+')">Save</button><button class="deleteBtn" onclick="removeFood('+i+')">Remove</button></div></div>').join(''):'<p class="muted">No food logged today.</p>';
- document.getElementById('spent').value=d.spent||'';fillProfile();renderCalendar();updateDailyAnalytics();
+ document.getElementById('spent').value=d.spent||'';fillProfile();renderCustomFoods();renderCalendar();updateDailyAnalytics();
 }
 function updateDailyAnalytics(){
  const p=d.foods.reduce((a,x)=>a+(Number(x.p)||0),0), c=d.foods.reduce((a,x)=>a+(Number(x.c)||0),0);
@@ -487,7 +544,7 @@ function updateDailyAnalytics(){
  const daily=Math.round((pp+wp+cp+bp+gp)/5);
  const set=(id,val)=>{const e=document.getElementById(id);if(e)e.textContent=val};
  const bar=(id,val)=>{const e=document.getElementById(id);if(e)e.style.width=val+'%'};
- set('todayDate',new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short'}).toUpperCase());
+ set('todayDate',todayLabel());
  set('dailyPercent',daily);set('dailyRingText',daily+'%');set('dayState',daily>=100?'COMPLETE':'IN PROGRESS');
  const dr=document.getElementById('dailyRing');if(dr)dr.style.setProperty('--p',daily+'%');
  set('dailyMessage',daily>=100?'All daily targets are complete. Strong day.':daily===0?'Your day starts here. Every logged goal moves the ring forward.':daily<50?'Good start. Keep stacking small wins.': 'You are building momentum. Keep going.');
@@ -501,7 +558,7 @@ function updateDailyAnalytics(){
 }
 
 function toast(msg){document.body.classList.remove('uiPulse');void document.body.offsetWidth;document.body.classList.add('uiPulse');const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._toast);window._toast=setTimeout(()=>t.classList.remove('show'),1700)}
-render();
+refreshForDateChange();
 
 /* ===== v9 Activity + XP + streak + swipe ===== */
 const V9KEY='deqxFitV9';
@@ -583,7 +640,7 @@ mainEl.addEventListener('touchend',e=>{
 const SUPABASE_URL='https://flypceipibvrkzzkurdg.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_h-0Bq665oVwud24ZHXDe8g_aib-YVT0';
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-let cloudUser=null,cloudSyncing=false,cloudTimer=null;
+let cloudUser=null,cloudSyncing=false,cloudTimer=null,localDirty=false;
 function cloudEl(id){return document.getElementById(id)}
 function cloudStatus(state,text){const dot=cloudEl('cloudDot'),label=cloudEl('cloudStatusText');if(!dot||!label)return;dot.className='cloudDot '+(state||'');label.textContent=text||''}
 function cloudMessage(text){const e=cloudEl('authMsg');const ce=cloudEl('cloudError');if(e)e.textContent=text||'';if(ce)ce.textContent=text||''}
@@ -602,10 +659,10 @@ async function cloudSyncNow(){if(!cloudUser||cloudSyncing)return false;cloudSync
  r=await supabaseClient.from('workout_logs').delete().eq('user_id',cloudUser.id).eq('workout_date',iso);if(r.error)throw r.error;
  const wh=d.workoutHistory[today()];if(wh){r=await supabaseClient.from('workout_logs').insert({user_id:cloudUser.id,workout_date:iso,workout_type:String(wh.scheduled||d.workout||'Workout'),completed:!!wh.completed,xp_earned:wh.completed?50:0});if(r.error)throw r.error}
  const todayWeight=[...d.history].reverse().find(x=>x.date===today());if(todayWeight){const q=await supabaseClient.from('weight_history').select('id').eq('user_id',cloudUser.id).eq('recorded_date',iso).maybeSingle();if(q.error)throw q.error;if(q.data){r=await supabaseClient.from('weight_history').update({weight:Number(todayWeight.weight)}).eq('id',q.data.id)}else{r=await supabaseClient.from('weight_history').insert({user_id:cloudUser.id,recorded_date:iso,weight:Number(todayWeight.weight)})}if(r?.error)throw r.error}
- localStorage.setItem(KEY,JSON.stringify(d));cloudTime();cloudStatus('online','Cloud sync complete');cloudMessage('');return true;
+ localStorage.setItem(KEY,JSON.stringify(d));localDirty=false;render();renderV9();cloudTime();cloudStatus('online','Cloud sync complete');cloudMessage('');return true;
 }catch(err){console.error('DEQX FIT cloudSync error',err);cloudStatus('error','Sync failed — local data is still safe');const detail=[err?.stage,err?.message,err?.code,err?.hint].filter(Boolean).join(' • ');cloudMessage(detail||'Could not sync. Check your Supabase tables and internet connection.');return false}finally{cloudSyncing=false}}
 function cloudQueueSync(){if(!cloudUser)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>cloudSyncNow(),900)}
-async function cloudLoad(){if(!cloudUser)return;cloudStatus('syncing','Loading your cloud data…');cloudMessage('');try{
+async function cloudLoad(){if(!cloudUser)return;if(localDirty){cloudStatus('syncing','Saving local changes to cloud…');await cloudSyncNow();return}cloudStatus('syncing','Loading your cloud data…');cloudMessage('');try{
  const {data:p,error:pe}=await supabaseClient.from('profiles').select('*').eq('id',cloudUser.id).maybeSingle();if(pe)throw Object.assign(new Error(pe.message||'Profiles query failed'),{code:pe.code,details:pe.details,hint:pe.hint,stage:'profiles'});
  const iso=isoDate(new Date());
  const {data:dl,error:de}=await supabaseClient.from('daily_logs').select('*').eq('user_id',cloudUser.id).eq('log_date',iso).maybeSingle();if(de)throw Object.assign(new Error(de.message||'Daily logs query failed'),{code:de.code,details:de.details,hint:de.hint,stage:'daily_logs'});
@@ -613,8 +670,9 @@ async function cloudLoad(){if(!cloudUser)return;cloudStatus('syncing','Loading y
  const {data:acts,error:ae}=await supabaseClient.from('activity_logs').select('*').eq('user_id',cloudUser.id).eq('log_date',iso).order('id',{ascending:false}).limit(1);if(ae)throw Object.assign(new Error(ae.message||'Activity logs query failed'),{code:ae.code,details:ae.details,hint:ae.hint,stage:'activity_logs'});
  const {data:whs,error:we}=await supabaseClient.from('workout_logs').select('*').eq('user_id',cloudUser.id).order('workout_date',{ascending:false}).limit(120);if(we)throw Object.assign(new Error(we.message||'Workout logs query failed'),{code:we.code,details:we.details,hint:we.hint,stage:'workout_logs'});
  const {data:weights,error:he}=await supabaseClient.from('weight_history').select('*').eq('user_id',cloudUser.id).order('recorded_date',{ascending:true});if(he)throw Object.assign(new Error(he.message||'Weight history query failed'),{code:he.code,details:he.details,hint:he.hint,stage:'weight_history'});
- if(p){d.goalWeight=Number(p.goal_weight)||d.goalWeight;d.proteinTarget=Number(p.protein_target)||d.proteinTarget;d.waterTarget=Number(p.water_target)||d.waterTarget;d.calorieTarget=Number(p.calorie_target)||d.calorieTarget;d.budgetTarget=Number(p.budget_target)>=0?Number(p.budget_target):d.budgetTarget;d.xp=Number(p.xp)||0}
- if(dl){d.weight=Number(dl.weight)||d.weight;d.water=Number(dl.water)||0;d.spent=Number(d.spent)||0;d.date=today();}
+ if(localDirty){cloudStatus('online','Local changes kept safe');cloudMessage('Local changes were detected and kept on this device. Syncing them now…');await cloudSyncNow();return}
+ if(p){d.goalWeight=Number(p.goal_weight)||d.goalWeight;d.weight=Number(p.current_weight)||d.weight;d.proteinTarget=Number(p.protein_target)||d.proteinTarget;d.waterTarget=Number(p.water_target)||d.waterTarget;d.calorieTarget=Number(p.calorie_target)||d.calorieTarget;d.budgetTarget=Number(p.budget_target)>=0?Number(p.budget_target):d.budgetTarget;d.xp=Number(p.xp)||0}
+ if(dl){d.weight=Number(dl.weight)||d.weight;d.water=Number(dl.water)||0;d.date=today();}
  d.foods=(foods||[]).map(x=>({n:x.food_name,p:Number(x.protein)||0,c:Number(x.calories)||0}));
  if(weights?.length)d.history=weights.map(x=>({date:new Date(x.recorded_date+'T00:00:00').toLocaleDateString('en-IN'),weight:Number(x.weight)}));
  if(!d.history.length)d.history=[{date:today(),weight:d.weight}];
@@ -629,22 +687,26 @@ async function cloudSignOut(){await supabaseClient.auth.signOut();cloudUser=null
 supabaseClient.auth.onAuthStateChange((event,session)=>{cloudUser=session?.user||null;cloudSetUI();if(session&&event!=='INITIAL_SESSION')setTimeout(()=>cloudLoad(),0)});
 (async()=>{const {data}=await supabaseClient.auth.getSession();cloudUser=data?.session?.user||null;cloudSetUI();if(cloudUser)await cloudLoad()})();
 window.addEventListener('online',()=>{if(cloudUser)cloudSyncNow()});
-const _saveCloud=window.save;window.save=function(doRender=true){_saveCloud(doRender);cloudQueueSync()};
-const _saveV9Cloud=window.saveV9;window.saveV9=function(){_saveV9Cloud();cloudQueueSync()};
+const _saveCloud=window.save;window.save=function(doRender=true){_saveCloud(doRender);if(cloudUser)localDirty=true;cloudQueueSync()};
+const _saveV9Cloud=window.saveV9;window.saveV9=function(){_saveV9Cloud();if(cloudUser)localDirty=true;cloudQueueSync()};
 const _resetCloud=window.resetApp;window.resetApp=function(){_resetCloud();if(cloudUser)cloudQueueSync()};
+window.addEventListener('focus',refreshForDateChange);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshForDateChange()});
+setInterval(refreshForDateChange,30000);
+
 </script>
 
 <script>
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=12')
+  navigator.serviceWorker.register('./service-worker.js?v=15')
     .then(reg => {
       if (reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.update();
     })
     .catch(() => {});
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!sessionStorage.getItem('deqx-sw-v12-reloaded')) {
-      sessionStorage.setItem('deqx-sw-v12-reloaded','1');
+    if (!sessionStorage.getItem('deqx-sw-v14-reloaded')) {
+      sessionStorage.setItem('deqx-sw-v14-reloaded','1');
       location.reload();
     }
   });
