@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a0d09">
-<title>DEQX FIT — v17</title>
+<title>DEQX FIT — v18</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <meta name="mobile-web-app-capable" content="yes">
@@ -478,7 +478,7 @@ ensureTodayState();
 let calendarCursor=new Date();
 
 function cloneInitial(){return JSON.parse(JSON.stringify({...INITIAL,date:today(),history:[{date:today(),weight:97}]}))}
-function save(doRender=true){localStorage.setItem(KEY,JSON.stringify(d));if(typeof cloudUser!=='undefined'&&cloudUser){localDirty=true;if(typeof cloudQueueSync==='function')cloudQueueSync()}if(doRender)render()}
+function save(doRender=true){ensureTodayState();localStorage.setItem(KEY,JSON.stringify(d));if(typeof cloudUser!=='undefined'&&cloudUser){localDirty=true;if(typeof cloudQueueSync==='function')cloudQueueSync()}if(doRender)render()}
 function levelInfo(){let level=Math.floor(d.xp/500)+1,within=d.xp%500;return {level,within,next:500,pct:within/500*100,rank:RANKS[Math.min(RANKS.length-1,Math.floor((level-1)/2))]}}
 function rewardOnce(key,amount,reason){const day=today();d.rewardDays[day]=d.rewardDays[day]||{};if(d.rewardDays[day][key])return false;d.rewardDays[day][key]=true;addXP(amount,reason);return true}
 function addXP(amount,reason){const before=levelInfo().level;d.xp+=amount;const after=levelInfo().level;save(false);if(after>before)showLevelUp(after,levelInfo().rank);render();if(after===before&&reason)toast('+'+amount+' XP • '+reason)}
@@ -490,14 +490,19 @@ function smartFill(v){document.getElementById('smartFood').value=v}
 function addQuickFood(key){
  const f=DB[key]; if(!f)return;
  const servings={egg:{amount:1,unit:'count'},appam:{amount:1,unit:'count'},chicken:{amount:50,unit:'g'},chapathi:{amount:1,unit:'count'},milk:{amount:250,unit:'ml'},oats:{amount:50,unit:'g'}}[key];
+ if(!servings)return;
  const factor=(servings.unit==='g')?servings.amount/100:(servings.unit==='ml')?servings.amount/250:servings.amount;
  const p=Math.round(f.p*factor*10)/10,c=Math.round(f.c*factor);
  const label=servings.unit==='count'?(servings.amount+' '+key):(servings.amount+'g '+key);
+ ensureTodayState();
+ d.foods=Array.isArray(d.foods)?d.foods:[];
  d.foods.push({n:label,p,c});
- rewardOnce('foodLogged',10,'Meal logged');
- save();
+ localStorage.setItem(KEY,JSON.stringify(d));
+ if(typeof cloudUser!=='undefined'&&cloudUser){localDirty=true;cloudQueueSync();}
+ render();
  toast('Added '+label+' ✓');
 }
+
 function saveCustomFood(){
  const name=document.getElementById('customFoodName').value.trim();
  const protein=Number(document.getElementById('customFoodProtein').value);
@@ -516,10 +521,16 @@ function saveCustomFood(){
 }
 function addCustomFood(id){
  const f=d.customFoods.find(x=>x.id===id); if(!f)return;
+ ensureTodayState();
  const label=f.unit==='grams'?(f.amount+'g '+f.name):(f.amount+' '+f.name);
- d.foods.push({n:label,p:Number(f.protein),c:Number(f.calories),customId:id});
- rewardOnce('foodLogged',10,'Meal logged');save();toast('Added '+label+' ✓');
+ d.foods=Array.isArray(d.foods)?d.foods:[];
+ d.foods.push({n:label,p:Number(f.protein)||0,c:Number(f.calories)||0,customId:id});
+ localStorage.setItem(KEY,JSON.stringify(d));
+ if(typeof cloudUser!=='undefined'&&cloudUser){localDirty=true;cloudQueueSync();}
+ render();
+ toast('Added '+label+' ✓');
 }
+
 function removeCustomFood(id){d.customFoods=d.customFoods.filter(x=>x.id!==id);save();renderCustomFoods();toast('Custom food removed');}
 function renderCustomFoods(){
  const el=document.getElementById('customFoodList'); if(!el)return;
@@ -689,8 +700,8 @@ async function cloudSyncNow(){if(!cloudUser||cloudSyncing)return false;cloudSync
  const {error:pe}=await supabaseClient.from('profiles').upsert({id:cloudUser.id,name:cloudUser.email?.split('@')[0]||'DEQX FIT',goal_weight:Number(d.goalWeight),current_weight:Number(d.weight),protein_target:Number(d.proteinTarget),water_target:Number(d.waterTarget),calorie_target:Number(d.calorieTarget),budget_target:Number(d.budgetTarget),xp:Number(d.xp)||0,level:levelInfo().level,updated_at:new Date().toISOString()}); if(pe)throw Object.assign(new Error(pe.message||'Profiles sync failed'),{code:pe.code,details:pe.details,hint:pe.hint,stage:'profiles'});
  const {error:de}=await supabaseClient.from('daily_logs').upsert(daily,{onConflict:'user_id,log_date'}); if(de)throw Object.assign(new Error(de.message||'Daily logs sync failed'),{code:de.code,details:de.details,hint:de.hint,stage:'daily_logs'});
  const iso=daily.log_date;
- let r=await supabaseClient.from('food_logs').delete().eq('user_id',cloudUser.id).eq('log_date',iso);if(r.error)throw r.error;
- if(d.foods.length){r=await supabaseClient.from('food_logs').insert(d.foods.map(x=>({user_id:cloudUser.id,log_date:iso,food_name:String(x.n),quantity:1,protein:Number(x.p)||0,calories:Number(x.c)||0})));if(r.error)throw r.error}
+ let r=await supabaseClient.from('food_logs').delete().eq('user_id',cloudUser.id).eq('log_date',iso);if(r.error)throw Object.assign(new Error(r.error.message||'Food log cleanup failed'),{code:r.error.code,details:r.error.details,hint:r.error.hint,stage:'food_logs'});
+ if(d.foods.length){r=await supabaseClient.from('food_logs').insert(d.foods.map(x=>({user_id:cloudUser.id,log_date:iso,food_name:String(x.n),quantity:1,protein:Number(x.p)||0,calories:Number(x.c)||0})));if(r.error)throw Object.assign(new Error(r.error.message||'Food log insert failed'),{code:r.error.code,details:r.error.details,hint:r.error.hint,stage:'food_logs'});}
  r=await supabaseClient.from('activity_logs').delete().eq('user_id',cloudUser.id).eq('log_date',iso);if(r.error)throw r.error;
  if(typeof v9!=='undefined'&&v9.activity){r=await supabaseClient.from('activity_logs').insert({user_id:cloudUser.id,log_date:iso,activity:v9.activity,duration:Number(document.getElementById('activityMinutes')?.value)||0,intensity:document.getElementById('activityIntensity')?.value||'moderate',calories_burned:Number(v9.burned)||0});if(r.error)throw r.error}
  r=await supabaseClient.from('workout_logs').delete().eq('user_id',cloudUser.id).eq('workout_date',iso);if(r.error)throw r.error;
@@ -698,7 +709,7 @@ async function cloudSyncNow(){if(!cloudUser||cloudSyncing)return false;cloudSync
  const todayWeight=[...d.history].reverse().find(x=>x.date===today());if(todayWeight){const q=await supabaseClient.from('weight_history').select('id').eq('user_id',cloudUser.id).eq('recorded_date',iso).maybeSingle();if(q.error)throw q.error;if(q.data){r=await supabaseClient.from('weight_history').update({weight:Number(todayWeight.weight)}).eq('id',q.data.id)}else{r=await supabaseClient.from('weight_history').insert({user_id:cloudUser.id,recorded_date:iso,weight:Number(todayWeight.weight)})}if(r?.error)throw r.error}
  localStorage.setItem(KEY,JSON.stringify(d));localDirty=false;render();renderV9();cloudTime();cloudStatus('online','Cloud sync complete');cloudMessage('');return true;
 }catch(err){console.error('DEQX FIT cloudSync error',err);cloudStatus('error','Sync failed — local data is still safe');const detail=[err?.stage,err?.message,err?.code,err?.hint].filter(Boolean).join(' • ');cloudMessage(detail||'Could not sync. Check your Supabase tables and internet connection.');return false}finally{cloudSyncing=false}}
-function cloudQueueSync(){if(!cloudUser)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>cloudSyncNow(),900)}
+function cloudQueueSync(){if(!cloudUser)return;clearTimeout(cloudTimer);cloudTimer=setTimeout(async()=>{if(cloudSyncing){cloudQueueSync();return}await cloudSyncNow();},900)}
 async function cloudLoad(){if(!cloudUser)return;if(localDirty){cloudStatus('syncing','Saving local changes to cloud…');await cloudSyncNow();return}cloudStatus('syncing','Loading your cloud data…');cloudMessage('');try{
  const {data:p,error:pe}=await supabaseClient.from('profiles').select('*').eq('id',cloudUser.id).maybeSingle();if(pe)throw Object.assign(new Error(pe.message||'Profiles query failed'),{code:pe.code,details:pe.details,hint:pe.hint,stage:'profiles'});
  const iso=isoDate(new Date());
@@ -707,6 +718,7 @@ async function cloudLoad(){if(!cloudUser)return;if(localDirty){cloudStatus('sync
  const {data:acts,error:ae}=await supabaseClient.from('activity_logs').select('*').eq('user_id',cloudUser.id).eq('log_date',iso).order('id',{ascending:false}).limit(1);if(ae)throw Object.assign(new Error(ae.message||'Activity logs query failed'),{code:ae.code,details:ae.details,hint:ae.hint,stage:'activity_logs'});
  const {data:whs,error:we}=await supabaseClient.from('workout_logs').select('*').eq('user_id',cloudUser.id).order('workout_date',{ascending:false}).limit(120);if(we)throw Object.assign(new Error(we.message||'Workout logs query failed'),{code:we.code,details:we.details,hint:we.hint,stage:'workout_logs'});
  const {data:weights,error:he}=await supabaseClient.from('weight_history').select('*').eq('user_id',cloudUser.id).order('recorded_date',{ascending:true});if(he)throw Object.assign(new Error(he.message||'Weight history query failed'),{code:he.code,details:he.details,hint:he.hint,stage:'weight_history'});
+ if(localDirty){cloudStatus('online','Local changes kept safe');cloudMessage('Local changes were detected during cloud load. Keeping this device data and syncing it…');await cloudSyncNow();return}
  if(localDirty){cloudStatus('online','Local changes kept safe');cloudMessage('Local changes were detected and kept on this device. Syncing them now…');await cloudSyncNow();return}
  if(p){d.goalWeight=Number(p.goal_weight)||d.goalWeight;d.weight=Number(p.current_weight)||d.weight;d.proteinTarget=Number(p.protein_target)||d.proteinTarget;d.waterTarget=Number(p.water_target)||d.waterTarget;d.calorieTarget=Number(p.calorie_target)||d.calorieTarget;d.budgetTarget=Number(p.budget_target)>=0?Number(p.budget_target):d.budgetTarget;d.xp=Number(p.xp)||0}
  if(dl){d.weight=Number(dl.weight)||d.weight;d.water=Number(dl.water)||0;d.date=today();}
