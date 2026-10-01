@@ -12,7 +12,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="DEQX FIT">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<<<<<<< HEAD
   <link rel="stylesheet" href="style.css?v=acid48">
   <style id="hologram-critical-acid-styles">
     /* HOLOGRAM CRITICAL ACID GREEN STYLES & RESETS */
@@ -253,9 +252,6 @@
       color: #d6ff32 !important;
     }
   </style>
-=======
-  <link rel="stylesheet" href="style.css">
->>>>>>> 0f03ac5efda652c86790879dfaa74ae2c2c1737d
 </head>
 
 <body>
@@ -599,7 +595,6 @@
           <div class="todayMission" id="calendarTodayMission"></div>
         </div>
 
-<<<<<<< HEAD
         <div class="card workoutScheduleCard">
           <div class="workoutScheduleHeader">
             <div>
@@ -611,11 +606,6 @@
               <span id="hologramBadgeText">BACK & BICEPS TARGETED</span>
             </div>
           </div>
-=======
-        <div class="card">
-          <div class="missionDay">TODAY'S SCHEDULE</div>
-          <div class="missionTitle" id="workoutScheduleTitle">Back + Biceps</div>
->>>>>>> 0f03ac5efda652c86790879dfaa74ae2c2c1737d
           <p class="muted" id="workoutScheduleText">Complete the scheduled workout to earn XP.</p>
 
           <!-- 3D ANATOMICAL FULL BODY HOLOGRAM VIEWER -->
@@ -1128,9 +1118,10 @@
     </div>
   </div>
 
-  <!-- ONBOARDING SETUP MODAL (MANDATORY AFTER RESET) -->
-  <div class="levelOverlay" id="onboardingModal" role="dialog" aria-modal="true" aria-labelledby="onboardTitle">
-    <div class="onboardBox">
+  <!-- ONBOARDING SETUP MODAL -->
+  <div class="levelOverlay" id="onboardingModal" role="dialog" aria-modal="true" aria-labelledby="onboardTitle" onclick="if(event.target === this) closeOnboardingModal()">
+    <div class="onboardBox" style="position:relative">
+      <button type="button" class="onboardCloseBtn" onclick="closeOnboardingModal()" aria-label="Close setup modal" style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.08); border:none; color:#a0a69a; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; z-index:10;">✕</button>
       <div class="onboardHeader">
         <div class="onboardBadge">🔥 DEQX FIT SETUP</div>
         <h2 id="onboardTitle">Welcome! Set Up Your Profile</h2>
@@ -1194,10 +1185,7 @@
 
   <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<<<<<<< HEAD
   <script src="hologram.js"></script>
-=======
->>>>>>> 0f03ac5efda652c86790879dfaa74ae2c2c1737d
   <script src="app.js"></script>
   <script src="supabase-sync.js"></script>
 </body>

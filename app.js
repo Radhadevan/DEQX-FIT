@@ -146,7 +146,7 @@ const INITIAL = {
   streakStartDate: today(),
   streakHistory: {},
   lastAttendanceDate: today(),
-  onboarded: false
+  onboarded: true
 };
 
 let d = JSON.parse(
@@ -163,7 +163,7 @@ let d = JSON.parse(
 d.name = d.name || '';
 d.age = d.age || '';
 d.startWeight = Number(d.startWeight) || (d.history && d.history.length ? Number(d.history[0].weight) : null) || Number(d.weight) || null;
-d.onboarded = typeof d.onboarded === 'boolean' ? d.onboarded : (!!d.name && !!d.weight && !!d.goalWeight);
+d.onboarded = true;
 
 d.workoutAnchor = d.workoutAnchor || { date: '2026-09-30', split: 'Leg Day' };
 if (!d.workoutAnchor.split || d.workoutAnchor.split === 'Back + Biceps' || d.workoutAnchor.split === 'Shoulders + Forearms') {
@@ -514,10 +514,6 @@ function selectNavTab(tabId) {
 }
 
 function show(id, direction) {
-  if (d && !d.onboarded && id !== 'home') {
-    openOnboardingModal();
-    return;
-  }
   document.querySelectorAll('.section').forEach(x => x.classList.remove('active', 'motion-left', 'motion-right'));
   const sec = document.getElementById(id);
   if (sec) {
@@ -1278,7 +1274,7 @@ function resetApp() {
     lastAttendanceDate: today(),
     customFoods: preservedCustomFoods,
     customActivities: preservedCustomActivities,
-    onboarded: false
+    onboarded: true
   };
 
   // 2. Wipe v9 power level, XP, streak, burned completely
@@ -1323,7 +1319,7 @@ function resetApp() {
 
 /* ===== ONBOARDING SETUP CONTROLLERS ===== */
 function checkOnboardingStatus() {
-  if (!d.onboarded || !d.name || !d.weight || !d.goalWeight) {
+  if (!d.name && !d.weight) {
     openOnboardingModal();
   } else {
     closeOnboardingModal();
@@ -1501,10 +1497,7 @@ function renderCalendar() {
     wInput.placeholder = d.weight ? 'Current: ' + d.weight + ' kg (optional)' : 'Current weight in kg (optional)';
   }
   updateWorkoutCaloriePreview();
-<<<<<<< HEAD
   if (window.HologramViewer) window.HologramViewer.update(todaySchedule);
-=======
->>>>>>> 0f03ac5efda652c86790879dfaa74ae2c2c1737d
 }
 
 function changeMonth(delta) {
@@ -2131,7 +2124,6 @@ document.addEventListener('touchstart', e => {
 }, { passive: true });
 
 document.addEventListener('touchend', e => {
-  if (d && !d.onboarded) return;
   const t = e.changedTouches[0];
   if (!t) return;
   const target = e.target;
@@ -2186,7 +2178,7 @@ if (document.readyState === 'loading') {
 /* Keyboard navigation & Modal escapes */
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    if (d && !d.onboarded) return; // Do not dismiss mandatory onboarding
+    closeOnboardingModal();
     closeTargetMapModal();
     closeAdjustModal();
     closeLevelOverlay();
@@ -2194,8 +2186,6 @@ document.addEventListener('keydown', e => {
     collapseNavDock();
     return;
   }
-
-  if (d && !d.onboarded) return;
 
   // Arrow Left / Arrow Right shortcuts when not inside text inputs
   const tag = (document.activeElement?.tagName || '').toLowerCase();
