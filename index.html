@@ -1183,11 +1183,33 @@
     </div>
   </div>
 
-  <!-- SCRIPTS -->
+  <!-- COMPONENT-BASED ARCHITECTURE -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="hologram.js"></script>
-  <script src="app.js"></script>
+
+  <!-- Core Layer: State, Utilities & Gamification -->
+  <script src="js/core/utils.js"></script>
+  <script src="js/core/state.js"></script>
+  <script src="js/core/gamification.js"></script>
+
+  <!-- Data Layer: Presets & Databases -->
+  <script src="js/data/foods.data.js"></script>
+  <script src="js/data/activities.data.js"></script>
+  <script src="js/data/routines.data.js"></script>
+
+  <!-- Component Layer: Modules & Views -->
+  <script src="js/components/hologram.component.js"></script>
+  <script src="js/components/navigation.component.js"></script>
+  <script src="js/components/home.component.js"></script>
+  <script src="js/components/food.component.js"></script>
+  <script src="js/components/activity.component.js"></script>
+  <script src="js/components/workout.component.js"></script>
+  <script src="js/components/budget.component.js"></script>
+  <script src="js/components/profile.component.js"></script>
+  <script src="js/components/modals.component.js"></script>
+
+  <!-- Cloud Sync & Application Orchestrator -->
   <script src="supabase-sync.js"></script>
+  <script src="app.js"></script>
 </body>
 
 </html>

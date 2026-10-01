@@ -1,0 +1,388 @@
+﻿    * {
+      box-sizing: border-box
+    }
+
+    html {
+      background: var(--bg);
+      scroll-behavior: smooth
+    }
+
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 50% -15%, #26301d 0, transparent 43%), var(--bg);
+      color: var(--white);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      letter-spacing: -.01em;
+      -webkit-font-smoothing: antialiased
+    }
+
+    button,
+    input,
+    select {
+      font: inherit
+    }
+
+    .app {
+      max-width: 520px;
+      margin: auto;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #10130f 0, #090b09 48%);
+      padding-bottom: 98px;
+      overflow: hidden
+    }
+
+    .hero {
+      color: var(--white);
+      padding: 22px 19px 15px;
+      position: relative;
+      overflow: hidden;
+      background: transparent
+    }
+
+    .hero:after {
+      content: "";
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      right: -165px;
+      top: -140px;
+      background: radial-gradient(circle, #d6ff3224 0, transparent 68%);
+      pointer-events: none
+    }
+
+    .heroTop {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 1
+    }
+
+    .brand {
+      font-size: 21px;
+      font-weight: 900;
+      letter-spacing: 1px
+    }
+
+    .brand span {
+      color: var(--lime);
+      font-weight: 800;
+      margin-left: 3px
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 10px;
+      margin-top: 5px;
+      letter-spacing: 1.2px;
+      font-weight: 650
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      padding: 0;
+      margin: 0;
+      border-radius: 15px;
+      background: linear-gradient(145deg, #20261e, #141713);
+      display: grid;
+      place-items: center;
+      border: 1px solid #ffffff14;
+      box-shadow: 0 5px 18px #0008;
+      color: var(--lime);
+      font-size: 17px;
+      font-weight: 950;
+      letter-spacing: -1px;
+      position: relative;
+      cursor: default;
+      transition: transform .18s, box-shadow .18s, border-color .18s
+    }
+
+    .avatar:after {
+      content: "";
+      position: absolute;
+      width: 17px;
+      height: 2px;
+      border-radius: 3px;
+      background: var(--lime);
+      bottom: 7px;
+      box-shadow: 0 0 9px #d6ff3266
+    }
+
+    .main {
+      padding: 9px 15px 14px
+    }
+
+    .card {
+      background: linear-gradient(145deg, #191d18, #131613);
+      border: 1px solid #ffffff0a;
+      border-radius: 22px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 12px 28px #0004;
+      position: relative;
+      overflow: hidden
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px
+    }
+
+    .label {
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 750;
+      letter-spacing: 1.05px
+    }
+
+    .value {
+      font-size: 26px;
+      font-weight: 820;
+      margin-top: 6px;
+      letter-spacing: -1px;
+      color: var(--white)
+    }
+
+    .value small {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 650;
+      letter-spacing: 0
+    }
+
+    .goalCard {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: linear-gradient(118deg, #d6ff32 0, #c8f42c 58%, #97bd1e 100%);
+      color: #11150c;
+      border: 0;
+      box-shadow: 0 10px 30px #b8e72924
+    }
+
+    .goalCard:after {
+      content: "";
+      position: absolute;
+      width: 175px;
+      height: 175px;
+      right: -74px;
+      top: -84px;
+      border: 1px solid #fff6;
+      border-radius: 50%;
+      box-shadow: 0 0 42px #fff2, inset 0 0 28px #fff2
+    }
+
+    .ring {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      flex: none;
+      background: conic-gradient(#11150c var(--p), #ffffff70 0);
+      filter: drop-shadow(0 3px 10px #556d1528);
+      position: relative;
+      z-index: 1;
+      transition: background 1s cubic-bezier(.2, .8, .2, 1);
+      transform: rotate(-90deg)
+    }
+
+    .ringInner {
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      background: #c9f233;
+      display: grid;
+      place-items: center;
+      font-weight: 850;
+      font-size: 15px;
+      color: #14180e;
+      transform: rotate(90deg)
+    }
+
+    .goalText {
+      flex: 1;
+      position: relative;
+      z-index: 1
+    }
+
+    .goalText .label {
+      color: #38441d
+    }
+
+    .goalText strong {
+      font-size: 20px;
+      letter-spacing: -.7px;
+      color: #11150c
+    }
+
+    .goalText p {
+      margin: 5px 0 0;
+      color: #39451f;
+      font-size: 12px;
+      font-weight: 600
+    }
+
+    .metric {
+      position: relative;
+      overflow: hidden
+    }
+
+    .metricIcon {
+      font-size: 18px;
+      filter: saturate(.85)
+    }
+
+    .metricTop {
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .metricProgress {
+      height: 6px;
+      background: #2b3029;
+      border-radius: 9px;
+      margin-top: 12px;
+      overflow: hidden
+    }
+
+    .metricFill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #b9e923, var(--lime));
+      border-radius: 9px;
+      box-shadow: 0 0 12px #d6ff3266;
+      transition: width .75s cubic-bezier(.2, .8, .2, 1)
+    }
+
+    .quickTitle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .quickTitle span {
+      font-size: 11px;
+      color: var(--muted)
+    }
+
+    .quick {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 11px
+    }
+
+    .quick button,
+    .pill {
+      border: 1px solid #ffffff0d;
+      border-radius: 13px;
+      padding: 11px 5px;
+      background: #222720;
+      color: var(--white);
+      font-weight: 700;
+      font-size: 11px;
+      transition: transform .15s, border-color .15s, background .15s
+    }
+
+    .quick button:active,
+    button:active {
+      transform: scale(.97)
+    }
+
+    .primary {
+      background: var(--lime) !important;
+      color: #12160b !important
+    }
+
+    .foodInput {
+      display: flex;
+      gap: 8px
+    }
+
+    .foodInput input {
+      flex: 1;
+      min-width: 0
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #30362e;
+      border-radius: 13px;
+      background: #10130f;
+      color: var(--white);
+      margin: 6px 0 10px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, transform .2s
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #9dbc31;
+      box-shadow: 0 0 0 3px #d6ff3217
+    }
+
+    input::placeholder {
+      color: #72796e
+    }
+
+    input[type=checkbox] {
+      accent-color: var(--lime);
+      width: auto;
+      margin-right: 8px
+    }
+
+    button {
+      border: 0;
+      border-radius: 13px;
+      padding: 12px 14px;
+      background: var(--lime);
+      color: #13170d;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 5px 16px #d6ff3212
+    }
+
+    h2 {
+      font-size: 15px;
+      margin: 0;
+      letter-spacing: -.2px
+    }
+
+    .muted {
+      font-size: 12px;
+      color: var(--muted)
+    }
+
+    .food {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 0;
+      border-bottom: 1px solid #ffffff0c;
+      font-size: 12px;
+      color: #e5e9df
+    }
+
+    .food:last-child {
+      border-bottom: 0
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px
+    }
+
+    .actions button {
+      flex: 1
+    }
+
+    .section {

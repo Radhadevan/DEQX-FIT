@@ -1,4 +1,4 @@
-const CACHE = 'deqx-fit-v49-acid-green-hologram';
+const CACHE = 'deqx-fit-v51-component-architecture';
 const CORE = [
   './',
   './index.html',
@@ -9,7 +9,26 @@ const CORE = [
   './manifest.json',
   './icon.svg',
   './assets/hologram-front.jpg',
-  './assets/hologram-back.jpg'
+  './assets/hologram-back.jpg',
+  './css/variables.css',
+  './css/base.css',
+  './css/components/navigation.css',
+  './css/components/hologram.css',
+  './js/core/utils.js',
+  './js/core/state.js',
+  './js/core/gamification.js',
+  './js/data/foods.data.js',
+  './js/data/activities.data.js',
+  './js/data/routines.data.js',
+  './js/components/hologram.component.js',
+  './js/components/navigation.component.js',
+  './js/components/home.component.js',
+  './js/components/food.component.js',
+  './js/components/activity.component.js',
+  './js/components/workout.component.js',
+  './js/components/budget.component.js',
+  './js/components/profile.component.js',
+  './js/components/modals.component.js'
 ];
 
 self.addEventListener('install', event => {

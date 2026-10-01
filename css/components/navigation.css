@@ -1,0 +1,231 @@
+﻿/* Floating capsule at bottom */
+.navCapsule {
+  position: fixed;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 28px);
+  max-width: 440px;
+  height: 48px;
+  background: rgba(14, 18, 13, 0.92);
+  border: 1px solid rgba(214, 255, 50, 0.2);
+  border-radius: 999px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65), 0 0 18px rgba(214, 255, 50, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px 4px 10px;
+  z-index: 100;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease, border-color 0.3s;
+}
+
+.navCapsule:hover {
+  border-color: rgba(214, 255, 50, 0.35);
+}
+
+.capsuleTab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(214, 255, 50, 0.08);
+  border: 1px solid rgba(214, 255, 50, 0.18);
+  transition: background 0.2s, transform 0.15s;
+  user-select: none;
+}
+
+.capsuleTab:active {
+  transform: scale(0.96);
+  background: rgba(214, 255, 50, 0.15);
+}
+
+.capsuleIcon {
+  font-size: 15px;
+  line-height: 1;
+  color: #d6ff32;
+  filter: drop-shadow(0 0 6px rgba(214, 255, 50, 0.5));
+}
+
+.capsuleLabel {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--white);
+}
+
+/* 7 dots indicator track */
+.navDotsTrack {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 4px;
+}
+
+.navDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  cursor: pointer;
+  transition: width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.28s ease, background 0.28s ease, box-shadow 0.28s ease;
+}
+
+.navDot:hover {
+  background: rgba(214, 255, 50, 0.6);
+  transform: scale(1.2);
+}
+
+.navDot.active {
+  width: 18px;
+  height: 6px;
+  border-radius: 999px;
+  background: #d6ff32;
+  box-shadow: 0 0 8px rgba(214, 255, 50, 0.7);
+}
+
+/* Expand button */
+.capsuleExpandBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #182015;
+  border: 1px solid rgba(214, 255, 50, 0.18);
+  border-radius: 999px;
+  color: #bcc6b4;
+  padding: 6px 11px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: none;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.capsuleExpandBtn:hover, .capsuleExpandBtn:active {
+  background: #252f20;
+  color: #d6ff32;
+  border-color: rgba(214, 255, 50, 0.4);
+}
+
+.expandIcon {
+  font-size: 8px;
+  transition: transform 0.25s ease;
+}
+
+.navCapsule.expanded .expandIcon {
+  transform: rotate(180deg);
+}
+
+/* Backdrop */
+.navDockBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 101;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.navDockBackdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Expandable dock */
+.navDock {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 105%);
+  width: 100%;
+  max-width: 520px;
+  background: rgba(14, 18, 13, 0.97);
+  border-top: 1px solid rgba(214, 255, 50, 0.25);
+  border-radius: 26px 26px 0 0;
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.85);
+  padding: 12px 18px max(18px, env(safe-area-inset-bottom));
+  z-index: 102;
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.navDock.show {
+  transform: translate(-50%, 0);
+}
+
+.navDockHandle {
+  width: 38px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  margin: 0 auto 12px;
+  cursor: pointer;
+}
+
+.navDockHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.navDockTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.navDockPulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d6ff32;
+  box-shadow: 0 0 10px #d6ff32;
+  animation: pulseDot 1.5s infinite;
+}
+
+.navDockTitleGroup b {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--white);
+  display: block;
+  line-height: 1.1;
+}
+
+.navDockTitleGroup small {
+  font-size: 10px;
+  color: #798573;
+  letter-spacing: 0.04em;
+  display: block;
+}
+
+.navDockCloseBtn {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #bcc6b4;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: none;
+  padding: 0;
+  transition: all 0.2s;
