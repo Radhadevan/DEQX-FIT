@@ -62,8 +62,8 @@
             </div>
           </div>
           <div class="dailyStats">
-            <div><span>GOAL</span><b><span id="weightHome">99.7</span> → <span id="goalWeightHome">85</span> kg</b><small
-                id="remaining">14.7 kg remaining</small></div>
+            <div><span>GOAL</span><b><span id="weightHome">--</span> → <span id="goalWeightHome">--</span> kg</b><small
+                id="remaining">-- kg remaining</small></div>
             <div class="goalMini"><span>PROGRESS</span>
               <div class="miniLine"><i id="weightMiniBar"></i></div><small id="weightMiniText">2% toward goal</small>
             </div>
@@ -107,11 +107,11 @@
               </div><span class="trend">↘</span>
             </div>
             <div class="weightJourney">
-              <div class="journeyNum"><strong id="weightHome2">97.1</strong><small> kg now</small></div>
+              <div class="journeyNum"><strong id="weightHome2">--</strong><small> kg now</small></div>
               <div class="journeyLine"><i id="weightJourneyBar"></i><span></span></div>
-              <div class="journeyNum right"><strong id="goalWeightHome2">85</strong><small> kg goal</small></div>
+              <div class="journeyNum right"><strong id="goalWeightHome2">--</strong><small> kg goal</small></div>
             </div>
-            <p class="muted" id="remaining2">12.1 kg remaining</p>
+            <p class="muted" id="remaining2">-- kg remaining</p>
           </div>
 
           <div class="card levelCompact">
@@ -252,17 +252,72 @@
 
         <div class="card">
           <div class="editGrid">
-            <label class="muted">Duration (minutes)<input id="activityMinutes" type="number" min="1" max="600" value="45"></label>
+            <label class="muted">Duration
+              <div class="inputWithUnit">
+                <input id="activityMinutes" type="number" step="any" min="0.1" value="45" oninput="updateBarUnit(this, 'activityBarUnit'); updateActivityCaloriePreview()">
+                <span id="activityBarUnit" class="unitBadge show minutes">minutes</span>
+              </div>
+            </label>
             <label class="muted">Intensity
-              <select id="activityIntensity">
+              <select id="activityIntensity" onchange="updateActivityCaloriePreview()">
                 <option value="light">Light</option>
                 <option value="moderate" selected>Moderate</option>
                 <option value="hard">Hard</option>
               </select>
             </label>
           </div>
+          <div id="activityCaloriePreview" style="background:rgba(184,245,58,0.06);border:1px solid rgba(184,245,58,0.22);border-radius:12px;padding:11px 14px;margin:0 0 14px;display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:22px;line-height:1">🔥</span>
+              <div>
+                <div style="font-size:10.5px;font-weight:700;color:var(--lime,#b8f53a);letter-spacing:0.06em">CALORIE BURN PREVIEW</div>
+                <div style="font-size:11.5px;color:#a6b69e;margin-top:1px" id="activityCalorieFormula">Select an activity above</div>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <span style="font-size:22px;font-weight:800;color:var(--lime,#b8f53a);line-height:1" id="activityCalorieValue">--</span>
+              <span style="font-size:11px;color:#8fa881;font-weight:600;display:block">kcal</span>
+            </div>
+          </div>
           <button class="primary" onclick="calculateActivity()">Calculate calories</button>
           <div id="activityResult" class="result" style="display:none"></div>
+        </div>
+
+        <div class="card">
+          <div class="quickTitle">
+            <div>
+              <h2>Custom activity</h2><span class="muted">Create your own activity choice</span>
+            </div>
+          </div>
+          <div class="customFoodGrid">
+            <label class="muted">Activity name<input id="customActivityName" placeholder="Running, Swimming, Boxing..."></label>
+            <label class="muted">Category / Subtitle<input id="customActivityCategory" placeholder="Cardio, Sport, HIIT..."></label>
+            <label class="muted">Icon
+              <select id="customActivityIcon">
+                <option value="🏃" selected>🏃 Running</option>
+                <option value="🚴">🚴 Cycling</option>
+                <option value="🏊">🏊 Swimming</option>
+                <option value="⚽">⚽ Football</option>
+                <option value="🥊">🥊 Boxing</option>
+                <option value="🏀">🏀 Basketball</option>
+                <option value="🧘">🧘 Yoga / Mobility</option>
+                <option value="🚶">🚶 Walking</option>
+                <option value="🤾">🤾 Sport</option>
+                <option value="⚡">⚡ High Energy</option>
+              </select>
+            </label>
+            <label class="muted">Burn rate (MET)
+              <select id="customActivityMET">
+                <option value="4.5">Light (~4.5 MET, e.g. Walking / Yoga)</option>
+                <option value="7" selected>Moderate (~7.0 MET, e.g. Jogging / Sports)</option>
+                <option value="9">Vigorous (~9.0 MET, e.g. Swimming / Fast Run)</option>
+                <option value="11.5">Intense (~11.5 MET, e.g. Sprints / HIIT)</option>
+              </select>
+            </label>
+          </div>
+          <button class="primary" onclick="saveCustomActivity()">Save custom activity</button>
+          <div id="customActivityResult" class="result"></div>
+          <div id="customActivityList" class="customFoodList"></div>
         </div>
 
         <div class="card">
@@ -312,27 +367,46 @@
             <option>Leg Day</option>
             <option>Rest</option>
           </select>
-          <input id="workoutMinutes" type="number" placeholder="Minutes">
+          <div style="margin: 0 0 10px">
+            <label class="muted" style="font-size:11.5px;display:block;margin-bottom:4px">Training Intensity</label>
+            <select id="workoutIntensity" onchange="updateWorkoutCaloriePreview()" style="margin:0">
+              <option value="light">Light-to-Moderate (MET 3.0 · longer rest times, slower pace)</option>
+              <option value="moderate" selected>Standard Moderate (MET 3.5 · 60–90s standard rests)</option>
+              <option value="vigorous">Vigorous / Circuit Style (MET 5.0 · supersets, heavy compound)</option>
+            </select>
+          </div>
+          <div class="inputWithUnit">
+            <input id="workoutMinutes" type="number" step="any" min="0.1" placeholder="Duration (e.g. 1 hr or 45 min)" oninput="updateBarUnit(this, 'workoutBarUnit'); updateWorkoutCaloriePreview()">
+            <span id="workoutBarUnit" class="unitBadge"></span>
+          </div>
+          <div style="margin: 0 0 12px">
+            <label class="muted" style="font-size:11.5px;display:flex;justify-content:space-between;margin-bottom:4px">
+              <span>Today's Weight</span>
+              <span style="font-size:11px;color:#7a8873">Optional</span>
+            </label>
+            <div style="position:relative;display:flex;align-items:center">
+              <input id="workoutWeight" type="number" step="0.1" min="20" max="300" placeholder="Current weight in kg (optional)" style="margin:0;padding-right:48px" oninput="updateWorkoutCaloriePreview()">
+              <span style="position:absolute;right:12px;font-size:11px;font-weight:700;color:#7a8873;pointer-events:none">KG</span>
+            </div>
+          </div>
+          <div id="workoutCaloriePreview" style="background:rgba(184,245,58,0.06);border:1px solid rgba(184,245,58,0.22);border-radius:12px;padding:11px 14px;margin:0 0 14px;display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:22px;line-height:1">🔥</span>
+              <div>
+                <div style="font-size:10.5px;font-weight:700;color:var(--lime,#b8f53a);letter-spacing:0.06em">CALORIE BURN PREVIEW</div>
+                <div style="font-size:11.5px;color:#a6b69e;margin-top:1px" id="workoutCalorieFormula">1 hr · Standard Moderate (MET 3.5)</div>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <span style="font-size:22px;font-weight:800;color:var(--lime,#b8f53a);line-height:1" id="workoutCalorieValue">--</span>
+              <span style="font-size:11px;color:#8fa881;font-weight:600;display:block">kcal</span>
+            </div>
+          </div>
           <button onclick="saveWorkout()">Complete today's workout</button>
           <p id="workoutSaved" class="muted"></p>
         </div>
 
-        <div class="card" style="border:1px solid #d6ff3225;background:linear-gradient(145deg,#171f16,#0f140e)">
-          <div class="quickTitle">
-            <h2>Change Routine / Start Split</h2><span class="badge" style="color:var(--lime);background:#d6ff3215">Dynamic Cycle</span>
-          </div>
-          <p class="muted" style="margin:5px 0 12px;font-size:12px">Tap any workout below to change today's routine (or log a weekend gym day / leave). Upcoming days will automatically continue from your choice.</p>
-          <div class="quick" style="grid-template-columns:repeat(2,1fr);gap:8px">
-            <button class="pill" onclick="setWorkoutCycle('Leg Day')">🦵 Leg Day</button>
-            <button class="pill" onclick="setWorkoutCycle('Chest + Triceps')">⚡ Chest + Triceps</button>
-            <button class="pill" onclick="setWorkoutCycle('Back + Biceps')">💪 Back + Biceps</button>
-            <button class="pill" onclick="setWorkoutCycle('Shoulders + Forearms')">🏋️ Shoulders + Forearms</button>
-          </div>
-          <div style="margin-top:8px;display:flex;gap:8px">
-            <button class="pill" style="flex:1;background:#242821;color:#b8c2af" onclick="setWorkoutCycle('Rest')">😴 Mark Today as Rest / Leave</button>
-          </div>
-          <p class="muted" style="margin-top:9px;font-size:11px">💡 <i>Tip: You can also tap any date in the calendar above to set or adjust its workout.</i></p>
-        </div>
+
 
         <div class="card">
           <h2>Workout checklist</h2>
@@ -342,18 +416,7 @@
         </div>
       </section>
 
-      <!-- PROGRESS / WEIGHT TAB -->
-      <section id="progressTab" class="section">
-        <div class="card">
-          <h2>Update weight</h2>
-          <input id="newWeight" type="number" step=".1" placeholder="Current weight in kg">
-          <button onclick="saveWeight()">Save weight</button>
-        </div>
-        <div class="card">
-          <h2>Weight history</h2>
-          <div id="history"></div>
-        </div>
-      </section>
+
 
       <!-- BUDGET SECTION -->
       <section id="budget" class="section">
@@ -407,6 +470,8 @@
           </div>
           <p class="muted">Update your targets any time. Changes apply across your dashboard.</p>
           <div class="editGrid">
+            <label class="muted">Your name<input id="profileName" type="text" placeholder="e.g. Devan"></label>
+            <label class="muted">Age<input id="profileAge" type="number" min="10" max="120" placeholder="e.g. 24"></label>
             <label class="muted">Goal weight (kg)<input id="profileGoal" type="number" min="1" step=".1"></label>
             <label class="muted">Protein target (g)<input id="profileProtein" type="number" min="1" step="1"></label>
             <label class="muted">Water target (L)<input id="profileWaterTarget" type="number" min=".1" step=".1"></label>
@@ -450,16 +515,15 @@
       </div>
 
       <div class="navDotsTrack" id="navDotsTrack" aria-label="Section indicators">
-        <button type="button" class="navDot active" data-tab="home" onclick="show('home')" title="Home (1/7)" aria-label="Home"></button>
-        <button type="button" class="navDot" data-tab="food" onclick="show('food')" title="Food (2/7)" aria-label="Food"></button>
-        <button type="button" class="navDot" data-tab="activity" onclick="show('activity')" title="Activity (3/7)" aria-label="Activity"></button>
-        <button type="button" class="navDot" data-tab="workout" onclick="show('workout')" title="Workout (4/7)" aria-label="Workout"></button>
-        <button type="button" class="navDot" data-tab="progressTab" onclick="show('progressTab')" title="Progress (5/7)" aria-label="Progress"></button>
-        <button type="button" class="navDot" data-tab="budget" onclick="show('budget')" title="Budget (6/7)" aria-label="Budget"></button>
-        <button type="button" class="navDot" data-tab="profile" onclick="show('profile')" title="Profile (7/7)" aria-label="Profile"></button>
+        <button type="button" class="navDot active" data-tab="home" onclick="show('home')" title="Home (1/6)" aria-label="Home"></button>
+        <button type="button" class="navDot" data-tab="food" onclick="show('food')" title="Food (2/6)" aria-label="Food"></button>
+        <button type="button" class="navDot" data-tab="activity" onclick="show('activity')" title="Activity (3/6)" aria-label="Activity"></button>
+        <button type="button" class="navDot" data-tab="workout" onclick="show('workout')" title="Workout (4/6)" aria-label="Workout"></button>
+        <button type="button" class="navDot" data-tab="budget" onclick="show('budget')" title="Budget (5/6)" aria-label="Budget"></button>
+        <button type="button" class="navDot" data-tab="profile" onclick="show('profile')" title="Profile (6/6)" aria-label="Profile"></button>
       </div>
 
-      <button type="button" class="capsuleExpandBtn" id="capsuleExpandBtn" onclick="toggleNavDock()" aria-label="Expand all 7 navigation tabs">
+      <button type="button" class="capsuleExpandBtn" id="capsuleExpandBtn" onclick="toggleNavDock()" aria-label="Expand all 6 navigation tabs">
         <span class="expandIcon">▲</span>
         <span class="expandText">Tabs</span>
       </button>
@@ -474,7 +538,7 @@
           <span class="navDockPulse"></span>
           <div>
             <b>NAVIGATION</b>
-            <small>7 SECTIONS AVAILABLE</small>
+            <small>6 SECTIONS AVAILABLE</small>
           </div>
         </div>
         <button type="button" class="navDockCloseBtn" onclick="collapseNavDock()" aria-label="Close navigation">✕</button>
@@ -496,10 +560,6 @@
         <button type="button" onclick="selectNavTab('workout')" id="n-workout" class="navDockItem">
           <b>🏋</b>
           <span>Workout</span>
-        </button>
-        <button type="button" onclick="selectNavTab('progressTab')" id="n-progressTab" class="navDockItem">
-          <b>↗</b>
-          <span>Progress</span>
         </button>
         <button type="button" onclick="selectNavTab('budget')" id="n-budget" class="navDockItem">
           <b>₹</b>
@@ -605,6 +665,70 @@
       <div class="modalFooter">
         <button class="primary" onclick="closeTargetMapModal()">Close</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ONBOARDING SETUP MODAL (MANDATORY AFTER RESET) -->
+  <div class="levelOverlay" id="onboardingModal" role="dialog" aria-modal="true" aria-labelledby="onboardTitle">
+    <div class="onboardBox">
+      <div class="onboardHeader">
+        <div class="onboardBadge">🔥 DEQX FIT SETUP</div>
+        <h2 id="onboardTitle">Welcome! Set Up Your Profile</h2>
+        <p class="muted">Enter your details to calculate your baseline, start your weight journey, and unlock your fitness dashboard.</p>
+      </div>
+
+      <form id="onboardForm" onsubmit="event.preventDefault(); submitOnboarding();" novalidate>
+        <div class="onboardGrid">
+          <label class="onboardField">
+            <span class="fieldLabel">Your Name <b class="req">*</b></span>
+            <input id="onboardName" type="text" placeholder="e.g. Devan" autocomplete="name" required>
+          </label>
+
+          <label class="onboardField">
+            <span class="fieldLabel">Age (years) <b class="req">*</b></span>
+            <input id="onboardAge" type="number" min="10" max="120" placeholder="e.g. 24" required>
+          </label>
+
+          <label class="onboardField">
+            <span class="fieldLabel">Current Weight (kg) <b class="req">*</b></span>
+            <input id="onboardCurrentWeight" type="number" step="0.1" min="20" max="300" placeholder="e.g. 75.0" required>
+          </label>
+
+          <label class="onboardField">
+            <span class="fieldLabel">Target Weight (kg) <b class="req">*</b></span>
+            <input id="onboardTargetWeight" type="number" step="0.1" min="20" max="300" placeholder="e.g. 85.0" required>
+          </label>
+        </div>
+
+        <!-- Optional collapsible targets toggle -->
+        <details class="onboardDetails">
+          <summary><span>⚙️ Customize Daily Targets</span> <small style="color:var(--muted)">(Optional)</small></summary>
+          <div class="onboardGrid subGrid">
+            <label class="onboardField">
+              <span class="fieldLabel">Daily Water (L)</span>
+              <input id="onboardWater" type="number" step="0.1" min="0.5" max="10" value="3.0">
+            </label>
+            <label class="onboardField">
+              <span class="fieldLabel">Protein Goal (g)</span>
+              <input id="onboardProtein" type="number" min="20" max="400" value="150">
+            </label>
+            <label class="onboardField">
+              <span class="fieldLabel">Daily Calories (kcal)</span>
+              <input id="onboardCalories" type="number" min="500" max="6000" value="2200">
+            </label>
+            <label class="onboardField">
+              <span class="fieldLabel">Daily Budget (₹)</span>
+              <input id="onboardBudget" type="number" min="0" max="5000" value="250">
+            </label>
+          </div>
+        </details>
+
+        <div id="onboardError" class="onboardError" style="display:none"></div>
+
+        <button type="submit" class="primary onboardSubmitBtn">
+          Start Your Journey <span>→</span>
+        </button>
+      </form>
     </div>
   </div>
 

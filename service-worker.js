@@ -1,4 +1,4 @@
-const CACHE = 'deqx-fit-v34-body-power-row';
+const CACHE = 'deqx-fit-v46-badminton-half-activity-burn';
 const CORE = [
   './',
   './index.html',

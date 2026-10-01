@@ -30,7 +30,6 @@ const QUICK_FOODS = [
 ];
 
 const ACTIVITIES = [
-  { id: 'Gym', label: 'GYM', sub: 'Strength', icon: '🏋️' },
   { id: 'Badminton', label: 'BADMINTON', sub: 'Cardio', icon: '🏸' },
   { id: 'Cricket', label: 'CRICKET', sub: 'Sport', icon: '🏏' }
 ];
@@ -122,14 +121,17 @@ function applyDayAdjust(split) {
 
 const RANKS = ['Rookie', 'Hunter', 'Elite', 'Vanguard', 'Shadow', 'Ascendant', 'Apex'];
 const INITIAL = {
-  weight: 99.7,
-  goalWeight: 85,
+  name: '',
+  age: '',
+  weight: null,
+  goalWeight: null,
+  startWeight: null,
   proteinTarget: 150,
   waterTarget: 3,
   calorieTarget: 2200,
   budgetTarget: 250,
   foods: [],
-  history: [{ date: today(), weight: 99.7 }],
+  history: [],
   water: 0,
   workout: '',
   spent: 0,
@@ -137,12 +139,19 @@ const INITIAL = {
   xp: 0,
   rewardDays: {},
   workoutHistory: {},
-  attendanceStreak: 1,
-  lastAttendanceDate: today()
+  workoutOverrides: {},
+  customFoods: [],
+  customActivities: [],
+  attendanceStreak: 0,
+  streakStartDate: today(),
+  streakHistory: {},
+  lastAttendanceDate: today(),
+  onboarded: false
 };
 
 let d = JSON.parse(
   localStorage.getItem(KEY) ||
+  localStorage.getItem('fitRadhadevanV6') ||
   localStorage.getItem('fitRadhadevanV5') ||
   localStorage.getItem('fitRadhadevanV4') ||
   localStorage.getItem('fitRadhadevanV3') ||
@@ -151,12 +160,10 @@ let d = JSON.parse(
   'null'
 ) || JSON.parse(JSON.stringify(INITIAL));
 
-if (d.weight === 97 || d.weight === 97.3 || !d.weight) {
-  d.weight = 99.7;
-  if (d.history && d.history.length === 1 && (d.history[0].weight === 97 || d.history[0].weight === 97.3)) {
-    d.history[0].weight = 99.7;
-  }
-}
+d.name = d.name || '';
+d.age = d.age || '';
+d.startWeight = Number(d.startWeight) || (d.history && d.history.length ? Number(d.history[0].weight) : null) || Number(d.weight) || null;
+d.onboarded = typeof d.onboarded === 'boolean' ? d.onboarded : (!!d.name && !!d.weight && !!d.goalWeight);
 
 d.workoutAnchor = d.workoutAnchor || { date: '2026-09-30', split: 'Leg Day' };
 if (!d.workoutAnchor.split || d.workoutAnchor.split === 'Back + Biceps' || d.workoutAnchor.split === 'Shoulders + Forearms') {
@@ -165,7 +172,14 @@ if (!d.workoutAnchor.split || d.workoutAnchor.split === 'Back + Biceps' || d.wor
 d.workoutOverrides = d.workoutOverrides || {};
 d.foods = d.foods || [];
 d.customFoods = d.customFoods || [];
-d.history = d.history || [{ date: today(), weight: d.weight || 99.7 }];
+d.customActivities = d.customActivities || [];
+d.history = Array.isArray(d.history) ? d.history : (d.weight ? [{ date: today(), weight: d.weight }] : []);
+
+// Clean up any stale dummy weights (like 99.7 or 97.1) from previous demo/default profiles if user has set their own weight
+if (d.weight && d.history && d.history.length > 1) {
+  d.history = d.history.filter(x => !(Number(x.weight) === 99.7 || Number(x.weight) === 97.1));
+  if (!d.history.length) d.history = [{ date: today(), weight: d.weight }];
+}
 d.goalWeight = Number(d.goalWeight) || 85;
 d.proteinTarget = Number(d.proteinTarget) || 150;
 d.waterTarget = Number(d.waterTarget) || 3;
@@ -174,7 +188,9 @@ d.budgetTarget = Number.isFinite(Number(d.budgetTarget)) ? Number(d.budgetTarget
 d.xp = Number(d.xp) || 0;
 d.rewardDays = d.rewardDays || {};
 d.workoutHistory = d.workoutHistory || {};
-d.attendanceStreak = Number(d.attendanceStreak) >= 1 ? Number(d.attendanceStreak) : 1;
+d.streakStartDate = d.streakStartDate || today();
+d.streakHistory = d.streakHistory || {};
+d.attendanceStreak = Number.isFinite(Number(d.attendanceStreak)) ? Number(d.attendanceStreak) : 0;
 d.lastAttendanceDate = d.lastAttendanceDate || today();
 
 function getDaysDifference(isoDate1, isoDate2) {
@@ -186,37 +202,150 @@ function getDaysDifference(isoDate1, isoDate2) {
   return Math.floor((utc2 - utc1) / (1000 * 60 * 60 * 24));
 }
 
-function checkAttendanceStreak() {
+function calculateCurrentDailyPercent() {
+  const p = (d.foods || []).reduce((a, x) => a + (Number(x.p) || 0), 0);
+  const c = (d.foods || []).reduce((a, x) => a + (Number(x.c) || 0), 0);
+  const burn = (typeof v9 !== 'undefined' && v9.burned) || 0;
+  const done = !!(d.workoutHistory && d.workoutHistory[isoDate(new Date())]?.completed);
+  const pct = (v, t) => Math.min(100, Math.round(((Number(v) || 0) / Math.max(1, Number(t) || 1)) * 100));
+  const pp = pct(p, d.proteinTarget || 150);
+  const wp = pct(d.water || 0, d.waterTarget || 3);
+  const cp = pct(c, d.calorieTarget || 2200);
+  const bp = pct(burn, 500);
+  const gp = done ? 100 : 0;
+  return Math.round((pp + wp + cp + bp + gp) / 5);
+}
+
+function computeAndUpdateStreak(dailyPercent) {
   const t = today();
-  if (!d.attendanceStreak || d.attendanceStreak < 1) d.attendanceStreak = 1;
-  if (!d.lastAttendanceDate) {
-    d.lastAttendanceDate = t;
-    save(false);
-    return;
+  d.streakStartDate = d.streakStartDate || t;
+  d.streakHistory = d.streakHistory || {};
+
+  const wasQualified = !!(d.streakHistory[t] && d.streakHistory[t].qualified);
+  const isQualified = Number(dailyPercent) >= 50;
+
+  d.streakHistory[t] = {
+    percent: Number(dailyPercent) || 0,
+    qualified: isQualified,
+    date: t
+  };
+
+  // Toast notification when user crosses 50% today for the first time
+  if (!wasQualified && isQualified) {
+    toast('🔥 Daily streak recorded! 50%+ daily target completed today ✓');
   }
-  const diffDays = getDaysDifference(d.lastAttendanceDate, t);
-  if (diffDays === 0) {
-    return;
+
+  // Count past consecutive qualified days backwards from yesterday
+  let pastStreak = 0;
+  let cursor = new Date();
+  cursor.setDate(cursor.getDate() - 1);
+
+  while (true) {
+    const checkIso = isoDate(cursor);
+    if (d.streakStartDate && checkIso < d.streakStartDate) break;
+    const entry = d.streakHistory[checkIso];
+    if (entry && entry.qualified) {
+      pastStreak++;
+      cursor.setDate(cursor.getDate() - 1);
+    } else {
+      break;
+    }
   }
-  if (diffDays === 1) {
-    // Logged in on consecutive day - increment streak infinitely!
-    d.attendanceStreak += 1;
-    d.lastAttendanceDate = t;
-    if (typeof v9 !== 'undefined') v9.streak = d.attendanceStreak;
-    save(false);
-    toast('🔥 Streak extended! ' + d.attendanceStreak + (d.attendanceStreak === 1 ? ' day' : ' days') + ' in a row!');
-  } else if (diffDays > 1) {
-    // Missed 1 or more full days without login/attendance - reset to 1
-    d.attendanceStreak = 1;
-    d.lastAttendanceDate = t;
-    if (typeof v9 !== 'undefined') v9.streak = 1;
-    save(false);
-    toast('🔥 Daily streak reset. Day 1 starts today!');
+
+  // Check if yesterday was missed:
+  // If yesterday was on or after streakStartDate and was NOT qualified, the previous streak ended.
+  const yest = new Date();
+  yest.setDate(yest.getDate() - 1);
+  const yestIso = isoDate(yest);
+  if (d.streakStartDate <= yestIso && (!d.streakHistory[yestIso] || !d.streakHistory[yestIso].qualified)) {
+    // Yesterday was missed! Previous streak has ended.
+    // Reset streak start date to today so Weekly Rhythm resets to today!
+    d.streakStartDate = t;
+    pastStreak = 0;
   }
+
+  const streakCount = pastStreak + (isQualified ? 1 : 0);
+  d.attendanceStreak = streakCount;
+  if (typeof v9 !== 'undefined') {
+    v9.streak = streakCount;
+  }
+
+  return { streakCount, isQualified };
+}
+
+function renderWeeklyRhythm(dailyPercent) {
+  const dots = document.getElementById('streakDots');
+  if (!dots) return;
+
+  const t = today();
+  const startIso = d.streakStartDate || t;
+  const [sy, sm, sd] = startIso.split('-').map(Number);
+  const startDateObj = new Date(sy, sm - 1, sd);
+  const [ty, tm, td] = t.split('-').map(Number);
+  const todayObj = new Date(ty, tm - 1, td);
+
+  const diffDays = Math.max(0, Math.floor((todayObj - startDateObj) / (1000 * 60 * 60 * 24)));
+  const cycleIndex = Math.floor(diffDays / 7);
+  const cycleStart = new Date(startDateObj.getTime() + cycleIndex * 7 * 24 * 60 * 60 * 1000);
+
+  const DAY_CHARS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  let html = '';
+  for (let i = 0; i < 7; i++) {
+    const slotDate = new Date(cycleStart.getTime() + i * 24 * 60 * 60 * 1000);
+    const slotIso = isoDate(slotDate);
+    const dayOfWeek = slotDate.getDay();
+    const char = DAY_CHARS[dayOfWeek];
+    const name = DAY_NAMES[dayOfWeek];
+
+    const isToday = (slotIso === t);
+    const isPast = (slotIso < t);
+
+    let isDone = false;
+    let isBlinking = false;
+
+    if (isPast) {
+      isDone = !!(d.streakHistory && d.streakHistory[slotIso]?.qualified);
+    } else if (isToday) {
+      isDone = Number(dailyPercent) >= 50;
+      // Today is active and continuously blinks till streak ends!
+      isBlinking = true;
+    }
+
+    const classes = [
+      isDone ? 'done' : '',
+      isToday ? 'today' : '',
+      isBlinking ? 'blinking' : '',
+      (isPast && !isDone) ? 'missed' : ''
+    ].filter(Boolean).join(' ');
+
+    const statusText = isToday
+      ? (isDone ? 'Today · Completed (50%+ target achieved)' : `Today · In progress (${dailyPercent}% / 50% target)`)
+      : isPast
+      ? (isDone ? 'Completed (50%+ achieved)' : 'Missed (< 50%)')
+      : 'Upcoming';
+
+    html += `<i class="${classes}" title="${name} (${slotIso}) · ${statusText}">${char}</i>`;
+  }
+
+  dots.innerHTML = html;
+
+  const actDots = document.getElementById('activityStreakDots');
+  if (actDots) actDots.innerHTML = html;
 }
 
 function showStreakInfo() {
-  toast('🔥 ' + (d.attendanceStreak || 1) + ' Day Streak! Attendance logged today ✓');
+  const streak = Number(d.attendanceStreak) || 0;
+  const t = today();
+  const entry = d.streakHistory && d.streakHistory[t];
+  const curPct = entry ? entry.percent : calculateCurrentDailyPercent();
+  const sUnit = streak === 1 ? 'day' : 'days';
+  if (curPct >= 50) {
+    toast(`🔥 ${streak} ${sUnit} streak active! Today’s target is ${curPct}% completed (✓ 50%+ achieved)`);
+  } else {
+    toast(`🔥 ${streak} ${sUnit} streak. Complete at least 50% today to record today's streak! (Currently ${curPct}%)`);
+  }
 }
 
 function openTargetMapModal() {
@@ -234,8 +363,15 @@ let foodDraft = [];
 
 function ensureTodayState() {
   const t = today();
-  checkAttendanceStreak();
   if (d.date !== t) {
+    const prevDate = d.date;
+    const prevEntry = d.streakHistory && d.streakHistory[prevDate];
+    if (!prevEntry || !prevEntry.qualified) {
+      // Previous day was missed (< 50%) -> Streak ended!
+      d.streakStartDate = t;
+      d.attendanceStreak = 0;
+      if (typeof v9 !== 'undefined') v9.streak = 0;
+    }
     foodDraft = [];
     d.foods = [];
     d.water = 0;
@@ -243,6 +379,11 @@ function ensureTodayState() {
     d.spent = 0;
     d.date = t;
     d.rewardDays[t] = d.rewardDays[t] || {};
+    if (typeof v9 !== 'undefined') {
+      v9.burned = 0;
+      v9.activity = null;
+      if (typeof saveV9 === 'function') saveV9();
+    }
     localStorage.setItem(KEY, JSON.stringify(d));
     return true;
   }
@@ -264,7 +405,7 @@ ensureTodayState();
 let calendarCursor = new Date();
 
 function cloneInitial() {
-  return JSON.parse(JSON.stringify({ ...INITIAL, date: today(), history: [{ date: today(), weight: 99.7 }] }));
+  return JSON.parse(JSON.stringify({ ...INITIAL, date: today(), history: d.weight ? [{ date: today(), weight: d.weight }] : [] }));
 }
 
 function save(doRender = true) {
@@ -327,7 +468,6 @@ const TAB_META = {
   food: { icon: '🍽', label: 'Food' },
   activity: { icon: '⚡', label: 'Activity' },
   workout: { icon: '🏋', label: 'Workout' },
-  progressTab: { icon: '↗', label: 'Progress' },
   budget: { icon: '₹', label: 'Budget' },
   profile: { icon: '◉', label: 'Profile' }
 };
@@ -374,6 +514,10 @@ function selectNavTab(tabId) {
 }
 
 function show(id, direction) {
+  if (d && !d.onboarded && id !== 'home') {
+    openOnboardingModal();
+    return;
+  }
   document.querySelectorAll('.section').forEach(x => x.classList.remove('active', 'motion-left', 'motion-right'));
   const sec = document.getElementById(id);
   if (sec) {
@@ -727,49 +871,267 @@ function saveWeight() {
   let w = +document.getElementById('newWeight').value;
   if (w > 0) {
     d.weight = w;
-    d.history.push({ date: today(), weight: w });
+    let latest = [...d.history].reverse().find(x => x.date === today());
+    if (latest) latest.weight = w;
+    else d.history.push({ date: today(), weight: w });
     rewardOnce('weightLogged', 20, 'Weight logged');
     save(false);
     document.getElementById('newWeight').value = '';
     render();
     document.getElementById('newWeight').placeholder = 'Enter current weight again';
-    toast('Weight saved ✓ Updated today’s data');
+    toast('Weight saved ✓ ' + w + ' kg recorded');
   }
 }
 
+function clearWeightHistory() {
+  if (!confirm('Clear weight history for this profile? Your current weight will be kept.')) return;
+  const cur = Number(d.weight) || (d.history && d.history.length ? d.history[d.history.length - 1].weight : 70);
+  d.history = [{ date: today(), weight: cur }];
+  d.startWeight = cur;
+  save(false);
+  if (typeof supabaseClient !== 'undefined' && supabaseClient && typeof cloudUser !== 'undefined' && cloudUser) {
+    supabaseClient.from('weight_history').delete().eq('user_id', cloudUser.id).then(() => {
+      if (typeof cloudSyncNow === 'function') cloudSyncNow();
+    }).catch(() => {});
+  }
+  render();
+  toast('Weight history cleared ✓ Starting fresh from ' + cur + ' kg');
+}
+window.clearWeightHistory = clearWeightHistory;
+
+function removeWeightEntry(idx) {
+  if (!d.history || idx < 0 || idx >= d.history.length) return;
+  const removed = d.history.splice(idx, 1)[0];
+  if (!d.history.length && d.weight) {
+    d.history = [{ date: today(), weight: d.weight }];
+  } else if (d.history.length) {
+    d.weight = d.history[d.history.length - 1].weight;
+  }
+  save(false);
+  if (typeof supabaseClient !== 'undefined' && supabaseClient && typeof cloudUser !== 'undefined' && cloudUser && removed) {
+    supabaseClient.from('weight_history').delete().eq('user_id', cloudUser.id).eq('weight', Number(removed.weight)).then(() => {}).catch(() => {});
+  }
+  render();
+  toast('Weight entry removed ✓');
+}
+window.removeWeightEntry = removeWeightEntry;
+
+/* ============================================================
+   SMART DURATION CONVERTER (HOURS vs MINUTES)
+   - Numbers <= 5 are automatically treated as HOURS (1 -> 60m, 2 -> 120m, 1.5 -> 90m)
+   - Numbers > 5 are treated as MINUTES (30, 40, 45, 55, 90)
+   - Explicit suffixes like "1h", "1.5 hr", "45m", "55 min" are also handled
+   ============================================================ */
+function parseDurationToMinutes(input) {
+  if (input === null || input === undefined) return 0;
+  const str = String(input).trim().toLowerCase();
+  if (!str) return 0;
+
+  // Explicit suffix matching e.g. "1.5h", "1 hr", "2 hrs", "2 hours"
+  const hrMatch = str.match(/^([\d.]+)\s*(h|hr|hrs|hour|hours)$/);
+  if (hrMatch) {
+    const h = parseFloat(hrMatch[1]);
+    return isNaN(h) ? 0 : Math.round(h * 60);
+  }
+
+  // Explicit suffix matching e.g. "45m", "45 min", "55 mins"
+  const minMatch = str.match(/^([\d.]+)\s*(m|min|mins|minute|minutes)$/);
+  if (minMatch) {
+    const m = parseFloat(minMatch[1]);
+    return isNaN(m) ? 0 : Math.round(m);
+  }
+
+  // Pure numeric entry (e.g. 1, 2, 1.5, 30, 40, 55)
+  const num = parseFloat(str);
+  if (isNaN(num) || num <= 0) return 0;
+
+  // RULE: <= 5 is automatically converted from HOURS to MINUTES (1 -> 60m, 2 -> 120m, 1.5 -> 90m)
+  // > 5 is treated as MINUTES directly (30 -> 30m, 40 -> 40m, 55 -> 55m)
+  if (num <= 5) {
+    return Math.round(num * 60);
+  } else {
+    return Math.round(num);
+  }
+}
+window.parseDurationToMinutes = parseDurationToMinutes;
+
+function formatDurationLabel(minutes) {
+  const m = Number(minutes) || 0;
+  if (m <= 0) return '0 min';
+  if (m < 60) return m + ' min';
+  const hrs = m / 60;
+  if (m % 60 === 0) {
+    return hrs + (hrs === 1 ? ' hr' : ' hrs') + ' (' + m + ' min)';
+  }
+  return hrs.toFixed(1).replace(/\.0$/, '') + ' hrs (' + m + ' min)';
+}
+window.formatDurationLabel = formatDurationLabel;
+
+function updateBarUnit(inputEl, unitElId) {
+  const badge = document.getElementById(unitElId);
+  if (!badge) return;
+  const raw = (inputEl ? String(inputEl.value) : '').trim();
+  if (!raw) {
+    badge.className = 'unitBadge';
+    badge.textContent = '';
+    return;
+  }
+  const num = parseFloat(raw);
+  if (isNaN(num) || num <= 0) {
+    badge.className = 'unitBadge';
+    badge.textContent = '';
+    return;
+  }
+  if (num <= 5) {
+    badge.className = 'unitBadge show hours';
+    badge.textContent = num === 1 ? 'hour' : 'hours';
+  } else {
+    badge.className = 'unitBadge show minutes';
+    badge.textContent = num === 1 ? 'minute' : 'minutes';
+  }
+}
+window.updateBarUnit = updateBarUnit;
+
+const WORKOUT_INTENSITY_MET = {
+  light: { met: 3.0, label: 'Light-to-Moderate (MET 3.0)' },
+  moderate: { met: 3.5, label: 'Standard Moderate (MET 3.5)' },
+  vigorous: { met: 5.0, label: 'Vigorous / Circuit Style (MET 5.0)' }
+};
+window.WORKOUT_INTENSITY_MET = WORKOUT_INTENSITY_MET;
+
+function getEffectiveWorkoutWeight() {
+  const weightInput = document.getElementById('workoutWeight');
+  const rawWeight = weightInput ? weightInput.value.trim() : '';
+  if (rawWeight !== '') {
+    const val = parseFloat(rawWeight);
+    if (!isNaN(val) && val >= 20 && val <= 300) {
+      return Math.round(val * 10) / 10;
+    }
+  }
+  const saved = Number(d?.weight) || (d?.history && d.history.length ? Number(d.history[d.history.length - 1].weight) : null);
+  return saved && saved >= 20 && saved <= 300 ? saved : 70;
+}
+window.getEffectiveWorkoutWeight = getEffectiveWorkoutWeight;
+
+function calculateGymCalories(mins, weight, intensityKey) {
+  const item = WORKOUT_INTENSITY_MET[intensityKey] || WORKOUT_INTENSITY_MET.moderate;
+  const met = item.met;
+  // Standard exercise physiology calculation factoring rest periods between sets (MET * weight * hours * 1.05):
+  // Reference for 97 kg person @ 1 hour session:
+  // - Light-to-Moderate (MET 3.0): ~305 kcal (longer rest times, slower pace)
+  // - Standard Moderate (MET 3.5): ~356 kcal (balanced sets, standard 60-90s rests)
+  // - Vigorous / Circuit (MET 5.0): ~509 kcal (short rest times, supersets, heavy compound movements)
+  const hours = (Number(mins) || 0) / 60;
+  return Math.round(met * weight * hours * 1.05);
+}
+window.calculateGymCalories = calculateGymCalories;
+
+function updateWorkoutCaloriePreview() {
+  const valEl = document.getElementById('workoutCalorieValue');
+  if (!valEl) return;
+
+  const rawMins = document.getElementById('workoutMinutes')?.value || '';
+  const parsedMins = parseDurationToMinutes(rawMins);
+  const intensity = document.getElementById('workoutIntensity')?.value || d?.workoutIntensity || 'moderate';
+  const weight = getEffectiveWorkoutWeight();
+  const item = WORKOUT_INTENSITY_MET[intensity] || WORKOUT_INTENSITY_MET.moderate;
+
+  // If duration not typed yet, default preview to 1 hr (60 min)
+  const effectiveMins = parsedMins > 0 ? parsedMins : 60;
+  const kcal = calculateGymCalories(effectiveMins, weight, intensity);
+
+  valEl.textContent = kcal;
+
+  const formulaEl = document.getElementById('workoutCalorieFormula');
+  if (formulaEl) {
+    const durLabel = parsedMins > 0 ? formatDurationLabel(parsedMins) : '1 hr';
+    formulaEl.textContent = `${durLabel} · ${weight} kg · ${item.label}`;
+  }
+}
+window.updateWorkoutCaloriePreview = updateWorkoutCaloriePreview;
+
 function saveWorkout() {
   const scheduled = scheduleForDate(new Date());
+
+  // Check optional daily weight update inside Today's Schedule card
+  const weightInput = document.getElementById('workoutWeight');
+  const rawWeight = weightInput ? weightInput.value.trim() : '';
+  let weightLogged = false;
+  if (rawWeight !== '') {
+    const enteredWeight = parseFloat(rawWeight);
+    if (!isNaN(enteredWeight) && enteredWeight >= 20 && enteredWeight <= 300) {
+      const cleanWeight = Math.round(enteredWeight * 10) / 10;
+      d.weight = cleanWeight;
+      let latest = [...d.history].reverse().find(x => x.date === today());
+      if (latest) {
+        latest.weight = cleanWeight;
+      } else {
+        d.history.push({ date: today(), weight: cleanWeight });
+      }
+      rewardOnce('weightLogged', 20, 'Weight logged');
+      weightLogged = true;
+      weightInput.value = '';
+    }
+  }
+
   if (scheduled === 'Rest') {
     d.workout = 'Rest / Recovery';
     d.workoutHistory[today()] = { scheduled: 'Rest', completed: false };
     save(false);
     document.getElementById('workoutMinutes').value = '';
-    document.getElementById('workoutSaved').textContent = 'Saved ✓ Rest day recorded.';
+    updateBarUnit(document.getElementById('workoutMinutes'), 'workoutBarUnit');
+    updateWorkoutCaloriePreview();
+    document.getElementById('workoutSaved').textContent = 'Saved ✓ Rest day recorded.' + (weightLogged ? ' · ⚖️ ' + d.weight + ' kg recorded' : '');
     render();
     renderCalendar();
-    toast('Workout data saved ✓');
+    toast(weightLogged ? 'Rest day & Weight saved ✓' : 'Workout data saved ✓');
     return;
   }
-  const selected = document.getElementById('workoutSelect').value,
-    mins = +document.getElementById('workoutMinutes').value || 0;
+  const selected = document.getElementById('workoutSelect').value;
+  const rawMins = document.getElementById('workoutMinutes').value;
+  const mins = parseDurationToMinutes(rawMins);
   if (mins <= 0) {
-    document.getElementById('workoutSaved').textContent = 'Enter workout minutes first.';
-    toast('Enter workout minutes');
+    document.getElementById('workoutSaved').textContent = 'Enter workout duration first (e.g. 1 hr, 45 min).' + (weightLogged ? ' (Weight was recorded: ' + d.weight + ' kg)' : '');
+    toast('Enter workout duration');
     return;
   }
   if (selected !== 'Rest' && selected !== scheduled) {
     d.workoutAnchor = { date: today(), split: selected };
     delete (d.workoutOverrides || {})[today()];
   }
-  d.workout = selected + ' • ' + mins + ' min';
+  d.workout = selected + ' • ' + formatDurationLabel(mins);
   d.workoutHistory[today()] = { scheduled, completed: true, actual: d.workout };
   rewardOnce('workoutCompleted', 50, 'Workout complete');
+
+  // Chosen training intensity & body weight
+  const intensity = document.getElementById('workoutIntensity')?.value || 'moderate';
+  d.workoutIntensity = intensity;
+  const weight = getEffectiveWorkoutWeight();
+  const item = WORKOUT_INTENSITY_MET[intensity] || WORKOUT_INTENSITY_MET.moderate;
+
+  // ---> GYM SESSION CALORIE BURN CALCULATION:
+  // Dynamically calculated based on body weight, duration, and chosen training intensity (factoring rest periods between sets)
+  const gymKcal = calculateGymCalories(mins, weight, intensity);
+
+  // Set ONLY that workout burn value on the home page as requested
+  if (typeof v9 !== 'undefined') {
+    v9.activity = selected; // e.g. "Chest + Triceps", "Back + Biceps", "Leg Day", etc.
+    v9.lastWorkout = today();
+    v9.lastActivityDate = today();
+    v9.burned = gymKcal; // Show only that value on the home page
+    saveV9();
+  }
+
   save(false);
   document.getElementById('workoutMinutes').value = '';
-  document.getElementById('workoutSaved').textContent = 'Saved ✓ Workout completed +50 XP';
+  updateBarUnit(document.getElementById('workoutMinutes'), 'workoutBarUnit');
+  updateWorkoutCaloriePreview();
+  const weightMsg = weightLogged ? ' · ⚖️ ' + d.weight + ' kg recorded' : '';
+  document.getElementById('workoutSaved').textContent = 'Saved ✓ ' + esc(selected) + ' completed (' + formatDurationLabel(mins) + ') · 🔥 ' + gymKcal + ' kcal burned (' + item.label + ' · ' + weight + ' kg)' + weightMsg;
   render();
   renderCalendar();
-  toast('Workout saved ✓ +50 XP');
+  if (typeof renderV9 === 'function') renderV9();
+  toast('Gym workout saved ✓ ' + gymKcal + ' kcal burned on Home Page!' + (weightLogged ? ' (Weight: ' + d.weight + ' kg)' : ''));
 }
 
 function saveSpent() {
@@ -788,18 +1150,24 @@ function saveSpent() {
 }
 
 function fillProfile() {
-  document.getElementById('profileGoal').value = d.goalWeight;
-  document.getElementById('profileProtein').value = d.proteinTarget;
-  document.getElementById('profileWaterTarget').value = d.waterTarget;
-  document.getElementById('profileCalories').value = d.calorieTarget;
-  document.getElementById('profileBudget').value = d.budgetTarget;
-  document.getElementById('profileWeight').value = d.weight;
-  document.getElementById('profileWater').value = d.water;
-  document.getElementById('profileSpent').value = d.spent;
+  const nameEl = document.getElementById('profileName');
+  if (nameEl) nameEl.value = d.name || '';
+  const ageEl = document.getElementById('profileAge');
+  if (ageEl) ageEl.value = d.age || '';
+  document.getElementById('profileGoal').value = d.goalWeight || '';
+  document.getElementById('profileProtein').value = d.proteinTarget || 150;
+  document.getElementById('profileWaterTarget').value = d.waterTarget || 3;
+  document.getElementById('profileCalories').value = d.calorieTarget || 2200;
+  document.getElementById('profileBudget').value = d.budgetTarget || 250;
+  document.getElementById('profileWeight').value = d.weight || '';
+  document.getElementById('profileWater').value = d.water || '';
+  document.getElementById('profileSpent').value = d.spent || '';
   document.getElementById('profileWorkout').value = d.workout || '';
 }
 
 function saveProfile() {
+  const nameVal = document.getElementById('profileName')?.value.trim();
+  const ageVal = +document.getElementById('profileAge')?.value;
   let goal = +document.getElementById('profileGoal').value,
     protein = +document.getElementById('profileProtein').value,
     water = +document.getElementById('profileWaterTarget').value,
@@ -810,6 +1178,8 @@ function saveProfile() {
     toast('Enter valid targets');
     return;
   }
+  if (nameVal) d.name = nameVal;
+  if (ageVal > 0) d.age = ageVal;
   d.goalWeight = goal;
   d.proteinTarget = protein;
   d.waterTarget = water;
@@ -869,16 +1239,210 @@ function removeFood(i) {
 }
 
 function resetApp() {
-  if (!confirm('Reset DEQX FIT? This will erase your food, water, workout, budget, weight history, XP and level.')) return;
-  d = cloneInitial();
-  calendarCursor = new Date();
+  if (!confirm('Reset DEQX FIT? This will permanently erase your power level, streak, XP, workouts, food logs, spending, and user profile.')) return;
+  
+  // Preserve custom foods and activities so the user's libraries are not lost
+  const preservedCustomFoods = (d && Array.isArray(d.customFoods)) ? [...d.customFoods] : [];
+  const preservedCustomActivities = (d && Array.isArray(d.customActivities)) ? [...d.customActivities] : [];
+
+  // Reset cloud data if logged in
+  if (typeof cloudResetUserTables === 'function') {
+    cloudResetUserTables();
+  }
+
+  // 1. Wipe state completely (preserving food and activity selection libraries)
+  d = {
+    name: '',
+    age: '',
+    weight: null,
+    goalWeight: null,
+    startWeight: null,
+    proteinTarget: 150,
+    waterTarget: 3,
+    calorieTarget: 2200,
+    budgetTarget: 250,
+    foods: [],
+    history: [],
+    water: 0,
+    workout: '',
+    spent: 0,
+    date: today(),
+    xp: 0,
+    rewardDays: {},
+    workoutHistory: {},
+    workoutOverrides: {},
+    workoutAnchor: { date: today(), split: 'Leg Day' },
+    attendanceStreak: 0,
+    streakStartDate: today(),
+    streakHistory: {},
+    lastAttendanceDate: today(),
+    customFoods: preservedCustomFoods,
+    customActivities: preservedCustomActivities,
+    onboarded: false
+  };
+
+  // 2. Wipe v9 power level, XP, streak, burned completely
+  if (typeof v9 !== 'undefined') {
+    v9.activity = null;
+    v9.burned = 0;
+    v9.streak = 0;
+    v9.lastWorkout = null;
+    v9.lastActivityDate = null;
+    v9.xp = 0;
+    v9.level = 1;
+    if (typeof saveV9 === 'function') saveV9();
+  }
+
+  // 3. Clear localStorage
   localStorage.setItem(KEY, JSON.stringify(d));
+  if (typeof V9KEY !== 'undefined') localStorage.setItem(V9KEY, JSON.stringify(v9));
+  localStorage.removeItem('deqx_food_draft');
+  ['fitRadhadevanV5', 'fitRadhadevanV4', 'fitRadhadevanV3', 'fitRadhadevanV2', 'fitRadhadevan'].forEach(k => localStorage.removeItem(k));
+
+  // 4. Reset calendar & navigation
+  calendarCursor = new Date();
   document.querySelectorAll('.section').forEach(x => x.classList.remove('active'));
   document.getElementById('home').classList.add('active');
   document.querySelectorAll('.nav button').forEach(x => x.classList.remove('active'));
   document.getElementById('n-home').classList.add('active');
+
+  // 5. Re-render UI in reset state (keeping food and activity selection visible)
+  renderQuickFoodGrid();
+  renderCustomFoods();
+  renderActivityChoices();
+  renderCustomActivities();
+  renderFoodDraft();
   render();
-  toast('DEQX FIT reset ✓');
+  if (typeof renderV9 === 'function') renderV9();
+  fillProfile();
+
+  // 6. Open the Onboarding Setup Screen (mandatory to unlock app)
+  openOnboardingModal();
+  toast('DEQX FIT has been reset. Please set up your profile.');
+}
+
+/* ===== ONBOARDING SETUP CONTROLLERS ===== */
+function checkOnboardingStatus() {
+  if (!d.onboarded || !d.name || !d.weight || !d.goalWeight) {
+    openOnboardingModal();
+  } else {
+    closeOnboardingModal();
+  }
+}
+
+function openOnboardingModal() {
+  const modal = document.getElementById('onboardingModal');
+  if (!modal) return;
+  modal.classList.add('show');
+  document.body.classList.add('onboarding-locked');
+
+  const nameInput = document.getElementById('onboardName');
+  const ageInput = document.getElementById('onboardAge');
+  const curWInput = document.getElementById('onboardCurrentWeight');
+  const goalWInput = document.getElementById('onboardTargetWeight');
+
+  if (nameInput) {
+    nameInput.value = d.name || '';
+    setTimeout(() => nameInput.focus(), 250);
+  }
+  if (ageInput) ageInput.value = d.age || '';
+  if (curWInput) curWInput.value = d.weight ? Number(d.weight) : '';
+  if (goalWInput) goalWInput.value = d.goalWeight ? Number(d.goalWeight) : '';
+
+  const err = document.getElementById('onboardError');
+  if (err) {
+    err.style.display = 'none';
+    err.textContent = '';
+  }
+}
+
+function closeOnboardingModal() {
+  const modal = document.getElementById('onboardingModal');
+  if (modal) modal.classList.remove('show');
+  document.body.classList.remove('onboarding-locked');
+}
+
+function submitOnboarding() {
+  const nameEl = document.getElementById('onboardName');
+  const ageEl = document.getElementById('onboardAge');
+  const curWEl = document.getElementById('onboardCurrentWeight');
+  const goalWEl = document.getElementById('onboardTargetWeight');
+
+  const name = nameEl ? nameEl.value.trim() : '';
+  const age = ageEl ? Number(ageEl.value) : 0;
+  const currentWeight = curWEl ? Number(curWEl.value) : 0;
+  const targetWeight = goalWEl ? Number(goalWEl.value) : 0;
+
+  if (!name) {
+    showOnboardError('Please enter your name.');
+    if (nameEl) nameEl.focus();
+    return;
+  }
+  if (!age || age < 10 || age > 120) {
+    showOnboardError('Please enter a valid age (between 10 and 120).');
+    if (ageEl) ageEl.focus();
+    return;
+  }
+  if (!currentWeight || currentWeight < 20 || currentWeight > 300) {
+    showOnboardError('Please enter your current weight (between 20 and 300 kg).');
+    if (curWEl) curWEl.focus();
+    return;
+  }
+  if (!targetWeight || targetWeight < 20 || targetWeight > 300) {
+    showOnboardError('Please enter your target weight (between 20 and 300 kg).');
+    if (goalWEl) goalWEl.focus();
+    return;
+  }
+
+  const water = Number(document.getElementById('onboardWater')?.value) || 3;
+  const protein = Number(document.getElementById('onboardProtein')?.value) || 150;
+  const calories = Number(document.getElementById('onboardCalories')?.value) || 2200;
+  const budget = Number(document.getElementById('onboardBudget')?.value) || 250;
+
+  d.name = name;
+  d.age = age;
+  d.weight = currentWeight;
+  d.goalWeight = targetWeight;
+  d.startWeight = currentWeight;
+  d.waterTarget = water;
+  d.proteinTarget = protein;
+  d.calorieTarget = calories;
+  d.budgetTarget = budget;
+  d.history = [{ date: today(), weight: currentWeight }];
+  d.onboarded = true;
+  d.attendanceStreak = 0;
+  d.streakStartDate = today();
+  d.streakHistory = {};
+  d.lastAttendanceDate = today();
+
+  if (typeof v9 !== 'undefined') {
+    v9.level = 1;
+    v9.xp = 0;
+    v9.streak = 0;
+    v9.burned = 0;
+    saveV9();
+  }
+
+  save(false);
+  render();
+  if (typeof renderV9 === 'function') renderV9();
+  fillProfile();
+
+  if (typeof cloudQueueSync === 'function') cloudQueueSync();
+
+  closeOnboardingModal();
+  show('home');
+  toast('🔥 Welcome, ' + d.name + '! Your profile has been initialized.');
+}
+
+function showOnboardError(msg) {
+  const errEl = document.getElementById('onboardError');
+  if (errEl) {
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+  } else {
+    alert(msg);
+  }
 }
 
 function esc(v) {
@@ -930,6 +1494,13 @@ function renderCalendar() {
   }
   const sel = document.getElementById('workoutSelect');
   if (sel && [...sel.options].some(o => o.value === todaySchedule)) sel.value = todaySchedule;
+  const intSel = document.getElementById('workoutIntensity');
+  if (intSel && d.workoutIntensity) intSel.value = d.workoutIntensity;
+  const wInput = document.getElementById('workoutWeight');
+  if (wInput && !wInput.value) {
+    wInput.placeholder = d.weight ? 'Current: ' + d.weight + ' kg (optional)' : 'Current weight in kg (optional)';
+  }
+  updateWorkoutCaloriePreview();
 }
 
 function changeMonth(delta) {
@@ -946,14 +1517,20 @@ function renderQuickFoodGrid() {
       <span>${item.icon}</span><b>${esc(item.name)}</b><small>${esc(item.portion)}</small>
     </div>
   `).join('');
+  if (typeof renderFoodDraft === 'function') renderFoodDraft();
 }
 
 function renderActivityChoices() {
   const container = document.getElementById('activityChoices');
   if (!container) return;
-  container.innerHTML = ACTIVITIES.map(act => `
+  const allActs = [...ACTIVITIES, ...(d.customActivities || [])];
+
+  container.innerHTML = allActs.map(act => `
     <button class="activityChoice" data-activity="${act.id}">
-      <span>${act.icon}</span><b>${esc(act.label)}</b><small>${esc(act.sub)}</small>
+      ${act.isCustom ? `<span class="deleteCustomActBtn" onclick="event.stopPropagation(); removeCustomActivity('${act.id}')" title="Delete custom activity">✕</span>` : ''}
+      <span>${act.icon || '⚡'}</span>
+      <b>${esc(act.label || act.name)}</b>
+      <small>${esc(act.sub || 'Custom')}</small>
     </button>
   `).join('');
 
@@ -963,8 +1540,98 @@ function renderActivityChoices() {
       b.classList.add('selected');
       v9.activity = b.dataset.activity;
       saveV9();
+      renderV9();
     });
   });
+}
+
+function saveCustomActivity() {
+  const nameInput = document.getElementById('customActivityName');
+  const catInput = document.getElementById('customActivityCategory');
+  const iconInput = document.getElementById('customActivityIcon');
+  const metInput = document.getElementById('customActivityMET');
+  const res = document.getElementById('customActivityResult');
+
+  const name = nameInput ? nameInput.value.trim() : '';
+  const sub = (catInput ? catInput.value.trim() : '') || 'Custom';
+  const icon = (iconInput ? iconInput.value : '') || '⚡';
+  const met = Number(metInput ? metInput.value : 7) || 7;
+
+  if (!name) {
+    if (res) {
+      res.style.display = 'block';
+      res.innerHTML = '<div class="result" style="color:#ff8b8b">Please enter an activity name.</div>';
+    }
+    return;
+  }
+
+  const id = 'act_' + Date.now();
+  d.customActivities = d.customActivities || [];
+  d.customActivities.push({
+    id: id,
+    label: name.toUpperCase(),
+    name: name,
+    sub: sub,
+    icon: icon,
+    met: met,
+    isCustom: true
+  });
+
+  save(false);
+  if (nameInput) nameInput.value = '';
+  if (catInput) catInput.value = '';
+  if (res) {
+    res.style.display = 'block';
+    res.innerHTML = '<div class="result" style="color:var(--lime)">Saved ✓ ' + esc(name) + ' added to activity choices!</div>';
+  }
+
+  renderActivityChoices();
+  renderCustomActivities();
+  toast('Custom activity added ✓');
+}
+
+function removeCustomActivity(id) {
+  if (!confirm('Remove this custom activity?')) return;
+  d.customActivities = (d.customActivities || []).filter(x => x.id !== id);
+  if (v9.activity === id) {
+    v9.activity = null;
+    saveV9();
+  }
+  save(false);
+  renderActivityChoices();
+  renderCustomActivities();
+  renderV9();
+  toast('Custom activity removed');
+}
+
+function renderCustomActivities() {
+  const el = document.getElementById('customActivityList');
+  if (!el) return;
+  const list = d.customActivities || [];
+  if (!list.length) {
+    el.innerHTML = '<p class="muted">No custom activities yet.</p>';
+    return;
+  }
+  el.innerHTML = list.map(a => `
+    <div class="customFoodItem">
+      <div class="customFoodMeta">
+        <b>${a.icon || '⚡'} ${esc(a.name || a.label)}</b>
+        <small>${esc(a.sub || 'Custom')} • ~${a.met || 7} MET</small>
+      </div>
+      <div class="actions">
+        <button onclick="selectActivity('${esc(a.id)}')">+ Select</button>
+        <button class="deleteBtn" onclick="removeCustomActivity('${esc(a.id)}')">×</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectActivity(actId) {
+  v9.activity = actId;
+  saveV9();
+  renderV9();
+  const found = (d.customActivities || []).find(x => x.id === actId);
+  toast('Selected ' + (found ? found.name : actId));
 }
 
 function render() {
@@ -976,15 +1643,49 @@ function render() {
   const styleProp = (id, prop, val) => { const e = document.getElementById(id); if (e) e.style.setProperty(prop, val); };
 
   let p = d.foods.reduce((a, x) => a + (Number(x.p) || 0), 0),
-    c = d.foods.reduce((a, x) => a + (Number(x.c) || 0), 0),
-    gp = Math.max(0, Math.min(100, ((100 - d.weight) / Math.max(1, 100 - d.goalWeight)) * 100)),
-    li = levelInfo();
+    c = d.foods.reduce((a, x) => a + (Number(x.c) || 0), 0);
+  const startW = Number(d.startWeight) || (d.history && d.history.length ? Number(d.history[0].weight) : null) || Number(d.weight) || 75;
+  const curW = Number(d.weight) || startW;
+  const goalW = Number(d.goalWeight) || startW;
+  let gp = 0;
+  if (startW !== goalW) {
+    if (startW > goalW) {
+      gp = Math.max(0, Math.min(100, ((startW - curW) / Math.max(0.1, startW - goalW)) * 100));
+    } else {
+      gp = Math.max(0, Math.min(100, ((curW - startW) / Math.max(0.1, goalW - startW)) * 100));
+    }
+  } else {
+    gp = 100;
+  }
+  const li = levelInfo();
 
-  set('weightHome', d.weight);
-  set('goalWeightHome', d.goalWeight);
-  set('remaining', Math.max(0, d.weight - d.goalWeight).toFixed(1) + ' kg remaining');
+  set('weightHome', Number(curW).toFixed(1));
+  set('goalWeightHome', Number(goalW).toFixed(0));
+  const diff = (curW - goalW);
+  const remText = diff > 0 
+    ? diff.toFixed(1) + ' kg remaining' 
+    : diff < 0 
+    ? Math.abs(diff).toFixed(1) + ' kg to gain' 
+    : 'Goal reached! 🎉';
+  set('remaining', remText);
   styleProp('ring', '--p', gp + '%');
   set('ringText', Math.round(gp) + '%');
+
+  const heroSub = document.querySelector('.hero .sub');
+  if (heroSub) {
+    heroSub.textContent = d.name ? ('WELCOME, ' + d.name.toUpperCase() + ' · TRAIN & TRANSFORM') : 'TRAIN · TRACK · TRANSFORM';
+  }
+  const av = document.querySelector('.hero .avatar');
+  if (av) {
+    if (d.name) {
+      const parts = d.name.trim().split(/\s+/);
+      av.textContent = parts.length > 1 ? (parts[0][0] + parts[1][0]).toUpperCase() : d.name.slice(0, 2).toUpperCase();
+      av.title = d.name;
+    } else {
+      av.textContent = 'DQX';
+      av.title = 'DEQX FIT';
+    }
+  }
 
   set('proteinView', Math.round(p));
   set('waterView', Number(d.water || 0).toFixed(2).replace(/\.00$/, ''));
@@ -1021,7 +1722,19 @@ function render() {
     : '<p class="muted">No food logged yet.</p>'
   );
 
-  setHtml('history', [...d.history].reverse().slice(0, 12).map(x => '<div class="food"><span>' + esc(x.date) + '</span><b>' + x.weight + ' kg</b></div>').join(''));
+  setHtml('history', (d.history && d.history.length)
+    ? [...d.history].reverse().slice(0, 15).map((x, revIdx) => {
+        const realIdx = d.history.length - 1 - revIdx;
+        return '<div class="food" style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px">' +
+          '<span>' + esc(x.date) + '</span>' +
+          '<div style="display:flex;align-items:center;gap:10px">' +
+            '<b>' + x.weight + ' kg</b>' +
+            '<button type="button" class="deleteBtn" style="padding:2px 7px;font-size:11px;background:#39201f;color:#ffb1aa;border-radius:6px;border:none;cursor:pointer" onclick="removeWeightEntry(' + realIdx + ')" title="Delete entry">✕</button>' +
+          '</div>' +
+        '</div>';
+      }).join('')
+    : '<p class="muted" style="font-size:12px;padding:8px 0">No weight history logged yet.</p>'
+  );
 
   setHtml('profileFoodList', d.foods.length
     ? d.foods.map((x, i) => '<div class="card" style="padding:11px;margin-bottom:8px;background:#10130f"><input id="foodName' + i + '" value="' + esc(x.n) + '"><div class="editGrid"><input id="foodProtein' + i + '" type="number" step=".1" value="' + x.p + '"><input id="foodCalories' + i + '" type="number" value="' + x.c + '"></div><div class="editActions"><button onclick="saveFoodEdit(' + i + ')">Save</button><button class="deleteBtn" onclick="removeFood(' + i + ')">Remove</button></div></div>').join('')
@@ -1030,7 +1743,10 @@ function render() {
 
   setVal('spent', d.spent || '');
   fillProfile();
+  renderQuickFoodGrid();
   renderCustomFoods();
+  renderActivityChoices();
+  renderCustomActivities();
   renderFoodDraft();
   renderCalendar();
   updateDailyAnalytics();
@@ -1108,16 +1824,38 @@ function updateDailyAnalytics() {
   bar('burnRowBar', bp);
   bar('workoutRowBar', gp);
 
-  const goalProgress = Math.max(0, Math.min(100, ((100 - d.weight) / Math.max(1, 100 - d.goalWeight)) * 100));
+  const startW = Number(d.startWeight) || (d.history && d.history.length ? Number(d.history[0].weight) : null) || Number(d.weight) || 75;
+  const curW = Number(d.weight) || startW;
+  const goalW = Number(d.goalWeight) || startW;
+  let goalProgress = 0;
+  if (startW !== goalW) {
+    if (startW > goalW) {
+      goalProgress = Math.max(0, Math.min(100, ((startW - curW) / Math.max(0.1, startW - goalW)) * 100));
+    } else {
+      goalProgress = Math.max(0, Math.min(100, ((curW - startW) / Math.max(0.1, goalW - startW)) * 100));
+    }
+  } else {
+    goalProgress = 100;
+  }
   bar('weightMiniBar', goalProgress);
   bar('weightJourneyBar', goalProgress);
   set('weightMiniText', Math.round(goalProgress) + '% toward goal');
-  set('weightHome2', Number(d.weight).toFixed(1));
-  set('goalWeightHome2', Number(d.goalWeight).toFixed(0));
-  set('remaining2', Math.max(0, d.weight - d.goalWeight).toFixed(1) + ' kg remaining');
+  set('weightHome2', Number(curW).toFixed(1));
+  set('goalWeightHome2', Number(goalW).toFixed(0));
+  set('weightHome', Number(curW).toFixed(1));
+  set('goalWeightHome', Number(goalW).toFixed(0));
+  const diff = (curW - goalW);
+  const remText = diff > 0 
+    ? diff.toFixed(1) + ' kg remaining' 
+    : diff < 0 
+    ? Math.abs(diff).toFixed(1) + ' kg to gain' 
+    : 'Goal reached! 🎉';
+  set('remaining2', remText);
+  set('remaining', remText);
   set('rankHome', (typeof v9 !== 'undefined' && v9.level > 5) ? 'Elite' : (typeof v9 !== 'undefined' && v9.level > 2 ? 'Rising' : 'Rookie'));
 
-  const streakCount = Math.max(1, Number(d.attendanceStreak) || 1);
+  const streakRes = computeAndUpdateStreak(daily);
+  const streakCount = streakRes.streakCount;
   set('todayStreakCount', streakCount);
   set('streakHome', streakCount);
   set('streakView', streakCount);
@@ -1127,6 +1865,13 @@ function updateDailyAnalytics() {
   set('activityStreakUnit', streakCount === 1 ? ' DAY' : ' DAYS');
   const streakViewWrap = document.getElementById('streakViewWrap');
   if (streakViewWrap) streakViewWrap.innerHTML = `<span id="streakView">${streakCount}</span> <span id="streakUnit">${streakCount === 1 ? 'day' : 'days'}</span>`;
+
+  const badge = document.getElementById('todayStreakBadge');
+  if (badge) {
+    badge.classList.toggle('blinking', true);
+  }
+
+  renderWeeklyRhythm(daily);
   set('modalDailyPercent', daily + '%');
   set('modalDayState', daily >= 100 ? 'COMPLETE' : 'IN PROGRESS');
   set('modalDailyMessage', daily >= 100
@@ -1164,7 +1909,7 @@ function savedFeedback(message, sectionId, resetFn) {
 /* ===== v9 Activity + XP + streak + swipe ===== */
 const V9KEY = 'deqxFitV9';
 var v9 = JSON.parse(localStorage.getItem(V9KEY) || 'null') || { activity: null, burned: 0, streak: 0, lastWorkout: null, xp: 0, level: 1 };
-const ACTIVITY_MET = { Gym: 5.5, Badminton: 7, Cricket: 5 };
+const ACTIVITY_MET = { Badminton: 7, Cricket: 5 };
 
 function saveV9() {
   localStorage.setItem(V9KEY, JSON.stringify(v9));
@@ -1198,17 +1943,75 @@ function closeLevelUp() {
   if (overlay) overlay.classList.remove('show');
 }
 
+function calculateActivityCalories(activityId, mins, weight, intensity) {
+  let met = ACTIVITY_MET[activityId];
+  let displayName = activityId;
+  if (!met && d.customActivities) {
+    const custom = d.customActivities.find(x => x.id === activityId);
+    if (custom) {
+      met = Number(custom.met) || 7;
+      displayName = custom.name || custom.label;
+    }
+  }
+  met = met || 7;
+  const mult = { light: 0.82, moderate: 1, hard: 1.18 }[intensity] || 1;
+
+  // IN BADMINTON: calculate calories burned of HALF of the entered value (50% active play & rest intervals)
+  const isBadminton = (String(activityId).toLowerCase() === 'badminton' || (displayName && String(displayName).trim().toLowerCase() === 'badminton'));
+  const effectiveMins = isBadminton ? (mins * 0.5) : mins;
+
+  // Physiological calorie burn calculation factoring body weight and standard MET multiplier (1.05)
+  const kcal = Math.round(met * weight * (effectiveMins / 60) * mult * 1.05);
+  return {
+    kcal,
+    met,
+    displayName,
+    isBadminton,
+    effectiveMins
+  };
+}
+window.calculateActivityCalories = calculateActivityCalories;
+
+function updateActivityCaloriePreview() {
+  const valEl = document.getElementById('activityCalorieValue');
+  const formulaEl = document.getElementById('activityCalorieFormula');
+  if (!valEl || !formulaEl) return;
+
+  const rawMins = document.getElementById('activityMinutes')?.value;
+  const parsedMins = parseDurationToMinutes(rawMins);
+  const mins = Math.min(600, Math.max(1, parsedMins || 45));
+  const intensity = document.getElementById('activityIntensity')?.value || 'moderate';
+  const weight = Math.max(40, Math.min(180, Number(d?.weight) || 70));
+
+  if (!v9?.activity) {
+    valEl.textContent = '--';
+    formulaEl.textContent = 'Select an activity above to preview calories';
+    return;
+  }
+
+  const { kcal, displayName, isBadminton, effectiveMins } = calculateActivityCalories(v9.activity, mins, weight, intensity);
+  valEl.textContent = kcal;
+  const durStr = formatDurationLabel(mins);
+  const badmintonTag = isBadminton ? ' · (50% of ' + durStr + ' active play)' : '';
+  formulaEl.textContent = `${durStr} ${displayName}${badmintonTag} · ${weight} kg · ${intensity}`;
+}
+window.updateActivityCaloriePreview = updateActivityCaloriePreview;
+
 function calculateActivity() {
   if (!v9.activity) {
     toast('Choose an activity first');
     show('activity');
     return;
   }
-  const mins = Math.min(600, Math.max(1, Number(document.getElementById('activityMinutes').value) || 45));
+  const rawMins = document.getElementById('activityMinutes')?.value;
+  const parsedMins = parseDurationToMinutes(rawMins);
+  const mins = Math.min(600, Math.max(1, parsedMins || 45));
   const intensity = document.getElementById('activityIntensity').value;
-  const mult = { light: 0.82, moderate: 1, hard: 1.18 }[intensity];
-  const weight = Math.max(40, Math.min(180, Number(d.weight) || 70));
-  const kcal = Math.round(ACTIVITY_MET[v9.activity] * weight * (mins / 60) * mult);
+  const weight = Math.max(40, Math.min(180, Number(d?.weight) || 70));
+
+  const { kcal, displayName, isBadminton, effectiveMins } = calculateActivityCalories(v9.activity, mins, weight, intensity);
+
+  // Set home page burned calories to this activity session's value
   v9.burned = kcal;
   v9.lastActivityDate = today();
   saveV9();
@@ -1216,34 +2019,44 @@ function calculateActivity() {
   const res = document.getElementById('activityResult');
   if (res) {
     res.style.display = 'block';
-    res.innerHTML = '✅ <b>Saved ✓ ' + kcal + ' kcal</b> · ' + mins + ' min ' + v9.activity;
+    const badmintonBadge = isBadminton ? '<br><small style="color:#b8f53a">🏸 Badminton calculated on half duration (' + formatDurationLabel(effectiveMins) + ' active play factoring rest intervals)</small>' : '';
+    res.innerHTML = '✅ <b>Saved ✓ ' + kcal + ' kcal</b> · ' + formatDurationLabel(mins) + ' ' + esc(displayName) + badmintonBadge + '<br><small style="color:#a6b69e">' + weight + ' kg · ' + intensity + ' intensity · Shown on Home page</small>';
   }
   earnXP(Math.min(60, Math.round(kcal / 10)), 'activity');
   document.getElementById('activityMinutes').value = '45';
+  updateBarUnit(document.getElementById('activityMinutes'), 'activityBarUnit');
   document.getElementById('activityIntensity').value = 'moderate';
   document.querySelectorAll('.activityChoice').forEach(x => x.classList.remove('selected'));
   v9.activity = null;
   saveV9();
+  render();
   renderV9();
-  toast('Activity saved ✓ +XP');
+  updateActivityCaloriePreview();
+  toast('Activity saved ✓ ' + kcal + ' kcal burned on Home!');
 }
 
 function updateStreak() {
-  const day = new Date().getDay();
-  if (day === 0 || day === 6) return;
   const key = today();
-  if (v9.lastWorkout === key) return;
-  v9.lastWorkout = key;
-  v9.streak++;
-  saveV9();
-  earnXP(50, 'workout');
-  renderV9();
+  if (typeof v9 !== 'undefined') {
+    if (v9.lastWorkout === key) return;
+    v9.lastWorkout = key;
+    earnXP(50, 'workout');
+    saveV9();
+  }
+  updateDailyAnalytics();
 }
 
 function renderV9() {
   document.querySelectorAll('.activityChoice').forEach(b => b.classList.toggle('selected', b.dataset.activity === v9.activity));
   const summary = document.getElementById('activitySummary');
-  if (summary) summary.textContent = v9.activity ? v9.activity + ' selected' : 'Choose an activity';
+  if (summary) {
+    let actName = v9.activity;
+    if (v9.activity && d.customActivities) {
+      const custom = d.customActivities.find(x => x.id === v9.activity);
+      if (custom) actName = custom.name || custom.label;
+    }
+    summary.textContent = actName ? actName + ' selected' : 'Choose an activity';
+  }
   const burn = v9.burned || 0,
     target = 500,
     percent = Math.min(100, Math.round((burn / target) * 100)),
@@ -1270,7 +2083,7 @@ function renderV9() {
   if (xn) xn.textContent = next;
   const xb = document.getElementById('xpBarHome');
   if (xb) xb.style.width = xpPct + '%';
-  const currentStreak = Math.max(1, Number(d?.attendanceStreak) || v9.streak || 1);
+  const currentStreak = Number(d?.attendanceStreak) || 0;
   const sUnit = currentStreak === 1 ? 'day' : 'days';
   ['streakHome', 'streakView'].forEach(id => {
     const e = document.getElementById(id);
@@ -1280,13 +2093,8 @@ function renderV9() {
   if (su) su.textContent = sUnit;
   const shu = document.getElementById('streakHomeUnit');
   if (shu) shu.textContent = sUnit;
-  const dots = document.getElementById('streakDots');
-  if (dots) {
-    const labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    const activeCount = Math.min(7, currentStreak % 7 === 0 ? 7 : (currentStreak % 7));
-    dots.innerHTML = labels.map((x, i) => '<i class="' + (i < activeCount ? 'done ' : '') + (new Date().getDay() === ((i + 1) % 7) ? 'today' : '') + '">' + x + '</i>').join('');
-  }
   updateDailyAnalytics();
+  updateActivityCaloriePreview();
 }
 
 const oldSaveWorkout = window.saveWorkout;
@@ -1305,7 +2113,7 @@ document.addEventListener('click', function (e) {
 });
 
 /* Swipe & Gestures between bottom sections */
-const swipeOrder = ['home', 'food', 'activity', 'workout', 'progressTab', 'budget', 'profile'];
+const swipeOrder = ['home', 'food', 'activity', 'workout', 'budget', 'profile'];
 let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
 
 document.addEventListener('touchstart', e => {
@@ -1319,10 +2127,11 @@ document.addEventListener('touchstart', e => {
 }, { passive: true });
 
 document.addEventListener('touchend', e => {
+  if (d && !d.onboarded) return;
   const t = e.changedTouches[0];
   if (!t) return;
   const target = e.target;
-  if (target.closest('input, textarea, select, .modalBox, .targetMapBox, .levelUpBox, .calendarTrack')) return;
+  if (target.closest('input, textarea, select, .modalBox, .targetMapBox, .levelUpBox, .onboardBox, .calendarTrack')) return;
 
   const dx = t.clientX - touchStartX;
   const dy = t.clientY - touchStartY;
@@ -1353,13 +2162,15 @@ document.addEventListener('touchend', e => {
 
 /* Initialization on DOM load or immediate if already ready */
 function initApp() {
-  checkAttendanceStreak();
   renderQuickFoodGrid();
   renderActivityChoices();
   render();
   updateSpendRing();
   renderV9();
   refreshForDateChange();
+  checkOnboardingStatus();
+  updateBarUnit(document.getElementById('activityMinutes'), 'activityBarUnit');
+  updateBarUnit(document.getElementById('workoutMinutes'), 'workoutBarUnit');
 }
 
 if (document.readyState === 'loading') {
@@ -1371,6 +2182,7 @@ if (document.readyState === 'loading') {
 /* Keyboard navigation & Modal escapes */
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
+    if (d && !d.onboarded) return; // Do not dismiss mandatory onboarding
     closeTargetMapModal();
     closeAdjustModal();
     closeLevelOverlay();
@@ -1378,6 +2190,8 @@ document.addEventListener('keydown', e => {
     collapseNavDock();
     return;
   }
+
+  if (d && !d.onboarded) return;
 
   // Arrow Left / Arrow Right shortcuts when not inside text inputs
   const tag = (document.activeElement?.tagName || '').toLowerCase();
@@ -1407,15 +2221,15 @@ setInterval(refreshForDateChange, 30000);
 
 /* PWA Service Worker Registration */
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=34')
+  navigator.serviceWorker.register('./service-worker.js?v=46')
     .then(reg => {
       if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
       reg.update();
     })
     .catch(() => { });
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!sessionStorage.getItem('deqx-sw-v34-reloaded')) {
-      sessionStorage.setItem('deqx-sw-v34-reloaded', '1');
+    if (!sessionStorage.getItem('deqx-sw-v46-reloaded')) {
+      sessionStorage.setItem('deqx-sw-v46-reloaded', '1');
       location.reload();
     }
   });
