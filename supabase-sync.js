@@ -73,7 +73,7 @@ async function cloudSyncNow() {
     const daily = cloudDailyPayload();
     const { error: pe } = await supabaseClient.from('profiles').upsert({
       id: cloudUser.id,
-      name: cloudUser.email?.split('@')[0] || 'DEQX FIT',
+      name: d.name || cloudUser.email?.split('@')[0] || 'DEQX FIT',
       goal_weight: Number(d.goalWeight),
       current_weight: Number(d.weight),
       protein_target: Number(d.proteinTarget),
@@ -107,12 +107,12 @@ async function cloudSyncNow() {
 
     r = await supabaseClient.from('activity_logs').delete().eq('user_id', cloudUser.id).eq('log_date', iso);
     if (r.error) throw r.error;
-    if (typeof v9 !== 'undefined' && v9.activity) {
+    if (typeof v9 !== 'undefined' && (v9.activity || v9.burned)) {
       r = await supabaseClient.from('activity_logs').insert({
         user_id: cloudUser.id,
         log_date: iso,
-        activity: v9.activity,
-        duration: Number(document.getElementById('activityMinutes')?.value) || 0,
+        activity: v9.activity || d.workout || 'Gym Workout',
+        duration: (typeof parseDurationToMinutes === 'function' ? parseDurationToMinutes(document.getElementById('activityMinutes')?.value || document.getElementById('workoutMinutes')?.value) : Number(document.getElementById('activityMinutes')?.value)) || 0,
         intensity: document.getElementById('activityIntensity')?.value || 'moderate',
         calories_burned: Number(v9.burned) || 0
       });
@@ -135,6 +135,10 @@ async function cloudSyncNow() {
 
     const todayWeight = [...d.history].reverse().find(x => x.date === today());
     if (todayWeight) {
+      // If history was just reset / fresh profile, clear previous profile's stale weight rows from Supabase
+      if (d.history.length === 1) {
+        await supabaseClient.from('weight_history').delete().eq('user_id', cloudUser.id).neq('recorded_date', iso);
+      }
       const q = await supabaseClient.from('weight_history').select('id').eq('user_id', cloudUser.id).eq('recorded_date', iso).maybeSingle();
       if (q.error) throw q.error;
       if (q.data) {
@@ -164,6 +168,34 @@ async function cloudSyncNow() {
   }
 }
 
+async function cloudResetUserTables() {
+  if (!supabaseClient || !cloudUser) return;
+  try {
+    await supabaseClient.from('weight_history').delete().eq('user_id', cloudUser.id);
+    await supabaseClient.from('food_logs').delete().eq('user_id', cloudUser.id);
+    await supabaseClient.from('daily_logs').delete().eq('user_id', cloudUser.id);
+    await supabaseClient.from('activity_logs').delete().eq('user_id', cloudUser.id);
+    await supabaseClient.from('workout_logs').delete().eq('user_id', cloudUser.id);
+    await supabaseClient.from('profiles').upsert({
+      id: cloudUser.id,
+      name: '',
+      goal_weight: null,
+      current_weight: null,
+      protein_target: 150,
+      water_target: 3,
+      calorie_target: 2200,
+      budget_target: 250,
+      xp: 0,
+      level: 1,
+      updated_at: new Date().toISOString()
+    });
+    console.log('DEQX FIT: Cloud tables reset successfully');
+  } catch (err) {
+    console.warn('DEQX FIT cloudResetUserTables error', err);
+  }
+}
+window.cloudResetUserTables = cloudResetUserTables;
+
 function cloudQueueSync() {
   if (!cloudUser) return;
   clearTimeout(cloudTimer);
@@ -178,6 +210,10 @@ function cloudQueueSync() {
 
 async function cloudLoad() {
   if (!supabaseClient || !cloudUser) return;
+  if (typeof d !== 'undefined' && (!d || !d.onboarded)) {
+    cloudStatus('online', 'Ready for profile entry');
+    return;
+  }
   if (localDirty) {
     cloudStatus('syncing', 'Saving local changes to cloud…');
     await cloudSyncNow();
