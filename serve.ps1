@@ -11,9 +11,12 @@ $mime = @{
     ".svg"  = "image/svg+xml"
     ".png"  = "image/png"
     ".ico"  = "image/x-icon"
+<<<<<<< HEAD
     ".jpg"  = "image/jpeg"
     ".jpeg" = "image/jpeg"
     ".webp" = "image/webp"
+=======
+>>>>>>> 0f03ac5efda652c86790879dfaa74ae2c2c1737d
 }
 
 $listener = $null

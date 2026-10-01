@@ -1501,7 +1501,10 @@ function renderCalendar() {
     wInput.placeholder = d.weight ? 'Current: ' + d.weight + ' kg (optional)' : 'Current weight in kg (optional)';
   }
   updateWorkoutCaloriePreview();
+<<<<<<< HEAD
   if (window.HologramViewer) window.HologramViewer.update(todaySchedule);
+=======
+>>>>>>> 0f03ac5efda652c86790879dfaa74ae2c2c1737d
 }
 
 function changeMonth(delta) {
