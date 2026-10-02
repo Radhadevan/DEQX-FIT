@@ -112,10 +112,7 @@
       })
       .catch(() => { });
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (!sessionStorage.getItem('deqx-sw-v50-reloaded')) {
-        sessionStorage.setItem('deqx-sw-v50-reloaded', '1');
-        location.reload();
-      }
+      console.log('[DEQX] Service worker controller updated.');
     });
   }
 

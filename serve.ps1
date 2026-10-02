@@ -35,12 +35,16 @@ if (-not $listener -or -not $listener.Server.IsBound) {
 $baseDir = $PSScriptRoot
 if (-not $baseDir) { $baseDir = Get-Location }
 
-$syncFile = [System.IO.Path]::Combine($baseDir, "sync_state.json")
+# Store runtime sync state in Windows TEMP directory to prevent VS Code Live Server from triggering full-page browser reloads
+$tempDir = [System.IO.Path]::GetTempPath()
+$syncFile = [System.IO.Path]::Combine($tempDir, "deqx_live_sync_state.json")
 $global:syncVersion = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
 $global:syncTime = [DateTime]::UtcNow.ToString("o")
+$global:syncDataBytes = $null
 
 if ([System.IO.File]::Exists($syncFile)) {
     try {
+        $global:syncDataBytes = [System.IO.File]::ReadAllBytes($syncFile)
         $global:syncVersion = [System.IO.File]::GetLastWriteTimeUtc($syncFile).ToFileTimeUtc()
         $global:syncTime = [System.IO.File]::GetLastWriteTimeUtc($syncFile).ToString("o")
     } catch {}
@@ -123,8 +127,11 @@ try {
                 }
                 # 3. Pull Current Data (/api/sync GET)
                 elseif ($rawPath -eq "/api/sync" -and $method -eq "GET") {
-                    if ([System.IO.File]::Exists($syncFile)) {
-                        $respBytes = [System.IO.File]::ReadAllBytes($syncFile)
+                    if ($global:syncDataBytes) {
+                        $respBytes = $global:syncDataBytes
+                    } elseif ([System.IO.File]::Exists($syncFile)) {
+                        $global:syncDataBytes = [System.IO.File]::ReadAllBytes($syncFile)
+                        $respBytes = $global:syncDataBytes
                     } else {
                         $respBytes = [System.Text.Encoding]::UTF8.GetBytes("{`"version`":0,`"d`":null,`"v9`":null}")
                     }
@@ -138,7 +145,13 @@ try {
                 elseif ($rawPath -eq "/api/sync" -and $method -eq "POST") {
                     $bodyBytes = New-Object byte[] ($reqBytes.Count - $bodyStart)
                     [System.Array]::Copy($reqBytes.ToArray(), $bodyStart, $bodyBytes, 0, $bodyBytes.Length)
-                    [System.IO.File]::WriteAllBytes($syncFile, $bodyBytes)
+                    
+                    # Store in memory and outside workspace directory
+                    $global:syncDataBytes = $bodyBytes
+                    try {
+                        [System.IO.File]::WriteAllBytes($syncFile, $bodyBytes)
+                    } catch {}
+
                     $global:syncVersion = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
                     $global:syncTime = [DateTime]::UtcNow.ToString("o")
 
@@ -149,7 +162,6 @@ try {
                     $stream.Write($hBytes, 0, $hBytes.Length)
                     $stream.Write($respBytes, 0, $respBytes.Length)
                     $stream.Flush()
-                    Write-Host "[LIVE-SYNC] Data updated ($($bodyBytes.Length) bytes)" -ForegroundColor Cyan
                 }
                 # 5. Static File Server
                 else {

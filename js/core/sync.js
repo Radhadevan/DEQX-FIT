@@ -1,6 +1,6 @@
 /**
  * DEQX FIT - Real-Time Multi-Device Sync Engine
- * Automatically synchronizes changes between Laptop and Phone in real-time.
+ * Synchronizes changes between Laptop and Phone in real-time without infinite loops or page reloads.
  */
 
 (function (window) {
@@ -9,7 +9,7 @@
   const STORAGE_VERSION_KEY = 'deqx_live_sync_version';
   const CLIENT_ID_KEY = 'deqx_live_client_id';
 
-  // Identify this specific browser tab/device
+  // Unique client ID per browser instance/tab
   let clientId = sessionStorage.getItem(CLIENT_ID_KEY);
   if (!clientId) {
     clientId = 'dev_' + Math.random().toString(36).slice(2, 9) + '_' + Date.now();
@@ -21,23 +21,42 @@
 
   let localVersion = Number(localStorage.getItem(STORAGE_VERSION_KEY) || 0);
   let isApplyingRemoteSync = false;
-  let pushTimer = null;
   let isPushing = false;
+  let pushTimer = null;
   let pollIntervalId = null;
+  let lastKnownHash = '';
 
-  // Resolve sync endpoint with cross-port fallback (e.g. if testing on Live Server port 5500 vs 8080)
+  const computeStateHash = (d, v9) => {
+    try {
+      return JSON.stringify({
+        date: d?.date,
+        weight: d?.weight,
+        water: d?.water,
+        spent: d?.spent,
+        workout: d?.workout,
+        foodsCount: d?.foods?.length,
+        foods: d?.foods,
+        workoutHistory: d?.workoutHistory,
+        workoutChecklist: d?.workoutChecklist,
+        xp: d?.xp,
+        historyCount: d?.history?.length,
+        burned: v9?.burned,
+        activity: v9?.activity
+      });
+    } catch {
+      return '';
+    }
+  };
+
   const getBaseSyncUrl = () => {
     const loc = window.location;
     if (loc.port === '8080' || !loc.port) {
       return '/api/sync';
     }
-    // Fallback to port 8080 on the same host (laptop IP)
+    // Fallback if accessed via a different port on the same host
     return `${loc.protocol}//${loc.hostname}:8080/api/sync`;
   };
 
-  /**
-   * Update visual sync status pill in header
-   */
   const updateSyncIndicator = (status, text) => {
     const badge = document.getElementById('liveSyncBadge');
     if (!badge) return;
@@ -50,13 +69,19 @@
    * Push local modifications to server
    */
   const pushSync = (immediate = false) => {
-    if (isApplyingRemoteSync) return; // Don't echo incoming syncs
+    if (isApplyingRemoteSync) return;
 
     clearTimeout(pushTimer);
-    const delay = immediate ? 0 : 250;
+    const delay = immediate ? 0 : 400;
 
     pushTimer = setTimeout(async () => {
-      if (isPushing) return;
+      if (isPushing || isApplyingRemoteSync) return;
+
+      const currentHash = computeStateHash(window.d, window.v9);
+      if (currentHash === lastKnownHash && lastKnownHash !== '') {
+        return; // State has not changed, skip redundant network call
+      }
+
       isPushing = true;
       updateSyncIndicator('syncing', 'Syncing…');
 
@@ -83,12 +108,12 @@
           const resData = await res.json().catch(() => ({}));
           localVersion = resData.version || newVersion;
           localStorage.setItem(STORAGE_VERSION_KEY, String(localVersion));
+          lastKnownHash = currentHash;
           updateSyncIndicator('online', 'Live Sync Active');
         } else {
           updateSyncIndicator('', 'Local only');
         }
       } catch (err) {
-        // Server might be unreachable or offline
         updateSyncIndicator('', 'Offline mode');
       } finally {
         isPushing = false;
@@ -100,7 +125,8 @@
    * Pull updated data from server and apply to active app
    */
   const pullSync = async () => {
-    if (isPushing) return;
+    if (isPushing || isApplyingRemoteSync) return;
+
     try {
       const res = await fetch(getBaseSyncUrl(), {
         headers: {
@@ -113,47 +139,54 @@
       const data = await res.json();
       if (!data || !data.d) return;
 
-      // Ignore if this client sent the data and version hasn't changed
-      if (data.client === clientId && data.version <= localVersion) {
+      // Don't apply if sent by this exact client
+      if (data.client === clientId) {
+        if (data.version && data.version > localVersion) {
+          localVersion = data.version;
+          localStorage.setItem(STORAGE_VERSION_KEY, String(localVersion));
+        }
         return;
       }
 
-      if (data.version && data.version <= localVersion && !window.__DEQX_FORCE_SYNC__) {
+      const remoteHash = computeStateHash(data.d, data.v9);
+      if (remoteHash === lastKnownHash && lastKnownHash !== '') {
+        localVersion = Math.max(localVersion, Number(data.version) || 0);
+        localStorage.setItem(STORAGE_VERSION_KEY, String(localVersion));
         return;
       }
 
-      console.log(`[DEQX LIVE SYNC] Applying remote data from ${data.device || 'device'} (v${data.version})`);
+      console.log(`[DEQX LIVE SYNC] Applying remote update from ${data.device || 'device'}`);
 
       isApplyingRemoteSync = true;
-      localVersion = data.version || Date.now();
+      localVersion = Number(data.version) || Date.now();
       localStorage.setItem(STORAGE_VERSION_KEY, String(localVersion));
+      lastKnownHash = remoteHash;
 
-      // 1. Update State Objects
+      // Update in-memory state
       window.d = data.d;
       if (data.v9) window.v9 = data.v9;
 
-      // 2. Persist to localStorage
+      // Persist to local device storage
       if (window.KEY) localStorage.setItem(window.KEY, JSON.stringify(window.d));
       if (window.V9KEY && window.v9) localStorage.setItem(window.V9KEY, JSON.stringify(window.v9));
 
-      // 3. Re-render all views
+      // Re-render UI views smoothly without reloading the page
       if (typeof window.render === 'function') window.render();
       if (typeof window.renderCalendar === 'function') window.renderCalendar();
       if (typeof window.renderV9 === 'function') window.renderV9();
       if (typeof window.updateDailyAnalytics === 'function') window.updateDailyAnalytics();
       if (typeof window.updateSpendRing === 'function') window.updateSpendRing();
 
-      // Re-render workout visualization if workout component is present
       if (window.DEQX?.components?.workout?.renderWorkoutVisualization) {
         window.DEQX.components.workout.renderWorkoutVisualization();
       }
 
       updateSyncIndicator('active-pulse', `Updated from ${data.device || 'laptop'}`);
-      setTimeout(() => updateSyncIndicator('online', 'Live Sync Active'), 3000);
+      setTimeout(() => updateSyncIndicator('online', 'Live Sync Active'), 2500);
 
-      const senderLabel = data.device === 'laptop' ? 'laptop' : 'other device';
+      const senderLabel = data.device === 'laptop' ? 'laptop' : 'phone';
       if (typeof window.toast === 'function') {
-        window.toast(`⚡ Real-time update from ${senderLabel} loaded ✓`);
+        window.toast(`⚡ Data updated from ${senderLabel} ✓`);
       }
 
     } catch (err) {
@@ -161,12 +194,12 @@
     } finally {
       setTimeout(() => {
         isApplyingRemoteSync = false;
-      }, 100);
+      }, 200);
     }
   };
 
   /**
-   * Fast version check to detect if another device updated data
+   * Fast version check
    */
   const checkVersion = async () => {
     if (isPushing || isApplyingRemoteSync) return;
@@ -182,44 +215,40 @@
         await pullSync();
       }
     } catch (e) {
-      // Server not reachable or temporary network hiccup
+      // Server offline or network idle
     }
   };
 
   /**
-   * Start 1-second auto-sync polling loop
+   * Start 2-second polling loop
    */
   const startSyncPolling = () => {
     if (pollIntervalId) clearInterval(pollIntervalId);
-    pollIntervalId = setInterval(checkVersion, 1000); // Check every 1 second
+    pollIntervalId = setInterval(checkVersion, 2000);
   };
 
   /**
-   * Initial bootstrap on page load
+   * Initialize sync engine
    */
   const initSync = async () => {
-    // 1. Initial check: Does server have newer data than this device?
+    lastKnownHash = computeStateHash(window.d, window.v9);
+
+    // Initial check: if server has newer data, pull it
     try {
       const res = await fetch(getBaseSyncUrl(), {
         headers: { 'Cache-Control': 'no-cache' }
       });
       if (res.ok) {
         const data = await res.json();
-        if (data && data.d && data.version && data.version > localVersion) {
+        if (data && data.d && data.version && data.version > localVersion && data.client !== clientId) {
           await pullSync();
-        } else if (window.d && (!data || !data.d)) {
-          // If server is empty and this device has data, seed the server
-          pushSync(true);
         }
       }
-    } catch (e) {
-      // Server offline initially
-    }
+    } catch (e) {}
 
-    // 2. Start fast 1-second polling loop
     startSyncPolling();
 
-    // 3. Immediately check when tab is focused or unlocked on phone
+    // Check on focus / phone screen wake
     window.addEventListener('focus', checkVersion);
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
@@ -227,7 +256,7 @@
       }
     });
 
-    // 4. Hook into window.save to auto-broadcast
+    // Hook into window.save
     const originalSave = window.save;
     window.save = function (doRender = true) {
       if (typeof originalSave === 'function') originalSave(doRender);
@@ -245,7 +274,6 @@
     };
   };
 
-  // Export module
   window.DEQX = window.DEQX || {};
   window.DEQX.sync = {
     clientId,
