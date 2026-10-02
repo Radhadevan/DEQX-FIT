@@ -263,11 +263,7 @@
           <div class="brand">DEQX <span>FIT</span></div>
           <div class="sub">TRAIN · TRACK · TRANSFORM</div>
         </div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <div class="liveSyncBadge online" id="liveSyncBadge" onclick="if(window.DEQX?.sync?.pullSync) window.DEQX.sync.pullSync()" title="Real-time multi-device sync with laptop (Tap to sync now)">
-            <span class="liveSyncDot"></span>
-            <span id="liveSyncText">Live Sync</span>
-          </div>
+        <div>
           <div class="avatar" aria-label="DEQX FIT logo">DQX</div>
         </div>
       </div>
@@ -708,8 +704,8 @@
               </select>
             </div>
             <div class="inputWithUnit" style="margin-bottom:10px">
-              <input id="workoutMinutes" type="number" step="any" min="1" max="360" value="45" placeholder="Duration in minutes (e.g. 45)" oninput="updateWorkoutCaloriePreview()">
-              <span id="workoutBarUnit" class="unitBadge">min</span>
+              <input id="workoutMinutes" type="number" step="any" min="0.1" max="360" value="45" placeholder="Duration (e.g. 1 hr or 45 min)" oninput="updateBarUnit(this, 'workoutBarUnit'); updateWorkoutCaloriePreview()">
+              <span id="workoutBarUnit" class="unitBadge show minutes">minutes</span>
             </div>
             <div style="margin: 0 0 12px">
               <label class="muted" style="font-size:11.5px;display:flex;justify-content:space-between;margin-bottom:4px">
@@ -747,8 +743,9 @@
               <div class="calendarMonth" id="calendarMonth">October 2026</div>
             </div>
             <div class="calendarNav">
-              <button onclick="changeMonth(-1)" aria-label="Previous month">‹</button>
-              <button onclick="changeMonth(1)" aria-label="Next month">›</button>
+              <button type="button" onclick="changeMonth(-1)" aria-label="Previous month">‹</button>
+              <button type="button" class="calEditBtn" onclick="openCalendarDayAdjust()" title="Adjust Workout Routine">✏️ Edit Routine</button>
+              <button type="button" onclick="changeMonth(1)" aria-label="Next month">›</button>
             </div>
           </div>
           <div class="calendarGrid" id="calendarGrid"></div>
@@ -776,9 +773,9 @@
           <div class="quickTitle">
             <h2>Cloud sync</h2><span class="userPill" id="cloudUserPill">Offline mode</span>
           </div>
-          <div class="cloudStatus">
+          <div class="cloudStatus" style="display:none">
             <span class="cloudDot" id="cloudDot"></span>
-            <span id="cloudStatusText">Local data only</span>
+            <span id="cloudStatusText"></span>
             <span class="syncTime" id="cloudSyncTime"></span>
           </div>
           <div id="authPanel" class="authBox">
@@ -940,19 +937,19 @@
     </div>
   </div>
 
-  <div class="levelOverlay" id="adjustWorkoutModal" role="dialog" aria-modal="true">
-    <div class="levelUpBox" style="text-align:left;max-width:380px;padding:24px 20px">
+  <div class="levelOverlay" id="adjustWorkoutModal" role="dialog" aria-modal="true" onclick="if(event.target===this)closeAdjustModal()">
+    <div class="levelUpBox" style="text-align:left;max-width:390px;padding:24px 20px;border:1px solid rgba(214,255,50,0.3);background:#111710;box-shadow:0 12px 40px rgba(0,0,0,0.85)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <h2 style="font-size:17px;margin:0;color:var(--white)" id="adjustModalTitle">Adjust Routine</h2>
-        <button onclick="closeAdjustModal()" style="padding:4px 9px;background:#262d22;color:var(--white);box-shadow:none">✕</button>
+        <h2 style="font-size:17px;margin:0;color:var(--white)" id="adjustModalTitle">Edit Workout Routine</h2>
+        <button type="button" onclick="closeAdjustModal()" style="padding:4px 9px;background:#20281e;color:var(--white);border:1px solid rgba(255,255,255,0.1);border-radius:6px;box-shadow:none;cursor:pointer">✕</button>
       </div>
-      <p class="muted" style="font-size:12px;margin:0 0 14px" id="adjustModalSubtitle">Choose the workout. Upcoming calendar days will continue seamlessly from this choice.</p>
+      <p class="muted" style="font-size:12px;margin:0 0 14px;line-height:1.4" id="adjustModalSubtitle">Choose a workout split. Upcoming calendar days will automatically continue from your selection:</p>
       <div style="display:grid;gap:8px">
-        <button onclick="applyDayAdjust('Leg Day')" style="padding:11px;font-size:13px;text-align:left">🦵 Leg Day</button>
-        <button onclick="applyDayAdjust('Chest + Triceps')" style="padding:11px;font-size:13px;text-align:left">⚡ Chest + Triceps</button>
-        <button onclick="applyDayAdjust('Back + Biceps')" style="padding:11px;font-size:13px;text-align:left">💪 Back + Biceps</button>
-        <button onclick="applyDayAdjust('Shoulders + Forearms')" style="padding:11px;font-size:13px;text-align:left">🏋️ Shoulders + Forearms</button>
-        <button onclick="applyDayAdjust('Rest')" style="padding:11px;font-size:13px;text-align:left;background:#252c21;color:#bcc6b4;box-shadow:none">😴 Rest / Leave (Pushes workout to next day)</button>
+        <button type="button" onclick="applyDayAdjust('Chest + Triceps')" style="padding:11px 14px;font-size:13px;font-weight:700;text-align:left;background:#172016;border:1px solid rgba(214,255,50,0.2);color:#ffffff;border-radius:10px;cursor:pointer">⚡ Chest + Triceps</button>
+        <button type="button" onclick="applyDayAdjust('Back + Biceps')" style="padding:11px 14px;font-size:13px;font-weight:700;text-align:left;background:#172016;border:1px solid rgba(214,255,50,0.2);color:#ffffff;border-radius:10px;cursor:pointer">💪 Back + Biceps</button>
+        <button type="button" onclick="applyDayAdjust('Shoulders + Forearms')" style="padding:11px 14px;font-size:13px;font-weight:700;text-align:left;background:#172016;border:1px solid rgba(214,255,50,0.2);color:#ffffff;border-radius:10px;cursor:pointer">🏋️ Shoulders + Forearms</button>
+        <button type="button" onclick="applyDayAdjust('Leg Day')" style="padding:11px 14px;font-size:13px;font-weight:700;text-align:left;background:#172016;border:1px solid rgba(214,255,50,0.2);color:#ffffff;border-radius:10px;cursor:pointer">🦵 Leg Day</button>
+        <button type="button" onclick="applyDayAdjust('Rest')" style="padding:11px 14px;font-size:13px;font-weight:600;text-align:left;background:#1d241c;border:1px solid rgba(255,255,255,0.08);color:#bcc6b4;border-radius:10px;box-shadow:none;cursor:pointer">😴 Rest / Recovery Day</button>
       </div>
     </div>
   </div>

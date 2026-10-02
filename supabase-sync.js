@@ -35,7 +35,7 @@ function cloudSetUI() {
   if (li) li.style.display = logged ? 'block' : 'none';
   if (pill) { pill.textContent = logged ? (cloudUser.email || 'Signed in') : 'Offline mode'; }
   if (logged) cloudStatus('online', 'Cloud account connected');
-  else cloudStatus('', 'Local data only');
+  else cloudStatus('', '');
 }
 
 function cloudDailyPayload() {

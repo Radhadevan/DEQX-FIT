@@ -416,22 +416,37 @@
         iso = window.isoDate(dt),
         sch = scheduleForDate(dt),
         isToday = iso === todayIso,
+        isSelected = iso === viewingIso,
         isWork = sch !== 'Rest',
         completed = !!(d?.workoutHistory && d.workoutHistory[iso]?.completed);
-      out += `<div class="calDay ${isWork ? 'workday ' : 'rest '}${isToday ? 'today ' : ''}${completed ? 'completed' : ''}" onclick="DEQX.components.workout.onCalendarDayClick('${iso}')" title="Tap to preview or adjust routine for this day"><div class="dateNum">${day}</div><div class="calWorkout">${sch === 'Rest' ? 'REST' : window.esc(sch.replace(' + ', ' +<br>')).replace(/&lt;br&gt;/g, '<br>')}</div></div>`;
+      out += `<div class="calDay ${isWork ? 'workday ' : 'rest '}${isToday ? 'today ' : ''}${isSelected ? 'selected ' : ''}${completed ? 'completed' : ''}" onclick="DEQX.components.workout.onCalendarDayClick('${iso}')" title="Tap to preview or edit routine for ${iso}"><div class="dateNum">${day}</div><div class="calWorkout">${sch === 'Rest' ? 'REST' : window.esc(sch.replace(' + ', ' +<br>')).replace(/&lt;br&gt;/g, '<br>')}</div></div>`;
     }
     const grid = document.getElementById('calendarGrid');
     if (grid) grid.innerHTML = out;
 
-    const todaySchedule = scheduleForDate(now),
-      done = !!(d?.workoutHistory && d.workoutHistory[todayIso]?.completed);
+    const activeIso = viewingIso || todayIso;
+    const activeDateObj = new Date(activeIso + 'T00:00:00');
+    const activeSchedule = scheduleForDate(activeDateObj);
+    const isToday = activeIso === todayIso;
+    const isDone = !!(d?.workoutHistory && d.workoutHistory[activeIso]?.completed);
+    const dayLabel = isToday ? 'Today' : activeIso;
+
     const missionEl = document.getElementById('calendarTodayMission');
     if (missionEl) {
-      missionEl.innerHTML = todaySchedule === 'Rest'
-        ? '<span class="restBadge">😴 <b>Today is a rest day.</b> Recovery days do not penalize your streak.</span>'
-        : done
-        ? '✅ <b>Workout completed.</b> Today’s training mission is cleared (+50 XP).'
-        : `🔥 <b>Today:</b> ${window.esc(todaySchedule)} · Complete it to earn <b>+50 XP</b>.`;
+      missionEl.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:180px">
+            ${activeSchedule === 'Rest'
+              ? '<span class="restBadge">😴 <b>' + dayLabel + ' is a rest day.</b> Recovery days do not penalize your streak.</span>'
+              : isDone
+              ? '✅ <b>' + dayLabel + ': ' + window.esc(activeSchedule) + ' completed.</b>'
+              : '🔥 <b>' + dayLabel + ':</b> ' + window.esc(activeSchedule) + ' · Complete it to earn <b>+50 XP</b>.'}
+          </div>
+          <button type="button" class="calEditBtn" onclick="DEQX.components.workout.openCalendarDayAdjust('${activeIso}')" title="Edit Workout Schedule for ${dayLabel}">
+            ✏️ Edit Routine
+          </button>
+        </div>
+      `;
     }
 
     // Sync activeSplit and render visualization
@@ -449,7 +464,8 @@
     activeSplit = scheduleForDate(dateObj);
     activeViewKey = null; // Reset to default view for new day
     renderWorkoutVisualization();
-    window.toast(`Viewing routine for ${iso}: ${activeSplit}`);
+    renderCalendar();
+    window.toast(`Selected ${iso}: ${activeSplit}`);
   };
 
   const changeMonth = (delta) => {
@@ -462,32 +478,37 @@
     if (!d) return;
     d.workoutAnchor = { date: targetDateIso, split };
     d.workoutOverrides = d.workoutOverrides || {};
-    delete d.workoutOverrides[targetDateIso];
+    d.workoutOverrides[targetDateIso] = split;
     window.save(true);
+    viewingIso = targetDateIso;
+    activeSplit = split;
+    activeViewKey = null;
+    renderWorkoutVisualization();
     renderCalendar();
-    window.toast(`Workout cycle anchor set to ${split} on ${targetDateIso}`);
+    window.toast(`Routine updated: ${split} for ${targetDateIso} ✓`);
   };
 
   const openCalendarDayAdjust = (iso) => {
-    const modal = document.getElementById('adjustModal');
+    const modal = document.getElementById('adjustWorkoutModal') || document.getElementById('adjustModal');
     if (!modal) return;
-    const title = document.getElementById('adjustDateTitle');
-    const sch = scheduleForDate(new Date(iso + 'T00:00:00'));
-    if (title) title.textContent = `Adjust Routine (${iso} · Currently: ${sch})`;
-    modal.dataset.iso = iso;
+    const targetIso = iso || viewingIso || window.isoDate(new Date());
+    const sch = scheduleForDate(new Date(targetIso + 'T00:00:00'));
+    const title = document.getElementById('adjustModalTitle') || document.getElementById('adjustDateTitle');
+    if (title) title.textContent = `Edit Workout Routine (${targetIso})`;
+    const sub = document.getElementById('adjustModalSubtitle');
+    if (sub) sub.innerHTML = `Currently scheduled: <b style="color:var(--neon-lime,#d6ff32)">${sch}</b>.<br>Choose a workout split to set for this date and continue your workout cycle:`;
+    modal.dataset.iso = targetIso;
     modal.classList.add('show');
   };
 
   const closeAdjustModal = () => {
-    const modal = document.getElementById('adjustModal');
+    const modal = document.getElementById('adjustWorkoutModal') || document.getElementById('adjustModal');
     if (modal) modal.classList.remove('show');
   };
 
   const applyDayAdjust = (split) => {
-    const modal = document.getElementById('adjustModal');
-    if (!modal) return;
-    const iso = modal.dataset.iso;
-    if (!iso) return;
+    const modal = document.getElementById('adjustWorkoutModal') || document.getElementById('adjustModal');
+    const iso = (modal && modal.dataset.iso) || viewingIso || window.isoDate(new Date());
     setWorkoutCycle(split, iso);
     closeAdjustModal();
   };

@@ -393,23 +393,9 @@
       display: block;
     }
 
-    /* Real-Time Live Sync Status Badge */
+    /* Real-Time Live Sync Status Badge (Hidden from UI per user request) */
     .liveSyncBadge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(214, 255, 50, 0.08);
-      border: 1px solid rgba(214, 255, 50, 0.25);
-      color: #d6ff32;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      cursor: pointer;
-      user-select: none;
-      transition: all 0.25s ease;
-      line-height: 1;
+      display: none !important;
     }
 
     .liveSyncBadge:hover {

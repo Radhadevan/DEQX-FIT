@@ -109,12 +109,12 @@
           localVersion = resData.version || newVersion;
           localStorage.setItem(STORAGE_VERSION_KEY, String(localVersion));
           lastKnownHash = currentHash;
-          updateSyncIndicator('online', 'Live Sync Active');
+          updateSyncIndicator('online', '');
         } else {
-          updateSyncIndicator('', 'Local only');
+          updateSyncIndicator('', '');
         }
       } catch (err) {
-        updateSyncIndicator('', 'Offline mode');
+        updateSyncIndicator('', '');
       } finally {
         isPushing = false;
       }
