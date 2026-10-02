@@ -1,4 +1,4 @@
-const CACHE = 'deqx-fit-v52-workout-cinematic-redesign';
+const CACHE = 'deqx-fit-v53-live-multi-device-sync';
 const CORE = [
   './',
   './index.html',
@@ -35,6 +35,7 @@ const CORE = [
   './css/components/hologram.css',
   './js/core/utils.js',
   './js/core/state.js',
+  './js/core/sync.js',
   './js/core/gamification.js',
   './js/data/foods.data.js',
   './js/data/activities.data.js',

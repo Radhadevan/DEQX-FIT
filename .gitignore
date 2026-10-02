@@ -1,0 +1,7 @@
+# Local sync state
+sync_state.json
+
+# Logs and system artifacts
+*.log
+.DS_Store
+Thumbs.db

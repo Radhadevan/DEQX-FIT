@@ -1,4 +1,4 @@
-﻿    * {
+    * {
       box-sizing: border-box
     }
 
@@ -386,3 +386,64 @@
     }
 
     .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    /* Real-Time Live Sync Status Badge */
+    .liveSyncBadge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(214, 255, 50, 0.08);
+      border: 1px solid rgba(214, 255, 50, 0.25);
+      color: #d6ff32;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.25s ease;
+      line-height: 1;
+    }
+
+    .liveSyncBadge:hover {
+      background: rgba(214, 255, 50, 0.16);
+      border-color: #d6ff32;
+      box-shadow: 0 0 12px rgba(214, 255, 50, 0.3);
+    }
+
+    .liveSyncDot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #d6ff32;
+      box-shadow: 0 0 6px #d6ff32;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .liveSyncBadge.syncing .liveSyncDot {
+      background: #ffcc00;
+      box-shadow: 0 0 8px #ffcc00;
+      animation: liveSyncPulse 0.8s infinite alternate;
+    }
+
+    .liveSyncBadge.active-pulse {
+      background: rgba(214, 255, 50, 0.25) !important;
+      border-color: #d6ff32 !important;
+      box-shadow: 0 0 16px rgba(214, 255, 50, 0.5) !important;
+    }
+
+    .liveSyncBadge.active-pulse .liveSyncDot {
+      transform: scale(1.4);
+    }
+
+    @keyframes liveSyncPulse {
+      0% { transform: scale(0.85); opacity: 0.6; }
+      100% { transform: scale(1.2); opacity: 1; }
+    }

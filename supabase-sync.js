@@ -156,6 +156,17 @@ async function cloudSyncNow() {
     cloudTime();
     cloudStatus('online', 'Cloud sync complete');
     cloudMessage('');
+
+    if (realtimeChannel && cloudUser) {
+      try {
+        realtimeChannel.send({
+          type: 'broadcast',
+          event: 'cloud_data_changed',
+          payload: { client: window.DEQX?.sync?.clientId, time: Date.now() }
+        });
+      } catch (be) {}
+    }
+
     return true;
   } catch (err) {
     console.error('DEQX FIT cloudSync error', err);
@@ -330,17 +341,41 @@ async function cloudSignOut() {
   cloudMessage('');
 }
 
+let realtimeChannel = null;
+
+function setupSupabaseRealtime() {
+  if (!supabaseClient || !cloudUser || realtimeChannel) return;
+  try {
+    realtimeChannel = supabaseClient.channel('deqx-cloud-sync-' + cloudUser.id)
+      .on('broadcast', { event: 'cloud_data_changed' }, (payload) => {
+        if (payload?.payload?.client !== window.DEQX?.sync?.clientId) {
+          console.log('[DEQX SUPABASE REALTIME] Cloud data change broadcast received from another device');
+          cloudLoad();
+        }
+      })
+      .subscribe((status) => {
+        console.log('[DEQX SUPABASE REALTIME] Subscription status:', status);
+      });
+  } catch (err) {
+    console.warn('[DEQX SUPABASE REALTIME] Failed to subscribe:', err);
+  }
+}
+
 if (supabaseClient) {
   supabaseClient.auth.onAuthStateChange((event, session) => {
     cloudUser = session?.user || null;
     cloudSetUI();
+    if (cloudUser) setupSupabaseRealtime();
     if (session && event !== 'INITIAL_SESSION') setTimeout(() => cloudLoad(), 0);
   });
   (async () => {
     const { data } = await supabaseClient.auth.getSession();
     cloudUser = data?.session?.user || null;
     cloudSetUI();
-    if (cloudUser) await cloudLoad();
+    if (cloudUser) {
+      setupSupabaseRealtime();
+      await cloudLoad();
+    }
   })();
 }
 

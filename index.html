@@ -263,7 +263,13 @@
           <div class="brand">DEQX <span>FIT</span></div>
           <div class="sub">TRAIN · TRACK · TRANSFORM</div>
         </div>
-        <div class="avatar" aria-label="DEQX FIT logo">DQX</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="liveSyncBadge online" id="liveSyncBadge" onclick="if(window.DEQX?.sync?.pullSync) window.DEQX.sync.pullSync()" title="Real-time multi-device sync with laptop (Tap to sync now)">
+            <span class="liveSyncDot"></span>
+            <span id="liveSyncText">Live Sync</span>
+          </div>
+          <div class="avatar" aria-label="DEQX FIT logo">DQX</div>
+        </div>
       </div>
     </header>
 
@@ -1073,6 +1079,7 @@
   <!-- Core Layer: State, Utilities & Gamification -->
   <script src="js/core/utils.js"></script>
   <script src="js/core/state.js"></script>
+  <script src="js/core/sync.js"></script>
   <script src="js/core/gamification.js"></script>
 
   <!-- Data Layer: Presets & Databases -->
