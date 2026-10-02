@@ -65,10 +65,21 @@
     if (bb) bb.style.width = bp + '%';
 
     const streakVal = window.computeAndUpdateStreak(daily);
+    const sUnit = streakVal === 1 ? 'day' : 'days';
     set('todayStreakCount', streakVal);
     set('streakHome', streakVal);
-    const sUnit = streakVal === 1 ? 'day' : 'days';
     set('streakHomeUnit', sUnit);
+    set('streakView', streakVal);
+    set('streakUnit', sUnit);
+    set('activityStreakView', streakVal);
+    set('activityStreakUnit', streakVal === 1 ? ' DAY' : ' DAYS');
+
+    // Pulsing or active state on today's streak badge
+    const badge = document.getElementById('todayStreakBadge');
+    if (badge) {
+      const isQualified = daily >= 70 && (typeof window.isGymWorkoutCompleted === 'function' ? window.isGymWorkoutCompleted() : done);
+      badge.classList.toggle('qualified', isQualified);
+    }
 
     window.renderWeeklyRhythm(daily);
   };

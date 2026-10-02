@@ -2419,6 +2419,13 @@
       100% { transform: scale(1.12) rotate(4deg); }
     }
 
+    .streakPill.qualified {
+      background: linear-gradient(135deg, #1c2e0b 0%, #10160d 100%);
+      border-color: #d6ff32aa;
+      box-shadow: 0 0 20px rgba(214, 255, 50, 0.4);
+      color: #d6ff32;
+    }
+
     .streakPill.blinking {
       animation: streakPillBlink 1.4s ease-in-out infinite;
     }

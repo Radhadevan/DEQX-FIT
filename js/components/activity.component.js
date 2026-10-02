@@ -261,7 +261,7 @@
 
     const currentStreak = Number(d?.attendanceStreak) || 0;
     const sUnit = currentStreak === 1 ? 'day' : 'days';
-    ['streakHome', 'streakView'].forEach(id => {
+    ['streakHome', 'streakView', 'todayStreakCount', 'activityStreakView'].forEach(id => {
       const e = document.getElementById(id);
       if (e) e.textContent = currentStreak;
     });
@@ -269,6 +269,8 @@
     if (su) su.textContent = sUnit;
     const shu = document.getElementById('streakHomeUnit');
     if (shu) shu.textContent = sUnit;
+    const asu = document.getElementById('activityStreakUnit');
+    if (asu) asu.textContent = currentStreak === 1 ? ' DAY' : ' DAYS';
 
     if (typeof window.updateDailyAnalytics === 'function') window.updateDailyAnalytics();
     updateActivityCaloriePreview();

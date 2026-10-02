@@ -437,7 +437,7 @@
         <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:10px;flex-wrap:wrap">
           <div style="flex:1;min-width:180px">
             ${activeSchedule === 'Rest'
-              ? '<span class="restBadge">😴 <b>' + dayLabel + ' is a rest day.</b> Recovery days do not penalize your streak.</span>'
+              ? '<span class="restBadge">😴 <b>' + dayLabel + ' is a rest day.</b> Complete gym workout &amp; &ge; 70% daily target to build your streak.</span>'
               : isDone
               ? '✅ <b>' + dayLabel + ': ' + window.esc(activeSchedule) + ' completed.</b>'
               : '🔥 <b>' + dayLabel + ':</b> ' + window.esc(activeSchedule) + ' · Complete it to earn <b>+50 XP</b>.'}

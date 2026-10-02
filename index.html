@@ -279,9 +279,9 @@
             <p>Build your day, one completed target at a time.</p>
           </div>
           <div class="todayHeaderRight">
-            <div class="streakPill" id="todayStreakBadge" onclick="showStreakInfo()" role="button" tabindex="0" title="Daily login & attendance streak">
+            <div class="streakPill" id="todayStreakBadge" onclick="showStreakInfo()" role="button" tabindex="0" title="Daily streak (Requires &ge; 70% target &amp; completed gym workout)">
               <span class="fireFlame">🔥</span>
-              <b id="todayStreakCount">1</b>
+              <b id="todayStreakCount">0</b>
             </div>
             <div class="todayStatus"><span class="statusDot"></span><span id="dayState">IN PROGRESS</span></div>
           </div>
@@ -365,7 +365,7 @@
             <div class="metricProgress">
               <div class="metricFill" id="xpBarHome"></div>
             </div>
-            <div class="muted levelRank"><span id="rankHome">Rookie</span> · <span id="streakHome">1</span> <span id="streakHomeUnit">day</span> streak
+            <div class="muted levelRank"><span id="rankHome">Rookie</span> · <span id="streakHome">0</span> <span id="streakHomeUnit">days</span> streak
             </div>
           </div>
         </div>
@@ -401,7 +401,7 @@
           <div class="cardHeader">
             <div><span class="label">WEEKLY RHYTHM</span>
               <h2>Consistency</h2>
-            </div><span class="muted" id="streakViewWrap"><span id="streakView">1</span> <span id="streakUnit">day</span></span>
+            </div><span class="muted" id="streakViewWrap" onclick="showStreakInfo()" style="cursor:pointer" title="Tap for streak details"><span id="streakView">0</span> <span id="streakUnit">days</span></span>
           </div>
           <div class="weekChart" id="streakDots"></div>
         </div>
@@ -572,10 +572,10 @@
           <p class="muted" id="burnPercent">0%</p>
         </div>
 
-        <div class="card streakCard">
+        <div class="card streakCard" onclick="showStreakInfo()" style="cursor:pointer" title="Tap for streak details">
           <div><span class="label">WORKOUT STREAK</span>
-            <div class="streakNumber"><span>🔥</span><b id="activityStreakView">1</b><small id="activityStreakUnit"> DAY</small></div>
-            <p class="muted">Weekend rest days don't break your streak.</p>
+            <div class="streakNumber"><span>🔥</span><b id="activityStreakView">0</b><small id="activityStreakUnit"> DAYS</small></div>
+            <p class="muted">Streak continues when daily target is &ge; 70% and gym workout is completed.</p>
           </div>
           <div class="streakDots" id="activityStreakDots"></div>
         </div>
