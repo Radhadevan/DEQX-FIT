@@ -13,6 +13,7 @@
   <meta name="apple-mobile-web-app-title" content="DEQX FIT">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="stylesheet" href="style.css?v=acid48">
+  <link rel="stylesheet" href="css/components/workout.css">
   <style id="hologram-critical-acid-styles">
     /* HOLOGRAM CRITICAL ACID GREEN STYLES & RESETS */
     .workoutScheduleCard .holoControls {
@@ -580,11 +581,164 @@
 
       <!-- WORKOUT SECTION -->
       <section id="workout" class="section">
-        <div class="card">
+        <!-- TOP APP BAR -->
+        <div class="workoutTopNav">
+          <button type="button" class="workoutNavBackBtn" onclick="nav('home')" aria-label="Back to Home">‹</button>
+          <div class="workoutNavBrand">
+            <div class="workoutNavBrandTitle">DEQX <span>FIT</span></div>
+            <div class="workoutNavBrandSub">TRAIN · TRACK · TRANSFORM</div>
+          </div>
+          <div class="workoutNavLogoBadge">DQX</div>
+        </div>
+
+        <!-- HERO TODAY'S WORKOUT CARD -->
+        <div class="workoutHeroCard">
+          <div class="workoutHeroHeader">
+            <div>
+              <div class="workoutSuperTag">TODAY'S WORKOUT</div>
+              <div class="workoutMainTitle" id="workoutHeroTitle">Back + Biceps</div>
+            </div>
+            <div class="workoutSplitPill" id="workoutHeroTag">
+              <span class="pillDumbbell">🏋</span> <span>BACK &amp; BICEPS</span>
+            </div>
+          </div>
+          <div class="workoutHeroSubtitle" id="workoutHeroSubtitle">
+            This is today's scheduled workout. Complete it to earn <span class="xpHighlight">+50 XP</span>.
+          </div>
+
+          <!-- VIEW SWITCHER BUTTONS -->
+          <div class="workoutViewSwitcher" id="workoutViewSwitcher">
+            <button type="button" class="workoutViewBtn active" onclick="DEQX.components.workout.setWorkoutView('back')">Back</button>
+            <button type="button" class="workoutViewBtn" onclick="DEQX.components.workout.setWorkoutView('biceps')">Biceps</button>
+            <button type="button" class="workoutFlipBtn" onclick="DEQX.components.workout.toggleWorkoutView()">Flip</button>
+          </div>
+
+          <!-- ANATOMICAL MUSCLE VISUAL STAGE -->
+          <div class="workoutVisualStage" id="workoutVisualStage">
+            <img id="workoutMuscleImg" class="workoutMuscleImg" src="assets/workout-back.png" alt="Workout Muscle Target Visual">
+          </div>
+        </div>
+
+        <!-- TARGET MUSCLE CARD -->
+        <div class="workoutTargetCard" id="workoutTargetCard" onclick="DEQX.components.workout.toggleWorkoutView()">
+          <div class="workoutTargetLabel">TARGET MUSCLE</div>
+          <div class="workoutTargetRow">
+            <div class="workoutTargetLeft">
+              <div class="workoutTargetIconBox">
+                <img id="workoutTargetIcon" src="assets/target-lat.png" alt="Target Muscle Icon" class="workoutTargetIcon">
+              </div>
+              <div>
+                <div class="workoutTargetName" id="workoutTargetName">Latissimus Dorsi</div>
+                <div class="workoutTargetRole" id="workoutTargetRole">Primary Target</div>
+              </div>
+            </div>
+            <div class="workoutTargetChevron">›</div>
+          </div>
+        </div>
+
+        <!-- WORKOUT PROGRESS CARD -->
+        <div class="workoutProgressCard" id="workoutProgressCard">
+          <div class="workoutProgressHeader">
+            <div class="workoutProgressTitle">WORKOUT PROGRESS</div>
+            <div class="workoutProgressTrophy">🏆 +50 XP</div>
+          </div>
+          <div class="workoutProgressBody">
+            <div class="workoutProgressCircleWrap">
+              <svg class="workoutProgressSvg" viewBox="0 0 60 60">
+                <circle class="workoutProgressBgCircle" cx="30" cy="30" r="26"></circle>
+                <circle class="workoutProgressFillCircle" id="workoutProgressFillCircle" cx="30" cy="30" r="26"></circle>
+              </svg>
+              <div class="workoutProgressPercent" id="workoutProgressPercent">0%</div>
+            </div>
+            <div class="workoutProgressInfo">
+              <div class="workoutProgressCount" id="workoutProgressCount">0 / 5 <span>exercises</span></div>
+              <div class="workoutProgressBarTrack">
+                <div class="workoutProgressBarFill" id="workoutProgressBarFill"></div>
+              </div>
+              <div class="workoutProgressHint">Complete all exercises to earn +50 XP.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EXERCISES CHECKLIST CARD -->
+        <div class="workoutExercisesCard" id="workoutExercisesCard">
+          <div class="workoutExercisesHeader">
+            <div class="workoutExercisesTitle" id="workoutExercisesTitle">EXERCISES (BACK ONLY)</div>
+            <button type="button" class="workoutReorderBtn" onclick="window.toast('Exercises optimized for hypertrophy &amp; joint mechanics')">
+              <span>⇅</span> Reorder
+            </button>
+          </div>
+          <div class="workoutExerciseList" id="workoutExerciseList"></div>
+        </div>
+
+        <!-- STICKY BOTTOM CTA -->
+        <div class="workoutStickyBar">
+          <button type="button" id="workoutCtaBtn" class="workoutCtaBtn" onclick="DEQX.components.workout.toggleWorkoutComplete()">
+            <span id="workoutCtaText">▶ Start Back Workout</span>
+          </button>
+        </div>
+
+        <!-- WORKOUT EXTRAS: CUSTOM LOGGER & GYM BURN CALCULATOR -->
+        <details class="workoutExtrasCard">
+          <summary class="workoutExtrasSummary">
+            <span>⚡ Custom Intensity &amp; Calorie Burn Calculator</span>
+            <small style="color:var(--text-muted)">▼</small>
+          </summary>
+          <div class="workoutExtrasContent">
+            <label class="muted" style="font-size:11.5px;display:block;margin-bottom:4px">Target Routine Split</label>
+            <select id="workoutSelect" onchange="DEQX.components.workout.setWorkoutSplit(this.value)" style="margin-bottom:10px">
+              <option>Chest + Triceps</option>
+              <option selected>Back + Biceps</option>
+              <option>Shoulders + Forearms</option>
+              <option>Leg Day</option>
+              <option>Rest</option>
+            </select>
+            <div style="margin: 0 0 10px">
+              <label class="muted" style="font-size:11.5px;display:block;margin-bottom:4px">Training Intensity</label>
+              <select id="workoutIntensity" onchange="updateWorkoutCaloriePreview()" style="margin:0">
+                <option value="light">Light-to-Moderate (MET 3.5 · longer rest times, slower pace)</option>
+                <option value="moderate" selected>Standard Moderate (MET 5.5 · 60–90s standard rests)</option>
+                <option value="hard">Vigorous / Circuit (MET 7.5 · supersets, heavy compound)</option>
+              </select>
+            </div>
+            <div class="inputWithUnit" style="margin-bottom:10px">
+              <input id="workoutMinutes" type="number" step="any" min="1" max="360" value="45" placeholder="Duration in minutes (e.g. 45)" oninput="updateWorkoutCaloriePreview()">
+              <span id="workoutBarUnit" class="unitBadge">min</span>
+            </div>
+            <div style="margin: 0 0 12px">
+              <label class="muted" style="font-size:11.5px;display:flex;justify-content:space-between;margin-bottom:4px">
+                <span>Bodyweight</span>
+                <span style="font-size:11px;color:#7a8873">Optional</span>
+              </label>
+              <div style="position:relative;display:flex;align-items:center">
+                <input id="workoutWeight" type="number" step="0.1" min="20" max="300" placeholder="Current weight in kg (optional)" style="margin:0;padding-right:48px" oninput="updateWorkoutCaloriePreview()">
+                <span style="position:absolute;right:12px;font-size:11px;font-weight:700;color:#7a8873;pointer-events:none">KG</span>
+              </div>
+            </div>
+            <div id="workoutCaloriePreview" style="background:rgba(214,255,50,0.06);border:1px solid rgba(214,255,50,0.22);border-radius:12px;padding:11px 14px;margin:0 0 14px;display:flex;align-items:center;justify-content:space-between">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:22px;line-height:1">🔥</span>
+                <div>
+                  <div style="font-size:10.5px;font-weight:700;color:var(--neon-lime,#d6ff32);letter-spacing:0.06em">ESTIMATED BURN</div>
+                  <div style="font-size:11.5px;color:#a6b69e;margin-top:1px" id="workoutCalorieFormula">45 min · Standard Moderate (MET 5.5)</div>
+                </div>
+              </div>
+              <div style="text-align:right">
+                <span style="font-size:22px;font-weight:800;color:var(--neon-lime,#d6ff32);line-height:1" id="workoutCalorieValue">240</span>
+                <span style="font-size:11px;color:#8fa881;font-weight:600;display:block">kcal</span>
+              </div>
+            </div>
+            <button type="button" class="primary" onclick="saveWorkout()" style="width:100%">Log Gym Session &amp; Calories</button>
+            <p id="workoutSaved" class="muted" style="margin-top:6px;text-align:center"></p>
+          </div>
+        </details>
+
+        <!-- WORKOUT CALENDAR -->
+        <div class="workoutCalendarCard">
           <div class="calendarHead">
             <div>
               <div class="label">WORKOUT CALENDAR</div>
-              <div class="calendarMonth" id="calendarMonth">September 2026</div>
+              <div class="calendarMonth" id="calendarMonth">October 2026</div>
             </div>
             <div class="calendarNav">
               <button onclick="changeMonth(-1)" aria-label="Previous month">‹</button>
@@ -593,276 +747,6 @@
           </div>
           <div class="calendarGrid" id="calendarGrid"></div>
           <div class="todayMission" id="calendarTodayMission"></div>
-        </div>
-
-        <div class="card workoutScheduleCard">
-          <div class="workoutScheduleHeader">
-            <div>
-              <div class="missionDay">TODAY'S SCHEDULE</div>
-              <div class="missionTitle" id="workoutScheduleTitle">Back + Biceps</div>
-            </div>
-            <div class="hologramStatusBadge" id="hologramStatusBadge" title="Current Muscle Activation State">
-              <span class="holoDot"></span>
-              <span id="hologramBadgeText">BACK & BICEPS TARGETED</span>
-            </div>
-          </div>
-          <p class="muted" id="workoutScheduleText">Complete the scheduled workout to earn XP.</p>
-
-          <!-- 3D ANATOMICAL FULL BODY HOLOGRAM VIEWER -->
-          <div class="holoContainer" id="holoContainer">
-            <!-- Top Hologram HUD Bar -->
-            <div class="holoHudTop">
-              <div class="holoTag">
-                <span class="holoTagIcon">🧬</span>
-                <span id="holoTargetLabel">BACK + BICEPS</span>
-                <span class="holoLiveDot" title="Live Hologram Simulation"></span>
-              </div>
-              <div class="holoControls">
-                <button type="button" class="holoViewBtn" id="holoBtnFront" onclick="HologramViewer.setView('front')">FRONT</button>
-                <button type="button" class="holoViewBtn active" id="holoBtnBack" onclick="HologramViewer.setView('back')">BACK</button>
-                <button type="button" class="holoRotateBtn" onclick="HologramViewer.toggleView()" title="Flip 3D View (Front / Back)">🔄 FLIP</button>
-              </div>
-            </div>
-
-            <!-- 3D Hologram Stage with Interactive 3D Perspective Tilt -->
-            <div class="holoStage" id="holoStage" title="Drag or hover to rotate in 3D perspective">
-              <!-- Hologram Projector Platform & Floor Grid -->
-              <div class="holoFloorGrid">
-                <div class="holoRing holoRing1"></div>
-                <div class="holoRing holoRing2"></div>
-                <div class="holoRing holoRing3"></div>
-                <div class="holoProjectorBase"></div>
-              </div>
-
-              <!-- Animated Vertical Laser Scanner -->
-              <div class="holoScanner"></div>
-
-              <!-- 3D Rotating Physique Wrapper -->
-              <div class="holoBodyCard" id="holoBodyCard">
-                <!-- FRONT VIEW -->
-                <div class="holoFace holoFront">
-                  <img src="assets/hologram-front.jpg" alt="3D Physique Hologram Front" class="holoImg" draggable="false" style="position:absolute; inset:0; width:100%; height:100%; object-fit:contain; pointer-events:none;">
-                  <svg class="holoOverlaySvg" viewBox="0 0 1000 1778" preserveAspectRatio="xMidYMid meet" style="position:absolute; inset:0; width:100%; height:100%; pointer-events:all;">
-                    <defs>
-                      <filter id="holoGlowFront" x="-40%" y="-40%" width="180%" height="180%">
-                        <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur1" />
-                        <feGaussianBlur in="SourceGraphic" stdDeviation="24" result="blur2" />
-                        <feMerge>
-                          <feMergeNode in="blur2" />
-                          <feMergeNode in="blur1" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
-                      <linearGradient id="holoPulseFront" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#d6ff32" stop-opacity="0.9" />
-                        <stop offset="100%" stop-color="#b8f53a" stop-opacity="0.8" />
-                      </linearGradient>
-                    </defs>
-
-                    <!-- Chest / Pectorals -->
-                    <g class="holoMuscleGroup" onclick="HologramViewer.showMuscleDetail('chest', 'front')" role="button" tabindex="0">
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="chest" d="M 374 382 C 405 378, 465 378, 492 392 C 496 425, 495 480, 486 515 C 456 528, 405 524, 368 480 C 356 442, 360 405, 374 382 Z" />
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="chest" d="M 626 382 C 595 378, 535 378, 508 392 C 504 425, 505 480, 514 515 C 544 528, 595 524, 632 480 C 644 442, 640 405, 626 382 Z" />
-                    </g>
-
-                    <!-- Anterior / Lateral Deltoids (Shoulders) -->
-                    <g class="holoMuscleGroup" onclick="HologramViewer.showMuscleDetail('deltoids', 'front')" role="button" tabindex="0">
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="deltoids" d="M 328 335 C 358 340, 370 365, 366 395 C 360 435, 346 475, 330 485 C 310 472, 288 432, 280 392 C 275 358, 298 338, 328 335 Z" />
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="deltoids" d="M 672 335 C 642 340, 630 365, 634 395 C 640 435, 654 475, 670 485 C 690 472, 712 432, 720 392 C 725 358, 702 338, 672 335 Z" />
-                    </g>
-
-                    <!-- Biceps -->
-                    <g class="holoMuscleGroup" onclick="HologramViewer.showMuscleDetail('biceps', 'front')" role="button" tabindex="0">
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="biceps" d="M 314 495 C 336 505, 340 540, 334 585 C 328 625, 312 650, 292 645 C 278 640, 274 605, 278 565 C 282 525, 295 500, 314 495 Z" />
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="biceps" d="M 686 495 C 664 505, 660 540, 666 585 C 672 625, 688 650, 708 645 C 722 640, 726 605, 722 565 C 718 525, 705 500, 686 495 Z" />
-                    </g>
-
-                    <!-- Forearms -->
-                    <g class="holoMuscleGroup" onclick="HologramViewer.showMuscleDetail('forearms', 'front')" role="button" tabindex="0">
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="forearms" d="M 288 655 C 310 668, 314 712, 305 770 C 295 825, 280 875, 260 880 C 248 880, 240 850, 242 805 C 245 745, 265 675, 288 655 Z" />
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="forearms" d="M 712 655 C 690 668, 686 712, 695 770 C 705 825, 720 875, 740 880 C 752 880, 760 850, 758 805 C 755 745, 735 675, 712 655 Z" />
-                    </g>
-
-                    <!-- Abdominals & Core -->
-                    <g class="holoMuscleGroup" onclick="HologramViewer.showMuscleDetail('abs', 'front')" role="button" tabindex="0">
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="abs" d="M 440 535 C 470 530, 530 530, 560 535 C 564 565, 562 595, 555 605 C 525 610, 475 610, 445 605 C 438 595, 436 565, 440 535 Z" />
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="abs" d="M 442 615 C 475 612, 525 612, 558 615 C 560 645, 558 675, 552 682 C 525 686, 475 686, 448 682 C 442 675, 440 645, 442 615 Z" />
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="abs" d="M 446 690 C 475 688, 525 688, 554 690 C 550 725, 545 765, 530 780 C 510 790, 490 790, 470 780 C 455 765, 450 725, 446 690 Z" />
-                    </g>
-
-                    <!-- Quadriceps -->
-                    <g class="holoMuscleGroup" onclick="HologramViewer.showMuscleDetail('quads', 'front')" role="button" tabindex="0">
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="quads" d="M 370 940 C 428 938, 476 955, 482 1015 C 488 1085, 474 1155, 444 1195 C 420 1205, 390 1195, 370 1175 C 345 1140, 340 1060, 345 1000 C 350 965, 360 945, 370 940 Z" />
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="quads" d="M 630 940 C 572 938, 524 955, 518 1015 C 512 1085, 526 1155, 556 1195 C 580 1205, 610 1195, 630 1175 C 655 1140, 660 1060, 655 1000 C 650 965, 640 945, 630 940 Z" />
-                    </g>
-
-                    <!-- Calves -->
-                    <g class="holoMuscleGroup" onclick="HologramViewer.showMuscleDetail('calves', 'front')" role="button" tabindex="0">
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="calves" d="M 370 1240 C 418 1238, 442 1268, 438 1338 C 434 1408, 410 1482, 385 1498 C 368 1498, 355 1458, 355 1398 C 355 1328, 360 1258, 370 1240 Z" />
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="calves" d="M 630 1240 C 582 1238, 558 1268, 562 1338 C 566 1408, 590 1482, 615 1498 C 632 1498, 645 1458, 645 1398 C 645 1328, 640 1258, 630 1240 Z" />
-                    </g>
-                  </svg>
-                </div>
-
-                <!-- BACK VIEW -->
-                <div class="holoFace holoBack">
-                  <img src="assets/hologram-back.jpg" alt="3D Physique Hologram Back" class="holoImg" draggable="false" style="position:absolute; inset:0; width:100%; height:100%; object-fit:contain; pointer-events:none;">
-                  <svg class="holoOverlaySvg" viewBox="0 0 1000 1778" preserveAspectRatio="xMidYMid meet" style="position:absolute; inset:0; width:100%; height:100%; pointer-events:all;">
-                    <defs>
-                      <filter id="holoGlowBack" x="-40%" y="-40%" width="180%" height="180%">
-                        <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur1" />
-                        <feGaussianBlur in="SourceGraphic" stdDeviation="24" result="blur2" />
-                        <feMerge>
-                          <feMergeNode in="blur2" />
-                          <feMergeNode in="blur1" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
-                      <linearGradient id="holoPulseBack" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#d6ff32" stop-opacity="0.9" />
-                        <stop offset="100%" stop-color="#b8f53a" stop-opacity="0.8" />
-                      </linearGradient>
-                    </defs>
-
-                    <!-- Trapezius & Upper Back -->
-                    <g class="holoMuscleGroup" onclick="HologramViewer.showMuscleDetail('traps', 'back')" role="button" tabindex="0">
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="traps" d="M 452 280 C 475 272, 525 272, 548 280 C 580 320, 620 350, 635 375 C 590 410, 545 425, 500 430 C 455 425, 410 410, 365 375 C 380 350, 420 320, 452 280 Z" />
-                    </g>
-
-                    <!-- Latissimus Dorsi (Lats) -->
-                    <g class="holoMuscleGroup" onclick="HologramViewer.showMuscleDetail('lats', 'back')" role="button" tabindex="0">
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="lats" d="M 485 440 C 465 470, 400 480, 355 460 C 345 520, 360 610, 410 680 C 445 690, 475 680, 485 660 C 490 590, 490 510, 485 440 Z" />
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="lats" d="M 515 440 C 535 470, 600 480, 645 460 C 655 520, 640 610, 590 680 C 555 690, 525 680, 515 660 C 510 590, 510 510, 515 440 Z" />
-                    </g>
-
-                    <!-- Posterior Deltoids (Rear Delts) -->
-                    <g class="holoMuscleGroup" onclick="HologramViewer.showMuscleDetail('deltoids', 'back')" role="button" tabindex="0">
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="deltoids" d="M 335 345 C 365 365, 370 395, 360 435 C 345 465, 320 475, 305 460 C 290 435, 290 380, 310 355 C 318 348, 326 345, 335 345 Z" />
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="deltoids" d="M 665 345 C 635 365, 630 395, 640 435 C 655 465, 680 475, 695 460 C 710 435, 710 380, 690 355 C 682 348, 674 345, 665 345 Z" />
-                    </g>
-
-                    <!-- Triceps (Back) -->
-                    <g class="holoMuscleGroup" onclick="HologramViewer.showMuscleDetail('triceps', 'back')" role="button" tabindex="0">
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="triceps" d="M 305 465 C 330 480, 335 525, 330 580 C 322 625, 305 645, 288 640 C 275 625, 270 580, 275 530 C 280 490, 292 470, 305 465 Z" />
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="triceps" d="M 695 465 C 670 480, 665 525, 670 580 C 678 625, 695 645, 712 640 C 725 625, 730 580, 725 530 C 720 490, 708 470, 695 465 Z" />
-                    </g>
-
-                    <!-- Forearms (Back) -->
-                    <g class="holoMuscleGroup" onclick="HologramViewer.showMuscleDetail('forearms', 'back')" role="button" tabindex="0">
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="forearms" d="M 285 645 C 305 660, 310 705, 300 770 C 290 825, 275 870, 255 875 C 242 875, 235 845, 238 800 C 242 740, 260 670, 285 645 Z" />
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="forearms" d="M 715 645 C 695 660, 690 705, 700 770 C 710 825, 725 870, 745 875 C 758 875, 765 845, 762 800 C 758 740, 740 670, 715 645 Z" />
-                    </g>
-
-                    <!-- Gluteus Maximus -->
-                    <g class="holoMuscleGroup" onclick="HologramViewer.showMuscleDetail('glutes', 'back')" role="button" tabindex="0">
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="glutes" d="M 380 765 C 440 760, 485 765, 492 800 C 498 850, 485 915, 445 940 C 405 945, 365 915, 350 865 C 342 820, 355 780, 380 765 Z" />
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="glutes" d="M 620 765 C 560 760, 515 765, 508 800 C 502 850, 515 915, 555 940 C 595 945, 635 915, 650 865 C 658 820, 645 780, 620 765 Z" />
-                    </g>
-
-                    <!-- Hamstrings -->
-                    <g class="holoMuscleGroup" onclick="HologramViewer.showMuscleDetail('hamstrings', 'back')" role="button" tabindex="0">
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="hamstrings" d="M 370 955 C 428 948, 474 962, 478 1022 C 484 1092, 470 1162, 440 1202 C 415 1212, 385 1202, 365 1178 C 345 1142, 340 1068, 345 1008 C 350 972, 360 958, 370 955 Z" />
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="hamstrings" d="M 630 955 C 572 948, 526 962, 522 1022 C 516 1092, 530 1162, 560 1202 C 585 1212, 615 1202, 635 1178 C 655 1142, 660 1068, 655 1008 C 650 972, 640 958, 630 955 Z" />
-                    </g>
-
-                    <!-- Calves (Back) -->
-                    <g class="holoMuscleGroup" onclick="HologramViewer.showMuscleDetail('calves', 'back')" role="button" tabindex="0">
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="calves" d="M 365 1230 C 414 1228, 438 1262, 434 1332 C 430 1406, 405 1482, 380 1498 C 362 1498, 350 1458, 350 1392 C 350 1322, 355 1252, 365 1230 Z" />
-                      <path fill="none" stroke="none" style="fill:transparent !important; stroke:none !important; opacity:0;" class="holoMuscle" data-muscle="calves" d="M 635 1230 C 586 1228, 562 1262, 566 1332 C 570 1406, 595 1482, 620 1498 C 638 1498, 650 1458, 650 1392 C 650 1322, 645 1252, 635 1230 Z" />
-                    </g>
-                  </svg>
-                </div>
-              </div>
-
-              <!-- HUD Target Laser Callout Markers -->
-              <div class="holoHudMarkers" id="holoHudMarkers"></div>
-            </div>
-
-            <!-- Bottom Hologram Target Breakdown Chips -->
-            <div class="holoFooter">
-              <div class="holoTargetChips" id="holoTargetChips"></div>
-              <div class="holoInteractiveHint">
-                <span>⚡ Tap muscles for coaching tips · Hover / Drag to tilt in 3D</span>
-              </div>
-            </div>
-
-            <!-- Muscle Detail HUD Popover Modal -->
-            <div class="holoMuscleDetail" id="holoMuscleDetail" style="display:none">
-              <div class="holoDetailHeader">
-                <div class="holoDetailTitleGroup">
-                  <span class="holoDetailBadge" id="holoDetailTag">Primary Focus</span>
-                  <h3 id="holoDetailTitle">Latissimus Dorsi</h3>
-                  <div class="holoDetailSub" id="holoDetailRole">Primary back width & upper body pulling</div>
-                </div>
-                <button type="button" class="holoCloseBtn" onclick="HologramViewer.closeDetail()" aria-label="Close details">✕</button>
-              </div>
-              <div class="holoDetailBody">
-                <div class="holoDetailSection">
-                  <div class="holoSectionLabel">KEY TARGET MOVEMENTS</div>
-                  <div class="holoExercisesList" id="holoDetailExercises">Weighted Pull-Ups, Lat Pulldowns, Barbell Bent-Over Rows</div>
-                </div>
-                <div class="holoDetailSection">
-                  <div class="holoSectionLabel">BIOMECHANICAL TIP</div>
-                  <p class="holoTipText" id="holoDetailTip">Drive with elbows rather than hands to isolate back fibers.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <label class="muted" style="font-size:11.5px;display:block;margin-top:14px;margin-bottom:4px">Target Workout Routine</label>
-          <select id="workoutSelect" onchange="if(window.HologramViewer) window.HologramViewer.update(this.value)">
-            <option>Chest + Triceps</option>
-            <option>Back + Biceps</option>
-            <option>Shoulders + Forearms</option>
-            <option>Leg Day</option>
-            <option>Rest</option>
-          </select>
-          <div style="margin: 0 0 10px">
-            <label class="muted" style="font-size:11.5px;display:block;margin-bottom:4px">Training Intensity</label>
-            <select id="workoutIntensity" onchange="updateWorkoutCaloriePreview()" style="margin:0">
-              <option value="light">Light-to-Moderate (MET 3.0 · longer rest times, slower pace)</option>
-              <option value="moderate" selected>Standard Moderate (MET 3.5 · 60–90s standard rests)</option>
-              <option value="vigorous">Vigorous / Circuit Style (MET 5.0 · supersets, heavy compound)</option>
-            </select>
-          </div>
-          <div class="inputWithUnit">
-            <input id="workoutMinutes" type="number" step="any" min="0.1" placeholder="Duration (e.g. 1 hr or 45 min)" oninput="updateBarUnit(this, 'workoutBarUnit'); updateWorkoutCaloriePreview()">
-            <span id="workoutBarUnit" class="unitBadge"></span>
-          </div>
-          <div style="margin: 0 0 12px">
-            <label class="muted" style="font-size:11.5px;display:flex;justify-content:space-between;margin-bottom:4px">
-              <span>Today's Weight</span>
-              <span style="font-size:11px;color:#7a8873">Optional</span>
-            </label>
-            <div style="position:relative;display:flex;align-items:center">
-              <input id="workoutWeight" type="number" step="0.1" min="20" max="300" placeholder="Current weight in kg (optional)" style="margin:0;padding-right:48px" oninput="updateWorkoutCaloriePreview()">
-              <span style="position:absolute;right:12px;font-size:11px;font-weight:700;color:#7a8873;pointer-events:none">KG</span>
-            </div>
-          </div>
-          <div id="workoutCaloriePreview" style="background:rgba(184,245,58,0.06);border:1px solid rgba(184,245,58,0.22);border-radius:12px;padding:11px 14px;margin:0 0 14px;display:flex;align-items:center;justify-content:space-between">
-            <div style="display:flex;align-items:center;gap:10px">
-              <span style="font-size:22px;line-height:1">🔥</span>
-              <div>
-                <div style="font-size:10.5px;font-weight:700;color:var(--lime,#b8f53a);letter-spacing:0.06em">CALORIE BURN PREVIEW</div>
-                <div style="font-size:11.5px;color:#a6b69e;margin-top:1px" id="workoutCalorieFormula">1 hr · Standard Moderate (MET 3.5)</div>
-              </div>
-            </div>
-            <div style="text-align:right">
-              <span style="font-size:22px;font-weight:800;color:var(--lime,#b8f53a);line-height:1" id="workoutCalorieValue">--</span>
-              <span style="font-size:11px;color:#8fa881;font-weight:600;display:block">kcal</span>
-            </div>
-          </div>
-          <button onclick="saveWorkout()">Complete today's workout</button>
-          <p id="workoutSaved" class="muted"></p>
-        </div>
-
-
-
-        <div class="card">
-          <h2>Workout checklist</h2>
-          <p><label><input type="checkbox" id="warmup"> Warm-up completed</label></p>
-          <p><label><input type="checkbox" id="cooldown"> Cool-down completed</label></p>
-          <p class="muted">Stop any movement that causes pain.</p>
         </div>
       </section>
 

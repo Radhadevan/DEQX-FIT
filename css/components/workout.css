@@ -1,0 +1,682 @@
+/**
+ * DEQX FIT - Workout Section Styles
+ * Pixel-perfect implementation matching reference dark cinematic UI.
+ */
+
+:root {
+  --neon-lime: #d6ff32;
+  --neon-lime-glow: rgba(214, 255, 50, 0.35);
+  --neon-lime-subtle: rgba(214, 255, 50, 0.12);
+  --dark-bg: #0a0d09;
+  --card-bg: #111611;
+  --card-inner: #151c15;
+  --card-border: rgba(214, 255, 50, 0.12);
+  --card-border-subtle: rgba(255, 255, 255, 0.06);
+  --text-muted: #889982;
+  --text-dim: #5c6c57;
+}
+
+#workout.section {
+  padding: 12px 14px 110px !important;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* WORKOUT TOP APP BAR */
+.workoutTopNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 4px 14px;
+}
+
+.workoutNavBackBtn {
+  all: unset;
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.workoutNavBackBtn:hover {
+  background: rgba(214, 255, 50, 0.15);
+  border-color: var(--neon-lime);
+  color: var(--neon-lime);
+}
+
+.workoutNavBrand {
+  text-align: center;
+}
+
+.workoutNavBrandTitle {
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+.workoutNavBrandTitle span {
+  color: var(--neon-lime);
+}
+
+.workoutNavBrandSub {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.workoutNavLogoBadge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--neon-lime);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  background: rgba(214, 255, 50, 0.06);
+  box-shadow: 0 0 10px rgba(214, 255, 50, 0.2);
+}
+
+/* TODAY'S WORKOUT MAIN CARD */
+.workoutHeroCard {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 16px 16px 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  margin-bottom: 12px;
+}
+
+.workoutHeroHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.workoutSuperTag {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.workoutMainTitle {
+  font-size: 24px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.workoutSplitPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--neon-lime-subtle);
+  border: 1px solid var(--neon-lime);
+  color: var(--neon-lime);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  box-shadow: 0 0 10px rgba(214, 255, 50, 0.2);
+}
+
+.workoutSplitPill .pillDumbbell {
+  font-size: 11px;
+}
+
+.workoutHeroSubtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 6px 0 14px;
+  line-height: 1.35;
+}
+
+.workoutHeroSubtitle .xpHighlight {
+  color: var(--neon-lime);
+  font-weight: 800;
+}
+
+/* VIEW SWITCHER PILLS */
+.workoutViewSwitcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 4px 0 14px;
+}
+
+.workoutViewBtn {
+  all: unset;
+  box-sizing: border-box;
+  padding: 6px 18px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #171e17;
+  color: #c4d3bf;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  user-select: none;
+}
+
+.workoutViewBtn:hover {
+  background: #1f281f;
+  color: #ffffff;
+  border-color: rgba(214, 255, 50, 0.3);
+}
+
+.workoutViewBtn.active {
+  background: var(--neon-lime) !important;
+  color: #0b1109 !important;
+  border-color: var(--neon-lime) !important;
+  font-weight: 800;
+  box-shadow: 0 0 16px rgba(214, 255, 50, 0.5);
+}
+
+.workoutFlipBtn {
+  all: unset;
+  box-sizing: border-box;
+  padding: 6px 18px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #171e17;
+  color: #c4d3bf;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.workoutFlipBtn:hover {
+  background: #1f281f;
+  color: #ffffff;
+}
+
+/* ANATOMICAL MUSCLE VISUAL STAGE */
+.workoutVisualStage {
+  position: relative;
+  width: 100%;
+  border-radius: 16px;
+  background: radial-gradient(circle at 50% 65%, rgba(214, 255, 50, 0.08) 0%, rgba(17, 22, 17, 0.2) 65%, transparent 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 240px;
+}
+
+.workoutMuscleImg {
+  width: 100%;
+  max-width: 440px;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  border-radius: 12px;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+/* TARGET MUSCLE CARD */
+.workoutTargetCard {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.workoutTargetCard:hover {
+  border-color: rgba(214, 255, 50, 0.3);
+  transform: translateY(-1px);
+}
+
+.workoutTargetLabel {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.workoutTargetRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.workoutTargetLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.workoutTargetIconBox {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #151b15;
+  border: 1.5px solid rgba(214, 255, 50, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.workoutTargetIcon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.workoutTargetName {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.workoutTargetRole {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.workoutTargetChevron {
+  font-size: 18px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+/* WORKOUT PROGRESS CARD */
+.workoutProgressCard {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.workoutProgressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.workoutProgressTitle {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.workoutProgressTrophy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(214, 255, 50, 0.1);
+  border: 1px solid rgba(214, 255, 50, 0.3);
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--neon-lime);
+}
+
+.workoutProgressBody {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.workoutProgressCircleWrap {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.workoutProgressSvg {
+  width: 60px;
+  height: 60px;
+  transform: rotate(-90deg);
+}
+
+.workoutProgressBgCircle {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 6;
+}
+
+.workoutProgressFillCircle {
+  fill: none;
+  stroke: var(--neon-lime);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 163.36; /* 2 * PI * 26 */
+  stroke-dashoffset: 163.36;
+  transition: stroke-dashoffset 0.4s ease;
+  filter: drop-shadow(0 0 4px rgba(214, 255, 50, 0.6));
+}
+
+.workoutProgressPercent {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13.5px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.workoutProgressInfo {
+  flex: 1;
+}
+
+.workoutProgressCount {
+  font-size: 18px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.workoutProgressCount span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.workoutProgressBarTrack {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.workoutProgressBarFill {
+  height: 100%;
+  width: 0%;
+  background: var(--neon-lime);
+  border-radius: 999px;
+  box-shadow: 0 0 8px rgba(214, 255, 50, 0.7);
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.workoutProgressHint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* EXERCISES CHECKLIST CARD */
+.workoutExercisesCard {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.workoutExercisesHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.workoutExercisesTitle {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.workoutReorderBtn {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: #171f17;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #c4d3bf;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.workoutReorderBtn:hover {
+  background: #202a20;
+  color: #ffffff;
+}
+
+.workoutExerciseList {
+  display: flex;
+  flex-direction: column;
+}
+
+.workoutExerciseItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--card-border-subtle);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.workoutExerciseItem:last-child {
+  border-bottom: none;
+  padding-bottom: 2px;
+}
+
+.workoutExerciseThumb {
+  width: 60px;
+  height: 38px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #171e17;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.workoutExerciseNum {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #1a221a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.workoutExerciseDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.workoutExerciseName {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
+}
+
+.workoutExerciseSets {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.workoutCheckBtn {
+  all: unset;
+  box-sizing: border-box;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.workoutCheckBtn:hover {
+  border-color: var(--neon-lime);
+}
+
+.workoutExerciseItem.checked .workoutCheckBtn {
+  background: var(--neon-lime);
+  border-color: var(--neon-lime);
+  box-shadow: 0 0 10px rgba(214, 255, 50, 0.5);
+}
+
+.workoutExerciseItem.checked .workoutCheckBtn::after {
+  content: '✓';
+  color: #0c1109;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.workoutExerciseItem.checked .workoutExerciseName {
+  color: #6d7e67;
+  text-decoration: line-through;
+}
+
+/* STICKY BOTTOM CTA BUTTON */
+.workoutStickyBar {
+  position: sticky;
+  bottom: 64px;
+  width: 100%;
+  padding: 8px 0;
+  z-index: 80;
+  background: linear-gradient(to top, rgba(10, 13, 9, 0.95) 75%, transparent);
+}
+
+.workoutCtaBtn {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  height: 48px;
+  border-radius: 999px;
+  background: var(--neon-lime);
+  color: #0b1109;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(214, 255, 50, 0.4);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.workoutCtaBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(214, 255, 50, 0.55);
+}
+
+.workoutCtaBtn:active {
+  transform: scale(0.98);
+}
+
+.workoutCtaBtn.completed {
+  background: #1c271b;
+  color: var(--neon-lime);
+  border: 1.5px solid var(--neon-lime);
+  box-shadow: 0 0 14px rgba(214, 255, 50, 0.25);
+}
+
+/* CALORIE LOG & TARGET CUSTOMIZER COLLAPSIBLE */
+.workoutExtrasCard {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.workoutExtrasSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  color: #b7c5b0;
+  user-select: none;
+}
+
+.workoutExtrasSummary::-webkit-details-marker {
+  display: none;
+}
+
+.workoutExtrasContent {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--card-border-subtle);
+}
+
+/* WORKOUT CALENDAR INTEGRATION */
+.workoutCalendarCard {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
