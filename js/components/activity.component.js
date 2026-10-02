@@ -121,6 +121,10 @@
     v9.lastActivityDate = window.today();
     window.saveV9();
 
+    if (typeof window.addTimelineEvent === 'function') {
+      window.addTimelineEvent('activity', `${displayName}`, `🔥 ${kcal} kcal burned · ${window.formatDurationLabel(mins)}`, '⚡', 0);
+    }
+
     const res = document.getElementById('activityResult');
     if (res) {
       res.style.display = 'block';
@@ -137,6 +141,7 @@
     document.querySelectorAll('.activityChoice').forEach(x => x.classList.remove('selected'));
     v9.activity = null;
     window.saveV9();
+    window.save(true);
 
     if (typeof window.render === 'function') window.render();
     renderV9();

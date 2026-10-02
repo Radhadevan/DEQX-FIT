@@ -62,6 +62,9 @@
     if (typeof window.renderActivityChoices === 'function') window.renderActivityChoices();
     if (typeof window.renderCustomActivities === 'function') window.renderCustomActivities();
     if (typeof window.renderFoodDraft === 'function') window.renderFoodDraft();
+    if (typeof window.renderFoodList === 'function') window.renderFoodList();
+    if (typeof window.renderProgress === 'function') window.renderProgress();
+    if (typeof window.renderHomeTimeline === 'function') window.renderHomeTimeline();
     if (typeof window.renderCalendar === 'function') window.renderCalendar();
     if (typeof window.updateDailyAnalytics === 'function') window.updateDailyAnalytics();
     if (typeof window.updateSpendRing === 'function') window.updateSpendRing();

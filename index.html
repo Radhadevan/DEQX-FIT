@@ -405,6 +405,18 @@
           </div>
           <div class="weekChart" id="streakDots"></div>
         </div>
+
+        <!-- TODAY'S COMPACT TIMELINE (Section 7) -->
+        <div class="card timelineCard reveal d5" id="homeTimelineCard" style="margin-top:14px">
+          <div class="cardHeader">
+            <div>
+              <span class="label">TODAY'S LOG</span>
+              <h2>Today's Timeline</h2>
+            </div>
+            <span class="muted" id="timelineCount">0 events</span>
+          </div>
+          <div class="homeTimelineList" id="homeTimelineList" style="margin-top:8px"></div>
+        </div>
       </section>
 
       <!-- FOOD SECTION -->
@@ -753,17 +765,29 @@
         </div>
       </section>
 
+      <!-- PROGRESS SECTION (Section 11 & 12) -->
+      <section id="progress" class="section">
+        <div class="todayHeader reveal d1">
+          <div>
+            <div class="eyebrow">ANALYTICS &amp; HABITS</div>
+            <h1>Fitness Progress</h1>
+            <p>Track your weight journey, consistency, and daily habits over time.</p>
+          </div>
+        </div>
+        <div id="progressContainer"></div>
+      </section>
 
-
-      <!-- BUDGET SECTION -->
+      <!-- BUDGET SECTION (Section 14) -->
       <section id="budget" class="section">
         <div class="card">
           <h2>Daily food budget</h2>
-          <div class="value">₹<span id="budgetTargetView">250</span></div>
-          <p class="muted">Today's spending</p>
-          <input id="spent" type="number" placeholder="Enter amount spent">
+          <div id="budgetDetailedSummary"></div>
+          <div class="value" style="display:none">₹<span id="budgetTargetView">250</span></div>
+          <p class="muted">Today's manual spending</p>
+          <input id="spent" type="number" placeholder="Enter amount spent (₹)">
           <button onclick="saveSpent()">Save spending</button>
           <p id="spentResult"></p>
+          <div id="budgetWeeklySummary"></div>
         </div>
       </section>
 
@@ -852,15 +876,16 @@
       </div>
 
       <div class="navDotsTrack" id="navDotsTrack" aria-label="Section indicators">
-        <button type="button" class="navDot active" data-tab="home" onclick="show('home')" title="Home (1/6)" aria-label="Home"></button>
-        <button type="button" class="navDot" data-tab="food" onclick="show('food')" title="Food (2/6)" aria-label="Food"></button>
-        <button type="button" class="navDot" data-tab="activity" onclick="show('activity')" title="Activity (3/6)" aria-label="Activity"></button>
-        <button type="button" class="navDot" data-tab="workout" onclick="show('workout')" title="Workout (4/6)" aria-label="Workout"></button>
-        <button type="button" class="navDot" data-tab="budget" onclick="show('budget')" title="Budget (5/6)" aria-label="Budget"></button>
-        <button type="button" class="navDot" data-tab="profile" onclick="show('profile')" title="Profile (6/6)" aria-label="Profile"></button>
+        <button type="button" class="navDot active" data-tab="home" onclick="show('home')" title="Home (1/7)" aria-label="Home"></button>
+        <button type="button" class="navDot" data-tab="food" onclick="show('food')" title="Food (2/7)" aria-label="Food"></button>
+        <button type="button" class="navDot" data-tab="activity" onclick="show('activity')" title="Activity (3/7)" aria-label="Activity"></button>
+        <button type="button" class="navDot" data-tab="workout" onclick="show('workout')" title="Workout (4/7)" aria-label="Workout"></button>
+        <button type="button" class="navDot" data-tab="progress" onclick="show('progress')" title="Progress (5/7)" aria-label="Progress"></button>
+        <button type="button" class="navDot" data-tab="budget" onclick="show('budget')" title="Budget (6/7)" aria-label="Budget"></button>
+        <button type="button" class="navDot" data-tab="profile" onclick="show('profile')" title="Profile (7/7)" aria-label="Profile"></button>
       </div>
 
-      <button type="button" class="capsuleExpandBtn" id="capsuleExpandBtn" onclick="toggleNavDock()" aria-label="Expand all 6 navigation tabs">
+      <button type="button" class="capsuleExpandBtn" id="capsuleExpandBtn" onclick="toggleNavDock()" aria-label="Expand all 7 navigation tabs">
         <span class="expandIcon">▲</span>
         <span class="expandText">Tabs</span>
       </button>
@@ -875,7 +900,7 @@
           <span class="navDockPulse"></span>
           <div>
             <b>NAVIGATION</b>
-            <small>6 SECTIONS AVAILABLE</small>
+            <small>7 SECTIONS AVAILABLE</small>
           </div>
         </div>
         <button type="button" class="navDockCloseBtn" onclick="collapseNavDock()" aria-label="Close navigation">✕</button>
@@ -897,6 +922,10 @@
         <button type="button" onclick="selectNavTab('workout')" id="n-workout" class="navDockItem">
           <b>🏋</b>
           <span>Workout</span>
+        </button>
+        <button type="button" onclick="selectNavTab('progress')" id="n-progress" class="navDockItem">
+          <b>📈</b>
+          <span>Progress</span>
         </button>
         <button type="button" onclick="selectNavTab('budget')" id="n-budget" class="navDockItem">
           <b>₹</b>
@@ -1091,6 +1120,7 @@
   <script src="js/components/food.component.js"></script>
   <script src="js/components/activity.component.js"></script>
   <script src="js/components/workout.component.js"></script>
+  <script src="js/components/progress.component.js"></script>
   <script src="js/components/budget.component.js"></script>
   <script src="js/components/profile.component.js"></script>
   <script src="js/components/modals.component.js"></script>

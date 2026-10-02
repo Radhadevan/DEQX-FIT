@@ -11,11 +11,12 @@
     food: { icon: '🍽', label: 'Food' },
     activity: { icon: '⚡', label: 'Activity' },
     workout: { icon: '🏋', label: 'Workout' },
+    progress: { icon: '📈', label: 'Progress' },
     budget: { icon: '₹', label: 'Budget' },
     profile: { icon: '◉', label: 'Profile' }
   };
 
-  const swipeOrder = ['home', 'food', 'activity', 'workout', 'budget', 'profile'];
+  const swipeOrder = ['home', 'food', 'activity', 'workout', 'progress', 'budget', 'profile'];
   let navDockTimer = null;
   let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
 
@@ -84,6 +85,7 @@
 
     if (id === 'profile' && typeof window.fillProfile === 'function') window.fillProfile();
     if (id === 'workout' && typeof window.renderCalendar === 'function') window.renderCalendar();
+    if (id === 'progress' && typeof window.renderProgress === 'function') window.renderProgress();
     if (typeof window.render === 'function') window.render();
     if (typeof window.updateSpendRing === 'function') window.updateSpendRing();
   };

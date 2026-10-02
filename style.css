@@ -5143,3 +5143,40 @@
     font-size: 8.5px;
   }
 }
+
+/* ==========================================================================
+   TODAY'S TIMELINE & WORKOUT SET TRACKING STYLES (CONTROLLED UPDATE)
+   ========================================================================== */
+
+.homeTimelineList {
+  display: flex;
+  flex-direction: column;
+}
+
+.timelineItem:last-child {
+  border-bottom: none !important;
+}
+
+.weekDot.rest {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #7a8a72 !important;
+}
+
+.calendarDay.rest .calStatusIcon {
+  font-size: 10px;
+}
+
+.setInp:focus {
+  outline: none;
+  border-color: var(--lime, #b8f53a) !important;
+}
+
+.logSetBtn:hover {
+  background: rgba(184, 245, 58, 0.2) !important;
+}
+
+#dayFitnessModal.show {
+  display: flex !important;
+}
+

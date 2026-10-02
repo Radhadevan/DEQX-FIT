@@ -6,22 +6,21 @@
   'use strict';
 
   const DB = {
-    egg: { p: 6.3, c: 78, a: ['egg', 'eggs'] },
-    appam: { p: 2, c: 120, a: ['appam', 'appams'] },
-    chapathi: { p: 3, c: 110, a: ['chapathi', 'chapati', 'chappathi', 'chappati'] },
-    chicken: { p: 27, c: 165, a: ['chicken'] },
-    beef: { p: 26, c: 250, a: ['beef'] },
-    milk: { p: 8, c: 150, a: ['milk'] },
-    oats: { p: 6.5, c: 190, a: ['oats', 'oat'] }
+    egg: { p: 6.3, c: 78, a: ['egg', 'eggs'], baseUnit: 'count', baseQty: 1 },
+    appam: { p: 2.0, c: 120, a: ['appam', 'appams'], baseUnit: 'count', baseQty: 1 },
+    chapathi: { p: 3.0, c: 110, a: ['chapathi', 'chapati', 'chappathi', 'chappati'], baseUnit: 'count', baseQty: 1 },
+    chicken: { p: 13.5, c: 82.5, a: ['chicken'], baseUnit: 'g', baseQty: 50 }, // 50g = 13.5g P, 82.5 kcal; 100g = 27g P, 165 kcal
+    milk: { p: 8.0, c: 150, a: ['milk'], baseUnit: 'ml', baseQty: 250 },
+    oats: { p: 6.5, c: 190, a: ['oats', 'oat'], baseUnit: 'g', baseQty: 50 } // 50g = 6.5g P, 190 kcal; 100g = 13g P, 380 kcal
   };
 
   const QUICK_FOODS = [
-    { key: 'egg', name: 'Egg', icon: '🥚', amount: 1, unit: 'count', portion: '1 egg' },
-    { key: 'appam', name: 'Appam', icon: '🥞', amount: 1, unit: 'count', portion: '1 appam' },
-    { key: 'chicken', name: 'Chicken', icon: '🍗', amount: 50, unit: 'g', portion: '50 g' },
-    { key: 'chapathi', name: 'Chapathi', icon: '🫓', amount: 1, unit: 'count', portion: '1 chapathi' },
-    { key: 'milk', name: 'Milk', icon: '🥛', amount: 250, unit: 'ml', portion: '250 ml' },
-    { key: 'oats', name: 'Oats', icon: '🥣', amount: 50, unit: 'g', portion: '50 g' }
+    { key: 'egg', name: 'Egg', icon: '🥚', amount: 1, unit: 'count', portion: '1 egg', pStep: 6.3, cStep: 78, labelPattern: q => `Egg × ${q}` },
+    { key: 'appam', name: 'Appam', icon: '🥞', amount: 1, unit: 'count', portion: '1 appam', pStep: 2.0, cStep: 120, labelPattern: q => `Appam × ${q}` },
+    { key: 'chicken', name: 'Chicken', icon: '🍗', amount: 50, unit: 'g', portion: '50 g', pStep: 13.5, cStep: 82.5, labelPattern: q => `Chicken × ${q}g` },
+    { key: 'chapathi', name: 'Chapathi', icon: '🫓', amount: 1, unit: 'count', portion: '1 chapathi', pStep: 3.0, cStep: 110, labelPattern: q => `Chapathi × ${q}` },
+    { key: 'milk', name: 'Milk', icon: '🥛', amount: 250, unit: 'ml', portion: '250 ml', pStep: 8.0, cStep: 150, labelPattern: q => `Milk × ${q}ml` },
+    { key: 'oats', name: 'Oats', icon: '🥣', amount: 50, unit: 'g', portion: '50 g', pStep: 6.5, cStep: 190, labelPattern: q => `Oats × ${q}g` }
   ];
 
   window.DEQX = window.DEQX || {};

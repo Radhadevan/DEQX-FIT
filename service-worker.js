@@ -1,4 +1,4 @@
-const CACHE = 'deqx-fit-v53-live-multi-device-sync';
+const CACHE = 'deqx-fit-v54-controlled-update';
 const CORE = [
   './',
   './index.html',
@@ -46,6 +46,7 @@ const CORE = [
   './js/components/food.component.js',
   './js/components/activity.component.js',
   './js/components/workout.component.js',
+  './js/components/progress.component.js',
   './js/components/budget.component.js',
   './js/components/profile.component.js',
   './js/components/modals.component.js'
