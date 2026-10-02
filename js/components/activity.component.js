@@ -31,7 +31,7 @@
   };
 
   const calculateActivityCalories = (activityId, mins, weight, intensity) => {
-    let met = 7.0;
+    let met = 6.0;
     let displayName = activityId || 'Activity';
     let isBadminton = false;
     let effectiveMins = mins;
@@ -41,22 +41,29 @@
     const d = window.d;
     const customAct = d?.customActivities?.find(c => c.id === activityId);
 
+    const intKey = String(intensity || 'moderate').toLowerCase();
+    const isEasy = (intKey === 'easy' || intKey === 'light' || intKey === 'low');
+    const isHard = (intKey === 'hard' || intKey === 'high' || intKey === 'vigorous');
+
     if (customAct) {
       met = Number(customAct.met) || 6.0;
       displayName = customAct.name || customAct.label;
     } else if (activityId === 'Badminton') {
       isBadminton = true;
       effectiveMins = Math.max(1, Math.round(mins / 2));
-      met = intensity === 'low' ? 4.5 : intensity === 'high' ? 7.5 : 6.0;
+      met = isEasy ? 4.5 : isHard ? 7.5 : 6.0;
       displayName = 'Badminton';
     } else if (activityId === 'Cricket') {
-      met = intensity === 'low' ? 3.5 : intensity === 'high' ? 6.0 : 4.8;
+      met = isEasy ? 3.5 : isHard ? 6.0 : 4.8;
       displayName = 'Cricket';
+    } else if (baseAct) {
+      met = Number(baseAct.met) || 6.0;
+      displayName = baseAct.name || baseAct.label;
     } else {
-      met = intensity === 'low' ? 4.0 : intensity === 'high' ? 8.0 : 6.0;
+      met = isEasy ? 4.0 : isHard ? 8.0 : 6.0;
     }
 
-    const intensityMultiplier = intensity === 'low' ? 0.85 : intensity === 'high' ? 1.2 : 1.0;
+    const intensityMultiplier = isEasy ? 0.8 : isHard ? 1.25 : 1.0;
     const calPerMin = (met * intensityMultiplier * 3.5 * weight) / 200;
     const kcal = Math.round(calPerMin * effectiveMins);
 
@@ -78,7 +85,7 @@
 
     const rawMins = document.getElementById('activityMinutes')?.value;
     const parsedMins = window.parseDurationToMinutes(rawMins);
-    const mins = Math.min(600, Math.max(1, parsedMins || 45));
+    const mins = Math.min(1440, Math.max(1, parsedMins || 60));
     const intensity = document.getElementById('activityIntensity')?.value || 'moderate';
     const weight = Math.max(40, Math.min(180, Number(d?.weight) || 70));
 
@@ -87,7 +94,9 @@
     if (valueEl) valueEl.textContent = kcal;
     if (formulaEl) {
       const badmintonNote = isBadminton ? ` (1/2 active: ${window.formatDurationLabel(effectiveMins)})` : '';
-      formulaEl.innerHTML = `<b>${window.esc(displayName)}</b> · ${window.formatDurationLabel(mins)}${badmintonNote} · ${intensity}`;
+      const intKey = String(intensity).toLowerCase();
+      const intLabel = (intKey === 'easy' || intKey === 'light') ? 'Easy' : (intKey === 'hard') ? 'Hard' : 'Moderate';
+      formulaEl.innerHTML = `<b>${window.esc(displayName)}</b> · ${window.formatDurationLabel(mins)}${badmintonNote} · ${intLabel}`;
     }
   };
 
@@ -102,7 +111,7 @@
 
     const rawMins = document.getElementById('activityMinutes')?.value;
     const parsedMins = window.parseDurationToMinutes(rawMins);
-    const mins = Math.min(600, Math.max(1, parsedMins || 45));
+    const mins = Math.min(1440, Math.max(1, parsedMins || 60));
     const intensity = document.getElementById('activityIntensity')?.value || 'moderate';
     const weight = Math.max(40, Math.min(180, Number(d?.weight) || 70));
 
@@ -123,7 +132,7 @@
 
     window.earnXP(Math.min(60, Math.round(kcal / 10)), 'activity');
     const minInput = document.getElementById('activityMinutes');
-    if (minInput) minInput.value = '45';
+    if (minInput) minInput.value = '1';
     window.updateBarUnit(minInput, 'activityBarUnit');
     document.querySelectorAll('.activityChoice').forEach(x => x.classList.remove('selected'));
     v9.activity = null;

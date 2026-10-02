@@ -1,4 +1,4 @@
-﻿    :root {
+    :root {
       color-scheme: dark;
       --bg: #090b09;
       --panel: #141714;
@@ -4329,7 +4329,7 @@
 
 .inputWithUnit input {
   margin: 0 !important;
-  padding-right: 80px !important;
+  padding-right: 94px !important;
 }
 
 .inputWithUnit .unitBadge {

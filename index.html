@@ -496,13 +496,13 @@
           <div class="editGrid">
             <label class="muted">Duration
               <div class="inputWithUnit">
-                <input id="activityMinutes" type="number" step="any" min="0.1" value="45" oninput="updateBarUnit(this, 'activityBarUnit'); updateActivityCaloriePreview()">
-                <span id="activityBarUnit" class="unitBadge show minutes">minutes</span>
+                <input id="activityMinutes" type="number" step="any" min="0.1" max="24" value="1" placeholder="Duration in hours (e.g. 1 or 2)" oninput="updateBarUnit(this, 'activityBarUnit'); updateActivityCaloriePreview()">
+                <span id="activityBarUnit" class="unitBadge show hours">1 HOUR</span>
               </div>
             </label>
             <label class="muted">Intensity
               <select id="activityIntensity" onchange="updateActivityCaloriePreview()">
-                <option value="light">Light</option>
+                <option value="easy">Easy</option>
                 <option value="moderate" selected>Moderate</option>
                 <option value="hard">Hard</option>
               </select>
@@ -698,14 +698,14 @@
             <div style="margin: 0 0 10px">
               <label class="muted" style="font-size:11.5px;display:block;margin-bottom:4px">Training Intensity</label>
               <select id="workoutIntensity" onchange="updateWorkoutCaloriePreview()" style="margin:0">
-                <option value="light">Light-to-Moderate (MET 3.5 · longer rest times, slower pace)</option>
-                <option value="moderate" selected>Standard Moderate (MET 5.5 · 60–90s standard rests)</option>
-                <option value="hard">Vigorous / Circuit (MET 7.5 · supersets, heavy compound)</option>
+                <option value="easy">Easy (MET 3.5 · lighter pace, longer rest)</option>
+                <option value="moderate" selected>Moderate (MET 5.5 · standard 60–90s rest)</option>
+                <option value="hard">Hard (MET 7.5 · vigorous supersets, heavy compound)</option>
               </select>
             </div>
             <div class="inputWithUnit" style="margin-bottom:10px">
-              <input id="workoutMinutes" type="number" step="any" min="0.1" max="360" value="45" placeholder="Duration (e.g. 1 hr or 45 min)" oninput="updateBarUnit(this, 'workoutBarUnit'); updateWorkoutCaloriePreview()">
-              <span id="workoutBarUnit" class="unitBadge show minutes">minutes</span>
+              <input id="workoutMinutes" type="number" step="any" min="0.1" max="24" value="1" placeholder="Duration (e.g. 1, 2, or 3 hours)" oninput="updateBarUnit(this, 'workoutBarUnit'); updateWorkoutCaloriePreview()">
+              <span id="workoutBarUnit" class="unitBadge show hours">1 HOUR</span>
             </div>
             <div style="margin: 0 0 12px">
               <label class="muted" style="font-size:11.5px;display:flex;justify-content:space-between;margin-bottom:4px">
@@ -722,7 +722,7 @@
                 <span style="font-size:22px;line-height:1">🔥</span>
                 <div>
                   <div style="font-size:10.5px;font-weight:700;color:var(--neon-lime,#d6ff32);letter-spacing:0.06em">ESTIMATED BURN</div>
-                  <div style="font-size:11.5px;color:#a6b69e;margin-top:1px" id="workoutCalorieFormula">45 min · Standard Moderate (MET 5.5)</div>
+                  <div style="font-size:11.5px;color:#a6b69e;margin-top:1px" id="workoutCalorieFormula">1h · Moderate (MET 5.5)</div>
                 </div>
               </div>
               <div style="text-align:right">

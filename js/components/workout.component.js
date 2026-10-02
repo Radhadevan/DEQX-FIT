@@ -527,12 +527,19 @@
   };
 
   const calculateGymCalories = (mins, weight, intensityKey) => {
+    const key = String(intensityKey || 'moderate').toLowerCase();
     const metMap = {
+      easy: 3.5,
       light: 3.5,
+      low: 3.5,
       moderate: 5.5,
-      hard: 7.5
+      medium: 5.5,
+      standard: 5.5,
+      hard: 7.5,
+      high: 7.5,
+      vigorous: 7.5
     };
-    const met = metMap[intensityKey] || 5.5;
+    const met = metMap[key] || 5.5;
     const calPerMin = (met * 3.5 * weight) / 200;
     return Math.round(calPerMin * mins);
   };
@@ -542,7 +549,7 @@
     if (!previewEl) return;
     const rawMins = document.getElementById('workoutMinutes')?.value;
     const parsedMins = window.parseDurationToMinutes(rawMins);
-    const mins = Math.min(360, Math.max(1, parsedMins || 45));
+    const mins = Math.min(1440, Math.max(1, parsedMins || 60));
     const intensity = document.getElementById('workoutIntensity')?.value || 'moderate';
     const weight = getEffectiveWorkoutWeight();
     const kcal = calculateGymCalories(mins, weight, intensity);
@@ -552,7 +559,11 @@
 
     const formulaEl = document.getElementById('workoutCalorieFormula');
     if (formulaEl) {
-      formulaEl.textContent = `${window.formatDurationLabel(mins)} · ${intensity} (MET ${intensity === 'light' ? 3.5 : intensity === 'hard' ? 7.5 : 5.5})`;
+      const intKey = String(intensity).toLowerCase();
+      const intensityLabel = (intKey === 'easy' || intKey === 'light' || intKey === 'low') ? 'Easy' : (intKey === 'hard' || intKey === 'high' || intKey === 'vigorous') ? 'Hard' : 'Moderate';
+      const metMap = { easy: 3.5, light: 3.5, moderate: 5.5, hard: 7.5, vigorous: 7.5 };
+      const metVal = metMap[intKey] || 5.5;
+      formulaEl.textContent = `${window.formatDurationLabel(mins)} · ${intensityLabel} (MET ${metVal})`;
     }
   };
 
@@ -576,7 +587,7 @@
 
     const rawMins = minutesInput?.value;
     const parsedMins = window.parseDurationToMinutes(rawMins);
-    const duration = Math.min(360, Math.max(1, parsedMins || 45));
+    const duration = Math.min(1440, Math.max(1, parsedMins || 60));
     const intensity = intensitySel?.value || 'moderate';
     const weightUsed = getEffectiveWorkoutWeight();
     const caloriesBurned = calculateGymCalories(duration, weightUsed, intensity);
