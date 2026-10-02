@@ -496,7 +496,7 @@
           <div class="editGrid">
             <label class="muted">Duration
               <div class="inputWithUnit">
-                <input id="activityMinutes" type="number" step="any" min="0.1" max="24" value="1" placeholder="Duration in hours (e.g. 1 or 2)" oninput="updateBarUnit(this, 'activityBarUnit'); updateActivityCaloriePreview()">
+                <input id="activityMinutes" type="number" step="any" min="0.1" max="720" value="1" placeholder="Duration (e.g. 1-5 hrs, 6+ mins)" oninput="updateBarUnit(this, 'activityBarUnit'); updateActivityCaloriePreview()">
                 <span id="activityBarUnit" class="unitBadge show hours">1 HOUR</span>
               </div>
             </label>
@@ -704,7 +704,7 @@
               </select>
             </div>
             <div class="inputWithUnit" style="margin-bottom:10px">
-              <input id="workoutMinutes" type="number" step="any" min="0.1" max="24" value="1" placeholder="Duration (e.g. 1, 2, or 3 hours)" oninput="updateBarUnit(this, 'workoutBarUnit'); updateWorkoutCaloriePreview()">
+              <input id="workoutMinutes" type="number" step="any" min="0.1" max="720" value="1" placeholder="Duration (e.g. 1-5 hrs, 6+ mins)" oninput="updateBarUnit(this, 'workoutBarUnit'); updateWorkoutCaloriePreview()">
               <span id="workoutBarUnit" class="unitBadge show hours">1 HOUR</span>
             </div>
             <div style="margin: 0 0 12px">

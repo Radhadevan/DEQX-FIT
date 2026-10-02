@@ -4353,17 +4353,12 @@
   opacity: 1;
 }
 
-.inputWithUnit .unitBadge.hours {
+.inputWithUnit .unitBadge.hours,
+.inputWithUnit .unitBadge.minutes {
   color: #0c1109;
   background: var(--lime, #d6ff32);
   font-weight: 800;
   box-shadow: 0 0 10px rgba(214, 255, 50, 0.4);
-}
-
-.inputWithUnit .unitBadge.minutes {
-  color: #a6b59e;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 /* ==========================================================================

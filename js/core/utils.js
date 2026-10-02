@@ -68,7 +68,7 @@
     const str = String(input).trim();
     if (!str) return 0;
 
-    // 1. Check if user explicitly specified minutes unit (e.g. "45 min", "30 mins", "15m")
+    // 1. Check if user explicitly specified minutes unit (e.g. "45 min", "30 mins", "15m", "4 min")
     const hasHourUnit = /(h|hr|hrs|hour|hours)/i.test(str);
     const hasMinUnit = /(m|min|mins|minute|minutes)/i.test(str);
 
@@ -77,7 +77,7 @@
       return mMatch ? Math.round(parseFloat(mMatch[1])) : 0;
     }
 
-    // 2. Explicit hours or combined (e.g. "1 hr", "2h 30m", "1.5 hours")
+    // 2. Explicit hours or combined (e.g. "1 hr", "2h 30m", "1.5 hours", "10 hrs")
     if (hasHourUnit) {
       let totalMinutes = 0;
       const hMatch = str.match(/(\d+(\.\d+)?)\s*(h|hr|hrs|hour|hours)/i);
@@ -87,11 +87,12 @@
       return totalMinutes;
     }
 
-    // 3. Plain numeric input (1, 2, 3, 4, 5, 6, and >6):
-    // All interpreted as hours (e.g. 1 -> 60 min, 3 -> 180 min, 6 -> 360 min, 7 -> 420 min)
+    // 3. Plain numeric input without unit:
+    // <= 5 = hours (e.g. 1 -> 60 min, 3 -> 180 min, 5 -> 300 min)
+    // > 5 = minutes (e.g. 6 -> 6 min, 7 -> 7 min, 15 -> 15 min, 45 -> 45 min, 60 -> 60 min)
     const numOnly = parseFloat(str);
     if (!isNaN(numOnly) && numOnly > 0) {
-      return Math.round(numOnly * 60);
+      return numOnly <= 5 ? Math.round(numOnly * 60) : Math.round(numOnly);
     }
     return 0;
   };
@@ -123,17 +124,31 @@
       const mins = parseDurationToMinutes(val);
       unitEl.textContent = `${mins} MIN`;
       unitEl.className = 'unitBadge show minutes';
-    } else if (hasHourUnit || (isPlainNum && !isNaN(num) && num > 0)) {
-      const hours = hasHourUnit ? (parseDurationToMinutes(val) / 60) : num;
-      const formattedHours = Number(hours.toFixed(2)).toString();
-      unitEl.textContent = `${formattedHours} ${formattedHours === '1' ? 'HOUR' : 'HOURS'}`;
+    } else if (hasHourUnit) {
+      const mins = parseDurationToMinutes(val);
+      const hours = Number((mins / 60).toFixed(2)).toString();
+      unitEl.textContent = `${hours} ${hours === '1' ? 'HOUR' : 'HOURS'}`;
       unitEl.className = 'unitBadge show hours';
+    } else if (isPlainNum && !isNaN(num) && num > 0) {
+      if (num <= 5) {
+        const formattedHours = Number(num.toFixed(2)).toString();
+        unitEl.textContent = `${formattedHours} ${formattedHours === '1' ? 'HOUR' : 'HOURS'}`;
+        unitEl.className = 'unitBadge show hours';
+      } else {
+        unitEl.textContent = `${Math.round(num)} MIN`;
+        unitEl.className = 'unitBadge show minutes';
+      }
     } else {
       const mins = parseDurationToMinutes(val);
       if (mins > 0) {
-        const hours = Number((mins / 60).toFixed(2)).toString();
-        unitEl.textContent = `${hours} ${hours === '1' ? 'HOUR' : 'HOURS'}`;
-        unitEl.className = 'unitBadge show hours';
+        if (mins <= 300 && mins % 60 === 0) {
+          const hours = mins / 60;
+          unitEl.textContent = `${hours} ${hours === 1 ? 'HOUR' : 'HOURS'}`;
+          unitEl.className = 'unitBadge show hours';
+        } else {
+          unitEl.textContent = `${mins} MIN`;
+          unitEl.className = 'unitBadge show minutes';
+        }
       } else {
         unitEl.classList.remove('show');
       }
