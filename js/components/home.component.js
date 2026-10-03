@@ -73,6 +73,7 @@
 
     const pp = pct(p, d.proteinTarget);
     const wp = pct(d.water, d.waterTarget);
+    const cp = pct(c, d.calorieTarget);
     const burnTarget = Number(d.burnTarget) || 500;
     const bp = pct(burn, burnTarget);
 

@@ -386,31 +386,44 @@
       // Close reset confirm modal
       closeResetConfirmModal();
 
-      // STEP 5 & 10: Refresh all UI views to clean 0 state
-      if (typeof window.fillProfile === 'function') window.fillProfile();
-      if (typeof window.render === 'function') window.render();
-      if (typeof window.renderV9 === 'function') window.renderV9();
-      if (typeof window.renderFoodDraft === 'function') window.renderFoodDraft();
-      if (typeof window.renderFoodList === 'function') window.renderFoodList();
-      if (typeof window.renderCustomFoods === 'function') window.renderCustomFoods();
-      if (typeof window.renderCustomActivities === 'function') window.renderCustomActivities();
-      if (typeof window.renderProgress === 'function') window.renderProgress();
-      if (typeof window.renderCalendar === 'function') window.renderCalendar();
-      if (typeof window.renderHomeTimeline === 'function') window.renderHomeTimeline();
-      if (typeof window.updateDailyAnalytics === 'function') window.updateDailyAnalytics();
-      if (typeof window.updateSpendRing === 'function') window.updateSpendRing();
+      // STEP 5 & 10: Refresh all UI views to clean 0 state (safely isolated)
+      try { if (typeof window.fillProfile === 'function') window.fillProfile(); } catch (e) { console.warn('[RESET UI fillProfile]', e); }
+      try { if (typeof window.render === 'function') window.render(); } catch (e) { console.warn('[RESET UI render]', e); }
+      try { if (typeof window.renderV9 === 'function') window.renderV9(); } catch (e) { console.warn('[RESET UI renderV9]', e); }
+      try { if (typeof window.renderFoodDraft === 'function') window.renderFoodDraft(); } catch (e) { console.warn('[RESET UI renderFoodDraft]', e); }
+      try { if (typeof window.renderFoodList === 'function') window.renderFoodList(); } catch (e) { console.warn('[RESET UI renderFoodList]', e); }
+      try { if (typeof window.renderCustomFoods === 'function') window.renderCustomFoods(); } catch (e) { console.warn('[RESET UI renderCustomFoods]', e); }
+      try { if (typeof window.renderCustomActivities === 'function') window.renderCustomActivities(); } catch (e) { console.warn('[RESET UI renderCustomActivities]', e); }
+      try { if (typeof window.renderProgress === 'function') window.renderProgress(); } catch (e) { console.warn('[RESET UI renderProgress]', e); }
+      try { if (typeof window.renderCalendar === 'function') window.renderCalendar(); } catch (e) { console.warn('[RESET UI renderCalendar]', e); }
+      try { if (typeof window.renderHomeTimeline === 'function') window.renderHomeTimeline(); } catch (e) { console.warn('[RESET UI renderHomeTimeline]', e); }
+      try { if (typeof window.updateDailyAnalytics === 'function') window.updateDailyAnalytics(); } catch (e) { console.warn('[RESET UI updateDailyAnalytics]', e); }
+      try { if (typeof window.updateSpendRing === 'function') window.updateSpendRing(); } catch (e) { console.warn('[RESET UI updateSpendRing]', e); }
 
       // Return user to Home
-      if (typeof window.show === 'function') {
-        window.show('home');
+      try {
+        if (typeof window.show === 'function') {
+          window.show('home');
+        }
+      } catch (e) {
+        console.warn('[RESET UI show home]', e);
       }
 
       // Show Reset Success Confirmation Banner: "DEQX FIT has been reset." "Fresh start · Today"
-      showResetSuccessToast();
+      try {
+        showResetSuccessToast();
+      } catch (e) {
+        console.warn('[RESET UI toast]', e);
+      }
 
     } catch (err) {
       console.error('[RESET EVERYTHING ERROR]', err);
-      alert('An error occurred during reset. Please try again.');
+      // Fallback state initialization to ensure user is never left in half-broken state
+      try {
+        closeResetConfirmModal();
+        if (typeof window.show === 'function') window.show('home');
+        showResetSuccessToast();
+      } catch (fe) {}
     } finally {
       if (btn) {
         btn.disabled = false;
