@@ -180,18 +180,32 @@ async function cloudSyncNow() {
 }
 
 async function cloudResetUserTables() {
-  if (!supabaseClient || !cloudUser) return;
+  if (!supabaseClient) return true;
+  if (!cloudUser) {
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session?.user) cloudUser = session.user;
+    } catch (e) {}
+  }
+  if (!cloudUser) return true;
+
+  clearTimeout(cloudTimer);
+  localDirty = false;
+  cloudSyncing = false;
+
+  const uid = cloudUser.id;
   try {
-    await supabaseClient.from('weight_history').delete().eq('user_id', cloudUser.id);
-    await supabaseClient.from('food_logs').delete().eq('user_id', cloudUser.id);
-    await supabaseClient.from('daily_logs').delete().eq('user_id', cloudUser.id);
-    await supabaseClient.from('activity_logs').delete().eq('user_id', cloudUser.id);
-    await supabaseClient.from('workout_logs').delete().eq('user_id', cloudUser.id);
+    await supabaseClient.from('food_logs').delete().eq('user_id', uid);
+    await supabaseClient.from('activity_logs').delete().eq('user_id', uid);
+    await supabaseClient.from('workout_logs').delete().eq('user_id', uid);
+    await supabaseClient.from('weight_history').delete().eq('user_id', uid);
+    await supabaseClient.from('daily_logs').delete().eq('user_id', uid);
+
     await supabaseClient.from('profiles').upsert({
-      id: cloudUser.id,
+      id: uid,
       name: '',
-      goal_weight: null,
-      current_weight: null,
+      goal_weight: 85,
+      current_weight: 75,
       protein_target: 150,
       water_target: 3,
       calorie_target: 2200,
@@ -200,9 +214,32 @@ async function cloudResetUserTables() {
       level: 1,
       updated_at: new Date().toISOString()
     });
-    console.log('DEQX FIT: Cloud tables reset successfully');
+
+    const iso = (typeof isoDate === 'function') ? isoDate(new Date()) : new Date().toISOString().slice(0, 10);
+    await supabaseClient.from('daily_logs').insert({
+      user_id: uid,
+      log_date: iso,
+      weight: 75,
+      protein: 0,
+      calories: 0,
+      water: 0,
+      calories_burned: 0,
+      workout_completed: false,
+      daily_completion: 0,
+      updated_at: new Date().toISOString()
+    });
+
+    await supabaseClient.from('weight_history').insert({
+      user_id: uid,
+      recorded_date: iso,
+      weight: 75
+    });
+
+    console.log('DEQX FIT: Supabase cloud tables reset successfully');
+    return true;
   } catch (err) {
     console.warn('DEQX FIT cloudResetUserTables error', err);
+    return false;
   }
 }
 window.cloudResetUserTables = cloudResetUserTables;
@@ -220,11 +257,15 @@ function cloudQueueSync() {
 }
 
 async function cloudLoad() {
-  if (!supabaseClient || !cloudUser) return;
-  if (typeof d !== 'undefined' && (!d || !d.onboarded)) {
-    cloudStatus('online', 'Ready for profile entry');
-    return;
+  if (!supabaseClient) return;
+  if (!cloudUser) {
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session?.user) cloudUser = session.user;
+    } catch (e) {}
   }
+  if (!cloudUser) return;
+
   if (localDirty) {
     cloudStatus('syncing', 'Saving local changes to cloud…');
     await cloudSyncNow();
@@ -247,30 +288,31 @@ async function cloudLoad() {
     const { data: weights, error: he } = await supabaseClient.from('weight_history').select('*').eq('user_id', cloudUser.id).order('recorded_date', { ascending: true });
     if (he) throw Object.assign(new Error(he.message || 'Weight history query failed'), { code: he.code, details: he.details, hint: he.hint, stage: 'weight_history' });
 
-    if (localDirty) {
-      cloudStatus('online', 'Local changes kept safe');
-      cloudMessage('Local changes were detected and kept on this device. Syncing them now…');
-      await cloudSyncNow();
-      return;
-    }
-
     if (p) {
-      d.goalWeight = Number(p.goal_weight) || d.goalWeight;
-      d.weight = Number(p.current_weight) || d.weight;
-      d.proteinTarget = Number(p.protein_target) || d.proteinTarget;
-      d.waterTarget = Number(p.water_target) || d.waterTarget;
-      d.calorieTarget = Number(p.calorie_target) || d.calorieTarget;
-      d.budgetTarget = Number(p.budget_target) >= 0 ? Number(p.budget_target) : d.budgetTarget;
+      d.goalWeight = Number(p.goal_weight) || 85;
+      d.weight = Number(p.current_weight) || (dl && Number(dl.weight)) || 75;
+      d.proteinTarget = Number(p.protein_target) || 150;
+      d.waterTarget = Number(p.water_target) || 3;
+      d.calorieTarget = Number(p.calorie_target) || 2200;
+      d.budgetTarget = Number(p.budget_target) >= 0 ? Number(p.budget_target) : 250;
       d.xp = Number(p.xp) || 0;
+      d.name = p.name || '';
     }
     if (dl) {
       d.weight = Number(dl.weight) || d.weight;
       d.water = Number(dl.water) || 0;
       d.date = today();
+    } else {
+      d.water = 0;
     }
+
     d.foods = (foods || []).map(x => ({ n: x.food_name, p: Number(x.protein) || 0, c: Number(x.calories) || 0 }));
-    if (weights?.length) d.history = weights.map(x => ({ date: new Date(x.recorded_date + 'T00:00:00').toLocaleDateString('en-IN'), weight: Number(x.weight) }));
-    if (!d.history.length) d.history = [{ date: today(), weight: d.weight }];
+    if (weights?.length) {
+      d.history = weights.map(x => ({ date: new Date(x.recorded_date + 'T00:00:00').toLocaleDateString('en-IN'), weight: Number(x.weight) }));
+    } else {
+      d.history = [{ date: today(), weight: d.weight || 75 }];
+    }
+
     d.workoutHistory = {};
     (whs || []).forEach(x => {
       const local = new Date(x.workout_date + 'T00:00:00').toLocaleDateString('en-IN');
@@ -279,18 +321,29 @@ async function cloudLoad() {
     if (dl && dl.workout_completed && !d.workoutHistory[today()]) {
       d.workoutHistory[today()] = { scheduled: scheduleForDate(new Date()) || 'Workout', completed: true, actual: 'Workout' };
     }
+
+    const hasWorkouts = (whs || []).some(x => x.completed) || (dl && dl.workout_completed);
+    if (!hasWorkouts) {
+      d.attendanceStreak = 0;
+      d.streakHistory = {};
+    }
+
     if (typeof v9 !== 'undefined') {
       const a = acts?.[0];
       v9.activity = a?.activity || null;
       v9.burned = Number(a?.calories_burned) || 0;
-      v9.lastActivityDate = a ? today() : v9.lastActivityDate;
-      v9.xp = Number(p?.xp) || v9.xp;
-      v9.level = Number(p?.level) || v9.level;
+      v9.lastActivityDate = a ? today() : null;
+      v9.xp = Number(p?.xp) || 0;
+      v9.level = Number(p?.level) || 1;
+      if (!hasWorkouts) v9.streak = 0;
       saveV9();
     }
+
     localStorage.setItem(KEY, JSON.stringify(d));
     render();
     renderV9();
+    if (typeof window.updateDailyAnalytics === 'function') window.updateDailyAnalytics();
+    if (typeof window.updateSpendRing === 'function') window.updateSpendRing();
     cloudTime();
     cloudStatus('online', 'Cloud data loaded');
   } catch (err) {

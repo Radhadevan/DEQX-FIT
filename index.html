@@ -12,9 +12,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="DEQX FIT">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="stylesheet" href="style.css?v=acid49">
+  <link rel="stylesheet" href="style.css?v=acid50">
   <link rel="stylesheet" href="css/components/workout.css">
-  <link rel="stylesheet" href="css/components/fresh-start.css?v=20261003_v2">
+  <link rel="stylesheet" href="css/components/fresh-start.css?v=20261003_v3">
   <style id="hologram-critical-acid-styles">
     /* HOLOGRAM CRITICAL ACID GREEN STYLES & RESETS */
     .workoutScheduleCard .holoControls {
@@ -1048,12 +1048,21 @@
   <div class="levelOverlay" id="resetConfirmModal" role="dialog" aria-modal="true" aria-labelledby="resetModalTitle" onclick="if(event.target === this) closeResetConfirmModal()">
     <div class="resetConfirmBox">
       <div class="resetConfirmIcon">⚠️</div>
-      <h2 id="resetModalTitle">Reset all fitness data?</h2>
-      <p class="resetConfirmText">Your food, activity, workout, weight history, XP, streak and progress will be cleared. Your account will NOT be deleted.</p>
+      <h2 id="resetModalTitle">Reset all DEQX FIT data?</h2>
+      <p class="resetConfirmText">This will permanently erase your fitness tracking history, food logs, activity logs, workout history, weight history, spending history, XP, level, streaks and custom data.<br><br>Your account will remain active, but your fitness tracking will start again from today.</p>
       <div class="resetConfirmActions">
-        <button type="button" class="btnCancel" onclick="closeResetConfirmModal()">Cancel</button>
-        <button type="button" class="btnDangerConfirm" onclick="confirmResetAllData()">Reset &amp; Start Fresh</button>
+        <button type="button" class="btnCancel" id="btnCancelReset" onclick="closeResetConfirmModal()">CANCEL</button>
+        <button type="button" class="btnDangerConfirm" id="btnDangerReset" onclick="confirmResetAllData()">RESET EVERYTHING</button>
       </div>
+    </div>
+  </div>
+
+  <!-- RESET SUCCESS BANNER -->
+  <div id="resetSuccessToast" class="resetSuccessToast" role="status" aria-live="polite">
+    <div class="rstIcon">⚡</div>
+    <div class="rstContent">
+      <div class="rstTitle">DEQX FIT has been reset.</div>
+      <div class="rstSubtitle">Fresh start · Today</div>
     </div>
   </div>
 

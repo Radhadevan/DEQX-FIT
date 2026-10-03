@@ -200,8 +200,13 @@
   const openResetConfirmModal = () => {
     const modal = document.getElementById('resetConfirmModal');
     if (modal) {
+      const btn = document.getElementById('btnDangerReset');
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'RESET EVERYTHING';
+      }
       modal.classList.add('show');
-    } else if (confirm('Reset all fitness data?\n\nYour food, activity, workout, weight history, XP, streak and progress will be cleared. Your account will NOT be deleted.')) {
+    } else if (confirm('Reset all DEQX FIT data?\n\nThis will permanently erase your fitness tracking history, food logs, activity logs, workout history, weight history, spending history, XP, level, streaks and custom data.\n\nYour account will remain active, but your fitness tracking will start again from today.')) {
       confirmResetAllData();
     }
   };
@@ -209,111 +214,209 @@
   const closeResetConfirmModal = () => {
     const modal = document.getElementById('resetConfirmModal');
     if (modal) modal.classList.remove('show');
+    const btn = document.getElementById('btnDangerReset');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'RESET EVERYTHING';
+    }
   };
 
-  const confirmResetAllData = () => {
-    closeResetConfirmModal();
+  const showResetSuccessToast = () => {
+    const toast = document.getElementById('resetSuccessToast');
+    if (toast) {
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3800);
+    }
+  };
 
-    // 1. Reset Supabase tracking tables if connected (preserves auth account & session)
-    if (typeof window.cloudResetUserTables === 'function') {
-      window.cloudResetUserTables();
+  const confirmResetAllData = async () => {
+    const btn = document.getElementById('btnDangerReset');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'RESETTING...';
     }
 
-    // 2. Remove tracking storage keys (preserve Supabase auth session token)
-    const keysToRemove = [
-      'fitRadhadevanV8',
-      'fitRadhadevanV7',
-      'fitRadhadevanV6',
-      'fitRadhadevanV5',
-      'fitRadhadevanV4',
-      'fitRadhadevanV3',
-      'fitRadhadevanV2',
-      'fitRadhadevan',
-      'deqxFitV9',
-      'deqx_food_draft'
-    ];
-    keysToRemove.forEach(k => localStorage.removeItem(k));
+    try {
+      // STEP 1 & 2: Delete user's cloud tracking rows (RLS safe, authenticated user only)
+      if (typeof window.cloudResetUserTables === 'function') {
+        try {
+          await window.cloudResetUserTables();
+        } catch (ce) {
+          console.warn('[RESET] Cloud reset warning:', ce);
+        }
+      }
 
-    // Clear temporary food draft
-    if (typeof window.clearFoodDraft === 'function') {
-      try { window.clearFoodDraft(); } catch (e) {}
+      // STEP 4: Clear ALL local tracking data from localStorage (preserve only Supabase auth session token)
+      const preservedAuthTokens = {};
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && (k.startsWith('sb-') || k.includes('auth-token') || k.includes('supabase.auth'))) {
+            preservedAuthTokens[k] = localStorage.getItem(k);
+          }
+        }
+        localStorage.clear();
+        for (const [k, v] of Object.entries(preservedAuthTokens)) {
+          localStorage.setItem(k, v);
+        }
+      } catch (e) {
+        console.warn('[RESET] localStorage clear warning:', e);
+      }
+
+      // Clear temporary food drafts
+      if (typeof window.clearFoodDraft === 'function') {
+        try { window.clearFoodDraft(); } catch (e) {}
+      }
+
+      // STEP 5: Clear pending sync queues & notify local server to purge sync file
+      if (window.DEQX?.sync?.resetSyncState) {
+        try {
+          await window.DEQX.sync.resetSyncState();
+        } catch (se) {}
+      }
+
+      // STEP 3 & 4: Create fresh current-day state for TODAY
+      const todayIso = window.today ? window.today() : new Date().toISOString().slice(0, 10);
+      const fresh = {
+        name: '',
+        age: '',
+        gender: '',
+        height: null,
+        weight: 75,
+        startWeight: 75,
+        goalWeight: 85,
+        proteinTarget: 150,
+        waterTarget: 3,
+        calorieTarget: 2200,
+        burnTarget: 500,
+        budgetTarget: 250,
+        foods: [],
+        history: [{ date: todayIso, weight: 75 }],
+        water: 0,
+        workout: '',
+        spent: 0,
+        date: todayIso,
+        xp: 0,
+        rewardDays: {},
+        workoutHistory: {},
+        workoutOverrides: {},
+        workoutSets: {},
+        workoutChecklist: {},
+        personalRecords: {},
+        exerciseHistory: {},
+        customFoods: [],
+        customActivities: [],
+        attendanceStreak: 0,
+        streakStartDate: todayIso,
+        streakHistory: {},
+        lastAttendanceDate: todayIso,
+        lastQualifiedDate: null,
+        dailyRecords: {
+          [todayIso]: {
+            date: todayIso,
+            weight: 75,
+            protein: 0,
+            calories: 0,
+            water: 0,
+            burned: 0,
+            activity: null,
+            workout: '',
+            workoutCompleted: false,
+            spent: 0,
+            dailyCompletion: 0,
+            foods: [],
+            timeline: [],
+            updatedAt: new Date().toISOString()
+          }
+        },
+        timeline: [],
+        achievements: {},
+        onboarded: false
+      };
+
+      const freshV9 = {
+        activity: null,
+        burned: 0,
+        streak: 0,
+        lastWorkout: null,
+        lastActivityDate: null,
+        xp: 0,
+        level: 1
+      };
+
+      // STEP 7: Save fresh state locally
+      window.d = fresh;
+      window.v9 = freshV9;
+      if (window.DEQX && window.DEQX.state) {
+        window.DEQX.state.d = fresh;
+        window.DEQX.state.v9 = freshV9;
+      }
+      localStorage.setItem(window.KEY || 'fitRadhadevanV8', JSON.stringify(fresh));
+      localStorage.setItem(window.V9KEY || 'deqxFitV9', JSON.stringify(freshV9));
+
+      // STEP 8: Push fresh state to live sync and Supabase if connected
+      if (window.DEQX?.sync?.pushSync) {
+        try { window.DEQX.sync.pushSync(true); } catch (pe) {}
+      }
+
+      // STEP 15: Run Reset Verification
+      const isVerified = (
+        fresh.xp === 0 &&
+        freshV9.xp === 0 &&
+        freshV9.level === 1 &&
+        fresh.attendanceStreak === 0 &&
+        freshV9.streak === 0 &&
+        fresh.foods.length === 0 &&
+        fresh.customFoods.length === 0 &&
+        fresh.customActivities.length === 0 &&
+        fresh.timeline.length === 0 &&
+        fresh.water === 0 &&
+        fresh.spent === 0 &&
+        freshV9.burned === 0
+      );
+
+      if (!isVerified) {
+        console.error('[RESET VERIFICATION FAILED]', fresh, freshV9);
+        alert('Reset verification encountered an inconsistency.');
+        return;
+      }
+
+      // Close reset confirm modal
+      closeResetConfirmModal();
+
+      // STEP 5 & 10: Refresh all UI views to clean 0 state
+      if (typeof window.fillProfile === 'function') window.fillProfile();
+      if (typeof window.render === 'function') window.render();
+      if (typeof window.renderV9 === 'function') window.renderV9();
+      if (typeof window.renderFoodDraft === 'function') window.renderFoodDraft();
+      if (typeof window.renderFoodList === 'function') window.renderFoodList();
+      if (typeof window.renderCustomFoods === 'function') window.renderCustomFoods();
+      if (typeof window.renderCustomActivities === 'function') window.renderCustomActivities();
+      if (typeof window.renderProgress === 'function') window.renderProgress();
+      if (typeof window.renderCalendar === 'function') window.renderCalendar();
+      if (typeof window.renderHomeTimeline === 'function') window.renderHomeTimeline();
+      if (typeof window.updateDailyAnalytics === 'function') window.updateDailyAnalytics();
+      if (typeof window.updateSpendRing === 'function') window.updateSpendRing();
+
+      // Return user to Home
+      if (typeof window.show === 'function') {
+        window.show('home');
+      }
+
+      // Show Reset Success Confirmation Banner: "DEQX FIT has been reset." "Fresh start · Today"
+      showResetSuccessToast();
+
+    } catch (err) {
+      console.error('[RESET EVERYTHING ERROR]', err);
+      alert('An error occurred during reset. Please try again.');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'RESET EVERYTHING';
+      }
     }
-
-    // 3. Initialize fresh blank state
-    const todayIso = window.today ? window.today() : new Date().toISOString().slice(0, 10);
-    const fresh = window.cloneInitial ? window.cloneInitial() : {};
-    fresh.onboarded = false;
-    fresh.name = '';
-    fresh.age = '';
-    fresh.gender = '';
-    fresh.height = null;
-    fresh.weight = null;
-    fresh.startWeight = null;
-    fresh.goalWeight = null;
-    fresh.proteinTarget = 150;
-    fresh.waterTarget = 3;
-    fresh.calorieTarget = 2200;
-    fresh.burnTarget = 500;
-    fresh.budgetTarget = 250;
-    fresh.foods = [];
-    fresh.history = [];
-    fresh.water = 0;
-    fresh.spent = 0;
-    fresh.workout = '';
-    fresh.xp = 0;
-    fresh.rewardDays = {};
-    fresh.workoutHistory = {};
-    fresh.workoutOverrides = {};
-    fresh.workoutSets = {};
-    fresh.workoutChecklist = {};
-    fresh.personalRecords = {};
-    fresh.exerciseHistory = {};
-    fresh.customFoods = [];
-    fresh.customActivities = [];
-    fresh.attendanceStreak = 0;
-    fresh.streakStartDate = todayIso;
-    fresh.streakHistory = {};
-    fresh.lastAttendanceDate = todayIso;
-    fresh.lastQualifiedDate = null;
-    fresh.dailyRecords = {};
-    fresh.timeline = [];
-    fresh.achievements = {};
-
-    window.d = fresh;
-    if (window.DEQX && window.DEQX.state) {
-      window.DEQX.state.d = fresh;
-    }
-    localStorage.setItem(window.KEY || 'fitRadhadevanV8', JSON.stringify(fresh));
-
-    // 4. Reset v9 state
-    const freshV9 = {
-      activity: null,
-      burned: 0,
-      streak: 0,
-      lastWorkout: null,
-      lastActivityDate: null,
-      xp: 0,
-      level: 1
-    };
-    window.v9 = freshV9;
-    if (window.DEQX && window.DEQX.state) {
-      window.DEQX.state.v9 = freshV9;
-    }
-    localStorage.setItem(window.V9KEY || 'deqxFitV9', JSON.stringify(freshV9));
-
-    // 5. Re-render UI to clean state
-    if (typeof window.fillProfile === 'function') window.fillProfile();
-    if (typeof window.render === 'function') window.render();
-    if (typeof window.renderV9 === 'function') window.renderV9();
-    if (typeof window.renderFoodDraft === 'function') window.renderFoodDraft();
-    if (typeof window.renderFoodList === 'function') window.renderFoodList();
-    if (typeof window.renderProgress === 'function') window.renderProgress();
-    if (typeof window.renderHomeTimeline === 'function') window.renderHomeTimeline();
-    if (typeof window.updateDailyAnalytics === 'function') window.updateDailyAnalytics();
-    if (typeof window.updateSpendRing === 'function') window.updateSpendRing();
-
-    // 6. Open dedicated "FRESH START" onboarding screen immediately (DO NOT go to Home first)
-    openOnboardingModal();
   };
 
   /* ===== TARGET MAP MODAL ===== */
@@ -396,6 +499,7 @@
   window.openResetConfirmModal = openResetConfirmModal;
   window.closeResetConfirmModal = closeResetConfirmModal;
   window.confirmResetAllData = confirmResetAllData;
+  window.showResetSuccessToast = showResetSuccessToast;
   window.openTargetMapModal = openTargetMapModal;
   window.closeTargetMapModal = closeTargetMapModal;
   window.renderTargetMap = renderTargetMap;

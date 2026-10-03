@@ -125,7 +125,25 @@ try {
                     $stream.Write($respBytes, 0, $respBytes.Length)
                     $stream.Flush()
                 }
-                # 3. Pull Current Data (/api/sync GET)
+                # 3a. Reset Sync State (/api/sync/reset or DELETE /api/sync)
+                elseif ($rawPath -eq "/api/sync/reset" -or ($rawPath -eq "/api/sync" -and $method -eq "DELETE")) {
+                    $global:syncDataBytes = $null
+                    try {
+                        if ([System.IO.File]::Exists($syncFile)) {
+                            [System.IO.File]::Delete($syncFile)
+                        }
+                    } catch {}
+                    $global:syncVersion = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+                    $global:syncTime = [DateTime]::UtcNow.ToString("o")
+                    $respJson = "{`"status`":`"reset`",`"version`":$($global:syncVersion),`"updated`":`"$($global:syncTime)`"}"
+                    $respBytes = [System.Text.Encoding]::UTF8.GetBytes($respJson)
+                    $header = "HTTP/1.1 200 OK`r`nContent-Type: application/json; charset=utf-8`r`nContent-Length: $($respBytes.Length)`r`nAccess-Control-Allow-Origin: *`r`nAccess-Control-Allow-Methods: GET, POST, DELETE, OPTIONS`r`nAccess-Control-Allow-Headers: Content-Type, X-Client-Id`r`nCache-Control: no-cache`r`nConnection: close`r`n`r`n"
+                    $hBytes = [System.Text.Encoding]::UTF8.GetBytes($header)
+                    $stream.Write($hBytes, 0, $hBytes.Length)
+                    $stream.Write($respBytes, 0, $respBytes.Length)
+                    $stream.Flush()
+                }
+                # 3b. Pull Current Data (/api/sync GET)
                 elseif ($rawPath -eq "/api/sync" -and $method -eq "GET") {
                     if ($global:syncDataBytes) {
                         $respBytes = $global:syncDataBytes

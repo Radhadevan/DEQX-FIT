@@ -56,9 +56,9 @@ Assert-Test "Arrow icon included on button" ($indexHtml.Contains('class="submitA
 
 Write-Host "`n3. VERIFYING RESET CONFIRMATION MODAL AND TEXTS:"
 Assert-Test "Reset Confirm Modal ID 'resetConfirmModal' present" ($indexHtml.Contains('id="resetConfirmModal"'))
-Assert-Test "Title: 'Reset all fitness data?' present" ($indexHtml.Contains("Reset all fitness data?"))
-Assert-Test "Text: 'Your food, activity, workout, weight history, XP, streak and progress will be cleared. Your account will NOT be deleted.' present" ($indexHtml.Contains("Your food, activity, workout, weight history, XP, streak and progress will be cleared. Your account will NOT be deleted."))
-Assert-Test "Buttons: Cancel and Reset & Start Fresh present" ($indexHtml.Contains("Cancel") -and $indexHtml.Contains("Reset &amp; Start Fresh"))
+Assert-Test "Title: 'Reset all DEQX FIT data?' present" ($indexHtml.Contains("Reset all DEQX FIT data?"))
+Assert-Test "Warning: 'This will permanently erase your fitness tracking history...' present" ($indexHtml.Contains("This will permanently erase your fitness tracking history, food logs, activity logs, workout history, weight history, spending history, XP, level, streaks and custom data."))
+Assert-Test "Buttons: CANCEL and RESET EVERYTHING present" ($indexHtml.Contains("CANCEL") -and $indexHtml.Contains("RESET EVERYTHING"))
 
 Write-Host "`n4. VERIFYING PROFILE PAGE POST-ONBOARDING FIELDS:"
 Assert-Test "Profile Name present" ($indexHtml.Contains('id="profileName"'))

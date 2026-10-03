@@ -119,24 +119,18 @@
         ? Number(dailyPctOverride)
         : calculateCurrentDailyPercent();
       gymDone = isGymWorkoutCompleted(todayIso);
+      return (dailyPct >= 70 && gymDone);
     } else {
       const rec = d.streakHistory && d.streakHistory[iso];
-      if (rec) {
-        dailyPct = (rec.dailyPercent !== undefined) ? Number(rec.dailyPercent) : 0;
-        gymDone = (rec.gymCompleted !== undefined) ? !!rec.gymCompleted : isGymWorkoutCompleted(iso);
-        if (rec.qualified || rec.completed) return true;
-      } else {
-        gymDone = isGymWorkoutCompleted(iso);
-        dailyPct = 0;
+      if (!rec) return false;
+      if (rec.qualified || rec.completed) return true;
+      dailyPct = (rec.dailyPercent !== undefined) ? Number(rec.dailyPercent) : 0;
+      gymDone = (rec.gymCompleted !== undefined) ? !!rec.gymCompleted : isGymWorkoutCompleted(iso);
+      if (isWeekend) {
+        return !!(rec.qualified || rec.completed);
       }
+      return (dailyPct >= 70 && gymDone);
     }
-
-    // On weekend rest days, user maintains streak without requiring gym workout!
-    if (isWeekend) {
-      return true;
-    }
-
-    return (dailyPct >= 70 && gymDone);
   };
 
   /**
@@ -153,22 +147,30 @@
     const d = window.d;
     if (!d) return 0;
 
-    const p = (d.foods || []).reduce((a, x) => a + (Number(x.p) || 0), 0);
-    const c = (d.foods || []).reduce((a, x) => a + (Number(x.c) || 0), 0);
-    const burn = (window.v9 && window.v9.burned) || 0;
+    const foods = Array.isArray(d.foods) ? d.foods : [];
+    const p = foods.reduce((a, x) => a + (Number(x.p) || 0), 0);
+    const c = foods.reduce((a, x) => a + (Number(x.c) || 0), 0);
+    const water = Number(d.water) || 0;
+    const burn = (window.v9 && Number(window.v9.burned)) || 0;
     const todayIso = window.today();
     const done = isGymWorkoutCompleted(todayIso);
+    const spent = Number(d.spent) || 0;
+    const budgetTarget = Number(d.budgetTarget) || 250;
+
+    // Fresh day / unstarted day check: if zero logs exist across all tracking pillars, completion is strictly 0%
+    const hasAnyTracking = (p > 0 || c > 0 || water > 0 || burn > 0 || done || spent > 0 || foods.length > 0);
+    if (!hasAnyTracking) {
+      return 0;
+    }
+
     const now = new Date();
     const isRest = (typeof window.scheduleForDate === 'function')
       ? (window.scheduleForDate(now) === 'Rest')
       : (now.getDay() === 0 || now.getDay() === 6);
 
-    const spent = Number(d.spent) || 0;
-    const budgetTarget = Number(d.budgetTarget) || 250;
-
     // Strict 100% capping for each pillar
     const pp = Math.min(100, Math.round((p / Math.max(1, d.proteinTarget || 150)) * 100));
-    const wp = Math.min(100, Math.round(((d.water || 0) / Math.max(0.1, d.waterTarget || 3)) * 100));
+    const wp = Math.min(100, Math.round((water / Math.max(0.1, d.waterTarget || 3)) * 100));
     const cp = Math.min(100, Math.round((c / Math.max(1, d.calorieTarget || 2200)) * 100));
     const bp = Math.min(100, Math.round((burn / Math.max(1, d.burnTarget || 500)) * 100));
     const gp = isRest ? 100 : (done ? 100 : 0);
@@ -179,7 +181,7 @@
     const score = Math.round((pp + wp + cp + bp + gp + budScore) / 6);
 
     // Check achievements
-    checkAchievements(p, d.water, burn, done, spent, budgetTarget);
+    checkAchievements(p, water, burn, done, spent, budgetTarget);
 
     return Math.min(100, Math.max(0, score));
   };
@@ -246,17 +248,6 @@
     const todayDaily = (dailyPercent !== undefined) ? Number(dailyPercent) : calculateCurrentDailyPercent();
     const todayGym = isGymWorkoutCompleted(todayIso);
 
-    // Weekend rest days qualify automatically without requiring a gym workout
-    const todayQualified = isWeekend || (todayDaily >= 70 && todayGym);
-
-    d.streakHistory[todayIso] = {
-      visited: true,
-      dailyPercent: todayDaily,
-      gymCompleted: todayGym,
-      completed: todayQualified,
-      qualified: todayQualified
-    };
-
     // Trace past unbroken streak
     let pastStreak = 0;
     let checkDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
@@ -270,6 +261,24 @@
         break;
       }
     }
+
+    // Weekend rest days only preserve an EXISTING streak (pastStreak > 0)
+    // They NEVER create a streak from 0!
+    // A brand new streak ONLY begins when daily score >= 70% AND gym workout completed!
+    let todayQualified = false;
+    if (pastStreak > 0 && isWeekend) {
+      todayQualified = true;
+    } else {
+      todayQualified = (todayDaily >= 70 && todayGym);
+    }
+
+    d.streakHistory[todayIso] = {
+      visited: true,
+      dailyPercent: todayDaily,
+      gymCompleted: todayGym,
+      completed: todayQualified,
+      qualified: todayQualified
+    };
 
     let totalStreak = 0;
     if (todayQualified) {

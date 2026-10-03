@@ -274,6 +274,31 @@
     };
   };
 
+  const resetSyncState = async () => {
+    clearTimeout(pushTimer);
+    isPushing = false;
+    isApplyingRemoteSync = false;
+    lastKnownHash = '';
+    localVersion = Date.now();
+    try {
+      localStorage.setItem(STORAGE_VERSION_KEY, String(localVersion));
+    } catch (e) {}
+
+    try {
+      await fetch(getBaseSyncUrl() + '/reset', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Client-Id': clientId
+        }
+      });
+    } catch (e) {}
+
+    try {
+      await pushSync(true);
+    } catch (e) {}
+  };
+
   window.DEQX = window.DEQX || {};
   window.DEQX.sync = {
     clientId,
@@ -282,6 +307,7 @@
     pullSync,
     checkVersion,
     initSync,
+    resetSyncState,
     updateSyncIndicator
   };
 
