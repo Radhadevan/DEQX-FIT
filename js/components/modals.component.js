@@ -10,7 +10,7 @@
   const checkOnboardingStatus = () => {
     const d = window.d;
     if (!d) return;
-    if (!d.name && !d.weight) {
+    if (!d.onboarded || !d.name || !d.weight) {
       openOnboardingModal();
     } else {
       closeOnboardingModal();
@@ -29,6 +29,11 @@
     const curWInput = document.getElementById('onboardCurrentWeight');
     const goalWInput = document.getElementById('onboardTargetWeight');
 
+    const waterInput = document.getElementById('onboardWater');
+    const protInput = document.getElementById('onboardProtein');
+    const calInput = document.getElementById('onboardCalories');
+    const budInput = document.getElementById('onboardBudget');
+
     if (nameInput) {
       nameInput.value = d.name || '';
       setTimeout(() => nameInput.focus(), 250);
@@ -36,6 +41,11 @@
     if (ageInput) ageInput.value = d.age || '';
     if (curWInput) curWInput.value = d.weight ? Number(d.weight) : '';
     if (goalWInput) goalWInput.value = d.goalWeight ? Number(d.goalWeight) : '';
+
+    if (waterInput) waterInput.value = d.waterTarget || 3.0;
+    if (protInput) protInput.value = d.proteinTarget || 150;
+    if (calInput) calInput.value = d.calorieTarget || 2200;
+    if (budInput) budInput.value = (d.budgetTarget !== undefined && d.budgetTarget !== null) ? d.budgetTarget : 250;
 
     const err = document.getElementById('onboardError');
     if (err) {
@@ -95,7 +105,7 @@
     if (!isNaN(budVal) && budVal >= 0) d.budgetTarget = budVal;
 
     d.history = d.history || [];
-    const todayStr = window.today();
+    const todayStr = window.today ? window.today() : new Date().toISOString().slice(0, 10);
     const exIdx = d.history.findIndex(x => x.date === todayStr);
     if (exIdx >= 0) {
       d.history[exIdx].weight = curW;
@@ -106,8 +116,11 @@
     d.onboarded = true;
     window.save(true);
     closeOnboardingModal();
+    if (typeof window.fillProfile === 'function') window.fillProfile();
     if (typeof window.show === 'function') window.show('home');
-    window.toast(`🔥 Welcome, ${d.name}! Your profile has been initialized.`);
+    if (typeof window.toast === 'function') {
+      window.toast(`🔥 Welcome, ${d.name}! Your profile has been initialized.`);
+    }
   };
 
   /* ===== TARGET MAP MODAL ===== */

@@ -13,9 +13,9 @@
   const INITIAL = {
     name: '',
     age: '',
-    weight: 97,
-    goalWeight: 75,
-    startWeight: 108,
+    weight: null,
+    goalWeight: null,
+    startWeight: null,
     proteinTarget: 150,
     waterTarget: 3,
     calorieTarget: 2200,
@@ -31,6 +31,7 @@
     workoutHistory: {},
     workoutOverrides: {},
     workoutSets: {},
+    workoutChecklist: {},
     personalRecords: {},
     exerciseHistory: {},
     customFoods: [],
@@ -43,7 +44,7 @@
     dailyRecords: {},
     timeline: [],
     achievements: {},
-    onboarded: true
+    onboarded: false
   };
 
   // Safe migration layer from all prior keys
@@ -71,24 +72,33 @@
   d.workoutHistory = d.workoutHistory || {};
   d.workoutOverrides = d.workoutOverrides || {};
   d.workoutSets = d.workoutSets || {};
+  d.workoutChecklist = d.workoutChecklist || {};
   d.personalRecords = d.personalRecords || {};
   d.exerciseHistory = d.exerciseHistory || {};
   d.streakHistory = d.streakHistory || {};
   d.dailyRecords = d.dailyRecords || {};
   d.timeline = Array.isArray(d.timeline) ? d.timeline : [];
   d.achievements = d.achievements || {};
-  d.onboarded = true;
+
+  // Preserve onboarded flag if valid profile exists
+  if (legacyData && (legacyData.name || legacyData.weight)) {
+    d.onboarded = (legacyData.onboarded !== false);
+  } else if (legacyData && legacyData.onboarded !== undefined) {
+    d.onboarded = !!legacyData.onboarded;
+  } else {
+    d.onboarded = false;
+  }
 
   // Weight initialization
   const todayIso = window.today ? window.today() : new Date().toISOString().slice(0, 10);
-  if (!d.weight && d.history.length) {
+  if (!d.weight && d.history && d.history.length) {
     d.weight = Number(d.history[d.history.length - 1].weight);
   }
-  d.startWeight = Number(d.startWeight) || (d.history.length ? Number(d.history[0].weight) : null) || Number(d.weight) || 97;
-
-  // Ensure today's weight is in history if set
-  if (d.weight && !d.history.some(x => x.date === todayIso)) {
-    d.history.push({ date: todayIso, weight: Number(d.weight) });
+  if (d.weight) {
+    d.startWeight = Number(d.startWeight) || (d.history && d.history.length ? Number(d.history[0].weight) : null) || Number(d.weight);
+    if (!d.history.some(x => x.date === todayIso)) {
+      d.history.push({ date: todayIso, weight: Number(d.weight) });
+    }
   }
 
   // V9 Activity & Streak State

@@ -186,32 +186,34 @@
     const styleProp = (id, prop, val) => { const e = document.getElementById(id); if (e) e.style.setProperty(prop, val); };
 
     // Weight Journey Metrics (Section 12)
-    const startW = Number(d.startWeight) || (d.history && d.history.length ? Number(d.history[0].weight) : null) || Number(d.weight) || 97;
-    const curW = Number(d.weight) || startW;
-    const goalW = Number(d.goalWeight) || 75;
+    const hasWeight = !!(d.weight && !isNaN(Number(d.weight)));
+    const startW = Number(d.startWeight) || (d.history && d.history.length ? Number(d.history[0].weight) : null) || (hasWeight ? Number(d.weight) : null);
+    const curW = hasWeight ? Number(d.weight) : null;
+    const goalW = d.goalWeight ? Number(d.goalWeight) : null;
 
     let gp = 0;
-    if (startW !== goalW) {
+    if (curW && startW && goalW && startW !== goalW) {
       if (startW > goalW) {
         gp = Math.max(0, Math.min(100, ((startW - curW) / Math.max(0.1, startW - goalW)) * 100));
       } else {
         gp = Math.max(0, Math.min(100, ((curW - startW) / Math.max(0.1, goalW - startW)) * 100));
       }
-    } else {
-      gp = 100;
     }
 
-    set('weightHome', Number(curW).toFixed(1));
-    set('weightHome2', Number(curW).toFixed(1));
-    set('goalWeightHome', Number(goalW).toFixed(0));
-    set('goalWeightHome2', Number(goalW).toFixed(0));
+    set('weightHome', curW ? Number(curW).toFixed(1) : '--');
+    set('weightHome2', curW ? Number(curW).toFixed(1) : '--');
+    set('goalWeightHome', goalW ? Number(goalW).toFixed(0) : '--');
+    set('goalWeightHome2', goalW ? Number(goalW).toFixed(0) : '--');
 
-    const diff = (curW - goalW);
-    const remText = diff > 0
-      ? diff.toFixed(1) + ' kg remaining'
-      : diff < 0
-      ? Math.abs(diff).toFixed(1) + ' kg to gain'
-      : 'Goal reached! 🎉';
+    let remText = '-- kg remaining';
+    if (curW && goalW) {
+      const diff = (curW - goalW);
+      remText = diff > 0
+        ? diff.toFixed(1) + ' kg remaining'
+        : diff < 0
+        ? Math.abs(diff).toFixed(1) + ' kg to gain'
+        : 'Goal reached! 🎉';
+    }
 
     set('remaining', remText);
     set('remaining2', remText);

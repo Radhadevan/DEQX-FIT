@@ -212,17 +212,18 @@
       value: Number(h.weight)
     }));
 
-    const startW = Number(d.startWeight) || (history.length ? Number(history[0].weight) : null) || Number(d.weight) || 97;
-    const curW = Number(d.weight) || startW;
-    const goalW = Number(d.goalWeight) || 75;
-    const totalLost = (startW - curW).toFixed(1);
-    const remaining = (curW - goalW).toFixed(1);
+    const hasWeight = !!(d.weight && !isNaN(Number(d.weight)));
+    const startW = Number(d.startWeight) || (history.length ? Number(history[0].weight) : null) || (hasWeight ? Number(d.weight) : null);
+    const curW = hasWeight ? Number(d.weight) : null;
+    const goalW = d.goalWeight ? Number(d.goalWeight) : null;
+    const totalLost = (startW && curW) ? (startW - curW).toFixed(1) : '--';
+    const remaining = (curW && goalW) ? (curW - goalW).toFixed(1) : '--';
 
     // Weekly average weight
     const last7Weights = (d.history || []).slice(-7).map(x => Number(x.weight)).filter(x => !isNaN(x) && x > 0);
     const weeklyAvgWeight = last7Weights.length
       ? (last7Weights.reduce((a, b) => a + b, 0) / last7Weights.length).toFixed(1)
-      : curW.toFixed(1);
+      : (curW ? curW.toFixed(1) : '--');
 
     // Render HTML Structure
     container.innerHTML = `
@@ -238,7 +239,7 @@
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
           <div>
             <span style="font-size:10px;font-weight:800;color:var(--lime,#b8f53a);letter-spacing:0.08em">WEIGHT JOURNEY</span>
-            <h2 style="font-size:18px;margin:2px 0 0;color:#fff">${curW} kg <small style="font-size:12px;color:#7a8a72;font-weight:500">current</small></h2>
+            <h2 style="font-size:18px;margin:2px 0 0;color:#fff">${curW || '--'} kg <small style="font-size:12px;color:#7a8a72;font-weight:500">current</small></h2>
           </div>
           <button type="button" onclick="window.logProgressWeight()" style="padding:6px 12px;background:#232d1e;color:var(--lime,#b8f53a);border:1px solid var(--lime,#b8f53a);border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer">+ Log weight</button>
         </div>
@@ -246,15 +247,15 @@
         <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:6px;margin-bottom:14px;text-align:center">
           <div style="background:rgba(255,255,255,0.03);padding:8px 4px;border-radius:8px">
             <span style="font-size:10px;color:#7a8a72">Start</span>
-            <b style="display:block;font-size:12.5px;color:#fff">${startW} kg</b>
+            <b style="display:block;font-size:12.5px;color:#fff">${startW || '--'} kg</b>
           </div>
           <div style="background:rgba(255,255,255,0.03);padding:8px 4px;border-radius:8px">
             <span style="font-size:10px;color:#7a8a72">Goal</span>
-            <b style="display:block;font-size:12.5px;color:#fff">${goalW} kg</b>
+            <b style="display:block;font-size:12.5px;color:#fff">${goalW || '--'} kg</b>
           </div>
           <div style="background:rgba(255,255,255,0.03);padding:8px 4px;border-radius:8px">
             <span style="font-size:10px;color:#7a8a72">Lost</span>
-            <b style="display:block;font-size:12.5px;color:var(--lime,#b8f53a)">${Number(totalLost) > 0 ? '-' + totalLost : totalLost} kg</b>
+            <b style="display:block;font-size:12.5px;color:var(--lime,#b8f53a)">${totalLost !== '--' && Number(totalLost) > 0 ? '-' + totalLost : totalLost} kg</b>
           </div>
           <div style="background:rgba(255,255,255,0.03);padding:8px 4px;border-radius:8px">
             <span style="font-size:10px;color:#7a8a72">7d Avg</span>
