@@ -146,7 +146,7 @@
     if (typeof window.render === 'function') window.render();
     renderV9();
     updateActivityCaloriePreview();
-    window.toast(`Activity saved ✓ ${kcal} kcal burned on Home!`);
+    window.toast('Activity saved ✓');
   };
 
   const saveCustomActivity = () => {

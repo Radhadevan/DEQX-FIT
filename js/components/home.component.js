@@ -73,8 +73,8 @@
 
     const pp = pct(p, d.proteinTarget);
     const wp = pct(d.water, d.waterTarget);
-    const cp = pct(c, d.calorieTarget);
-    const bp = pct(burn, 500);
+    const burnTarget = Number(d.burnTarget) || 500;
+    const bp = pct(burn, burnTarget);
 
     const set = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
 
@@ -108,6 +108,7 @@
     set('proteinTargetHome', d.proteinTarget || 150);
     set('waterTargetHome', d.waterTarget || 3);
     set('calorieTargetHome', Number(d.calorieTarget || 2200).toLocaleString('en-IN'));
+    set('burnTargetHome', burnTarget);
 
     const pb = document.getElementById('proteinBar');
     if (pb) pb.style.width = pp + '%';

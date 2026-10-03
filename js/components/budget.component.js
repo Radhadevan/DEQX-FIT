@@ -171,7 +171,7 @@
     window.save(true);
     updateSpendRing();
     if (typeof window.savedFeedback === 'function') {
-      window.savedFeedback(`Spending saved: ₹${d.spent}`, 'budget');
+      window.savedFeedback('Spending saved ✓', 'budget');
     }
   };
 

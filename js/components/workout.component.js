@@ -861,7 +861,7 @@
     if (typeof window.updateStreak === 'function') window.updateStreak();
     if (typeof window.rewardOnce === 'function') window.rewardOnce('workout', 50, 'Completed daily workout!');
     if (typeof window.savedFeedback === 'function') {
-      window.savedFeedback(`Workout logged ✓ ${workoutName} (${caloriesBurned} kcal)`, 'workout');
+      window.savedFeedback('Workout saved ✓', 'workout');
     }
     renderCalendar();
   };

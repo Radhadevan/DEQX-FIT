@@ -47,7 +47,7 @@
     window.save(true);
     renderProgress();
     if (typeof window.savedFeedback === 'function') {
-      window.savedFeedback(`Weight logged: ${val} kg ✓`, 'progress');
+      window.savedFeedback('Weight saved ✓', 'progress');
     }
   };
 

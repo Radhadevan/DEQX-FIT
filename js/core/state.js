@@ -13,12 +13,15 @@
   const INITIAL = {
     name: '',
     age: '',
+    gender: '',
+    height: null,
     weight: null,
     goalWeight: null,
     startWeight: null,
     proteinTarget: 150,
     waterTarget: 3,
     calorieTarget: 2200,
+    burnTarget: 500,
     budgetTarget: 250,
     foods: [],
     history: [],
@@ -65,6 +68,9 @@
   // Ensure arrays and objects exist
   d.name = d.name || '';
   d.age = d.age || '';
+  d.gender = d.gender || '';
+  d.height = (d.height !== undefined && d.height !== null && !isNaN(Number(d.height))) ? Number(d.height) : null;
+  d.burnTarget = (d.burnTarget !== undefined && d.burnTarget !== null && !isNaN(Number(d.burnTarget))) ? Number(d.burnTarget) : 500;
   d.foods = Array.isArray(d.foods) ? d.foods : [];
   d.history = Array.isArray(d.history) ? d.history : [];
   d.customFoods = Array.isArray(d.customFoods) ? d.customFoods : [];

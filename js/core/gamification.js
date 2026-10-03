@@ -170,7 +170,7 @@
     const pp = Math.min(100, Math.round((p / Math.max(1, d.proteinTarget || 150)) * 100));
     const wp = Math.min(100, Math.round(((d.water || 0) / Math.max(0.1, d.waterTarget || 3)) * 100));
     const cp = Math.min(100, Math.round((c / Math.max(1, d.calorieTarget || 2200)) * 100));
-    const bp = Math.min(100, Math.round((burn / 500) * 100));
+    const bp = Math.min(100, Math.round((burn / Math.max(1, d.burnTarget || 500)) * 100));
     const gp = isRest ? 100 : (done ? 100 : 0);
     const budScore = (spent <= budgetTarget)
       ? 100

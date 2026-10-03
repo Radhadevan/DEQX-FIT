@@ -263,7 +263,7 @@
     const totP = d.foods.reduce((a, x) => a + (Number(x.p) || 0), 0);
     window.save(true);
     if (typeof window.savedFeedback === 'function') {
-      window.savedFeedback(`Meal confirmed ✓ (+${totP.toFixed(1)}g P)`, 'food');
+      window.savedFeedback("Saved ✓ Meal added to today's data", 'food');
     }
   };
 
