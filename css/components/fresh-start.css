@@ -1,0 +1,365 @@
+/**
+ * DEQX FIT - Fresh Start Onboarding & Reset Confirmation Styles
+ * Premium Dark Glassmorphic Theme with Acid/Lime Green Accents
+ */
+
+/* ==========================================================================
+   1. OVERLAY & CONTAINER
+   ========================================================================== */
+#onboardingModal {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10000 !important;
+  background: rgba(4, 7, 4, 0.94) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  display: none;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  overflow-y: auto !important;
+  box-sizing: border-box !important;
+}
+
+#onboardingModal.show {
+  display: flex !important;
+}
+
+body.onboarding-locked {
+  overflow: hidden !important;
+}
+
+.onboardBox {
+  width: min(560px, 95vw) !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  padding: 32px 26px !important;
+  border-radius: 28px !important;
+  background: radial-gradient(circle at 50% 0%, rgba(214, 255, 50, 0.14) 0%, transparent 60%),
+              linear-gradient(180deg, #161c14 0%, #0c100a 100%) !important;
+  border: 1px solid rgba(214, 255, 50, 0.28) !important;
+  box-shadow: 0 0 65px rgba(214, 255, 50, 0.16), 0 35px 95px rgba(0, 0, 0, 0.95) !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  transform: scale(0.94);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s;
+}
+
+.levelOverlay.show .onboardBox {
+  transform: scale(1) !important;
+}
+
+/* Custom sleek scrollbar for setup modal */
+.onboardBox::-webkit-scrollbar {
+  width: 5px;
+}
+.onboardBox::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 99px;
+}
+.onboardBox::-webkit-scrollbar-thumb {
+  background: rgba(214, 255, 50, 0.25);
+  border-radius: 99px;
+}
+.onboardBox::-webkit-scrollbar-thumb:hover {
+  background: rgba(214, 255, 50, 0.45);
+}
+
+/* ==========================================================================
+   2. HEADER & BRAND CREST
+   ========================================================================== */
+.fsHeaderGroup {
+  text-align: center !important;
+  margin-bottom: 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.fsBrandLogo {
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  letter-spacing: 4px !important;
+  color: #ffffff !important;
+  text-transform: uppercase !important;
+  margin: 0 0 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  text-shadow: 0 0 25px rgba(214, 255, 50, 0.25) !important;
+}
+
+.fsBrandLogo .fsLogoIcon {
+  color: var(--lime, #d6ff32) !important;
+  font-size: 20px !important;
+  filter: drop-shadow(0 0 8px rgba(214, 255, 50, 0.6));
+}
+
+.fsBrandMotto {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 4px 14px !important;
+  border-radius: 99px !important;
+  background: rgba(214, 255, 50, 0.08) !important;
+  border: 1px solid rgba(214, 255, 50, 0.22) !important;
+  color: var(--lime, #d6ff32) !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+  margin-bottom: 16px !important;
+}
+
+.fsBadge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 5px 15px !important;
+  border-radius: 99px !important;
+  background: rgba(214, 255, 50, 0.14) !important;
+  border: 1px solid rgba(214, 255, 50, 0.38) !important;
+  color: var(--lime, #d6ff32) !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1.5px !important;
+  text-transform: uppercase !important;
+  margin-bottom: 10px !important;
+  box-shadow: 0 0 15px rgba(214, 255, 50, 0.15) !important;
+}
+
+.fsBadge .fsDotPulse {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: var(--lime, #d6ff32) !important;
+  box-shadow: 0 0 8px var(--lime, #d6ff32) !important;
+}
+
+.fsTitle {
+  font-size: 26px !important;
+  font-weight: 900 !important;
+  color: #ffffff !important;
+  margin: 0 0 6px !important;
+  letter-spacing: -0.5px !important;
+  line-height: 1.2 !important;
+}
+
+.fsSubtitle {
+  font-size: 13px !important;
+  color: #92a28e !important;
+  margin: 0 !important;
+  line-height: 1.5 !important;
+  max-width: 420px !important;
+}
+
+/* ==========================================================================
+   3. GLASS CARDS
+   ========================================================================== */
+.fsCard {
+  background: linear-gradient(165deg, rgba(23, 30, 20, 0.8) 0%, rgba(12, 16, 11, 0.95) 100%) !important;
+  border: 1px solid rgba(214, 255, 50, 0.16) !important;
+  border-radius: 20px !important;
+  padding: 18px 20px !important;
+  margin-bottom: 16px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+.fsCard:hover {
+  border-color: rgba(214, 255, 50, 0.3) !important;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45), 0 0 25px rgba(214, 255, 50, 0.06) !important;
+}
+
+.fsCardHeader {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  text-align: left !important;
+  gap: 3px !important;
+  margin-bottom: 16px !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  width: 100% !important;
+}
+
+.fsCardTitle {
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1.2px !important;
+  color: var(--lime, #d6ff32) !important;
+  text-transform: uppercase !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+}
+
+.fsCardSubtitle {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: #8c9b88 !important;
+  margin: 0 !important;
+  line-height: 1.4 !important;
+  display: block !important;
+}
+
+/* ==========================================================================
+   4. GRID LAYOUTS & FIELDS
+   ========================================================================== */
+.fsGrid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 12px 14px !important;
+  width: 100% !important;
+}
+
+@media (max-width: 520px) {
+  .fsGrid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px 10px !important;
+  }
+  .fsGrid.singleMobile {
+    grid-template-columns: 1fr !important;
+  }
+  .onboardBox {
+    padding: 24px 16px !important;
+  }
+}
+
+.fsField {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  text-align: left !important;
+  position: relative !important;
+}
+
+.fsLabel {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+  color: #adbcaa !important;
+  letter-spacing: 0.6px !important;
+  text-transform: uppercase !important;
+}
+
+.fsLabel .req {
+  color: var(--lime, #d6ff32) !important;
+  font-size: 13px !important;
+  margin-left: 2px !important;
+}
+
+.fsUnitTag {
+  font-size: 9.5px !important;
+  font-weight: 700 !important;
+  color: #7b8b78 !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  padding: 1px 5px !important;
+  border-radius: 4px !important;
+  letter-spacing: 0.5px !important;
+}
+
+.fsInput,
+.fsSelect {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  background: #111610 !important;
+  border: 1px solid #242e21 !important;
+  border-radius: 12px !important;
+  color: #ffffff !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  padding: 11px 13px !important;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s !important;
+  font-family: inherit !important;
+  outline: none !important;
+}
+
+.fsInput::placeholder {
+  color: #556251 !important;
+  font-weight: 500 !important;
+}
+
+.fsSelect {
+  cursor: pointer !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23d6ff32' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 14px center !important;
+  padding-right: 36px !important;
+}
+
+.fsSelect option {
+  background: #141912 !important;
+  color: #ffffff !important;
+  padding: 8px !important;
+}
+
+.fsInput:focus,
+.fsSelect:focus {
+  border-color: var(--lime, #d6ff32) !important;
+  box-shadow: 0 0 0 3px rgba(214, 255, 50, 0.18), 0 0 15px rgba(214, 255, 50, 0.12) !important;
+  background: #151d13 !important;
+}
+
+/* ==========================================================================
+   5. ERROR MESSAGE & BUTTONS
+   ========================================================================== */
+.onboardError {
+  margin: 14px 0 !important;
+  padding: 11px 14px !important;
+  background: rgba(57, 28, 27, 0.9) !important;
+  border: 1px solid rgba(255, 123, 114, 0.45) !important;
+  border-radius: 12px !important;
+  color: #ff9b94 !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+  line-height: 1.4 !important;
+  box-shadow: 0 6px 20px rgba(255, 80, 80, 0.15) !important;
+}
+
+.fsSubmitBtn {
+  width: 100% !important;
+  margin-top: 14px !important;
+  padding: 16px 24px !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.6px !important;
+  border-radius: 16px !important;
+  background: var(--lime, #d6ff32) !important;
+  color: #070a05 !important;
+  border: none !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  box-shadow: 0 0 30px rgba(214, 255, 50, 0.35), 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease !important;
+}
+
+.fsSubmitBtn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 0 42px rgba(214, 255, 50, 0.55), 0 10px 28px rgba(0, 0, 0, 0.6) !important;
+  filter: brightness(1.05) !important;
+}
+
+.fsSubmitBtn:active {
+  transform: scale(0.98) !important;
+}
+
+.fsSubmitBtn .submitArrowIcon {
+  transition: transform 0.2s ease !important;
+}
+
+.fsSubmitBtn:hover .submitArrowIcon {
+  transform: translateX(4px) !important;
+}
